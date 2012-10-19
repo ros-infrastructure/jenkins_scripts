@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+from test_repositories import *
+import optparse
+
+
+def main():
+    parser = optparse.OptionParser()
+    (options, args) = parser.parse_args()
+
+    if len(args) <= 1:
+        print "Usage: %s ros_distro repository_name1 repository_name2"%sys.argv[0]
+        raise BuildException("Wrong number of parameters for test_repositories script")
+
+    ros_distro = args[0]
+    repositories = args[1:]
+    workspace = os.environ['WORKSPACE']
+    print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
+
+    test_repositories(ros_distro, repositories, workspace, use_devel_repo=False, test_depends_on=True)
+
+
+
+if __name__ == '__main__':
+    # global try
+    try:
+        main()
+        print "prerelease script finished cleanly"
+
+    # global catch
+    except BuildException as ex:
+        print ex.msg
+
+    except Exception as ex:
+        print "prerelease script failed. Check out the console output above for details."
+        raise ex

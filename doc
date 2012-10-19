@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+import os
+import sys
+import subprocess
+import yaml
+import urllib
+import datetime
+from doc_stack import *
+import shutil
+
+#TODO: Eventually, pull rosdoc lite from debs
+def install_rosdoc_lite(workspace, ros_distro):
+    checkout_path = "%s/rosdoc_lite" % workspace
+    if os.path.exists(checkout_path):
+        shutil.rmtree(checkout_path)
+        
+    call("git clone git://github.com/ros-infrastructure/rosdoc_lite.git %s" % checkout_path)
+    old_dir = os.getcwd()
+    os.chdir("rosdoc_lite")
+    call("git checkout %s-devel" % ros_distro)
+    os.makedirs("build")
+    os.chdir("build")
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
+    call("cmake ..", ros_env)
+    call("make", ros_env)
+    call("make install", ros_env)
+    os.chdir(old_dir)
+
+def install_catkin_sphinx(workspace):
+    checkout_path = "%s/catkin_sphinx" % workspace
+    sphinx_path = os.path.abspath("%s/sphinx" % os.environ['HOME'])
+    if os.path.exists(checkout_path):
+        shutil.rmtree(checkout_path)
+
+    if not os.path.exists(sphinx_path):
+        os.makedirs(sphinx_path)
+
+    call("git clone git://github.com/ros/catkin-sphinx.git %s" % checkout_path)
+    old_dir = os.getcwd()
+    os.chdir("%s"%checkout_path)
+    call("./setup.py install")
+    os.chdir(old_dir)
+    #print "Copying themes to %s" % sphinx_path
+    #shutil.copytree(os.path.join(checkout_path, 'theme', 'ros-theme'), os.path.join(sphinx_path, 'ros-theme'))
+
+def main():
+    print
+    print
+    print
+    print "============================================================"
+    print "==== Begin doc script.  Ignore the output above ====="
+    print "============================================================"
+    print
+    print
+    print
+
+    arguments = sys.argv[1:]
+    if len(arguments) !=2:
+        print "Usage: ./doc [distro] [stack]"
+        raise BuildException("Wrong number of parameters for doc script")
+
+    ros_distro = arguments[0]
+    stack = arguments[1]
+    print "Working on distro %s and stack %s" % (ros_distro, stack)
+
+    workspace = os.environ['WORKSPACE']
+    docspace = os.path.join(workspace, 'doc_stacks', str(datetime.datetime.now()).replace(' ','_').replace(':','-'))
+    os.makedirs(docspace)
+
+    #Add ros to apt
+    print "Add ROS to apt sources"
+    with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:
+        #TODO: Decide whether normal or shadow fixed makes sense here
+        #f.write("deb http://packages.ros.org/ros/ubuntu %s main"%os.environ['OS_PLATFORM'])
+        f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main"%os.environ['OS_PLATFORM'])
+    call("wget http://packages.ros.org/ros.key -O %s/ros.key"%workspace)
+    call("apt-key add %s/ros.key"%workspace)
+    call("apt-get update")
+
+    # install vcs tools
+    print "Installing vcs tools..."
+    call("apt-get install mercurial --yes")
+    call("apt-get install git --yes")   
+    call("apt-get install subversion --yes")
+
+    call("apt-get install rsync --yes")
+
+    #install ssh
+    call("apt-get install openssh-client --yes")
+
+    print "Installing catkin-sphinx"
+    install_catkin_sphinx(workspace)
+    print "Done installing catkin-sphinx"
+
+    #Install rosdoc lite
+    print "Installing ros and rosdoc_lite..."
+    call("apt-get install python-catkin-pkg python-rospkg python-networkx --yes")
+    call("apt-get install ros-%s-ros --yes" % ros_distro)
+    #TODO: Replace with commented line below
+    call("apt-get install graphviz python-sphinx python-yaml doxygen ros-%s-genmsg python-epydoc --yes" % ros_distro)
+    #TODO: Put back in
+    #call("apt-get install ros-%s-rosdoc-lite --yes" % ros_distro)
+    install_rosdoc_lite(workspace, ros_distro)
+    print "Done installing ros and rosdoc_lite"
+
+    #Run documentation generation on the stack
+    document_repo(workspace, docspace, ros_distro, stack, os.environ['OS_PLATFORM'], os.environ['ARCH'])
+
+if __name__ == '__main__':
+    main()
