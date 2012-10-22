@@ -64,7 +64,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
     rosdep = RosDepResolver(ros_distro)
 
     # download the repositories from source
-    print "Downloading all repositories"
+    print "Creating rosinstall file for repositories"
     rosinstall = ""
     for repository in repositories:
         if use_devel_repo:
@@ -76,7 +76,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
     print "rosinstall file for all repositories: \n %s"%rosinstall
     with open(workspace+"/repository.rosinstall", 'w') as f:
         f.write(rosinstall)
-    print "Create rosinstall file for repositories %s"%(', '.join(repositories))
+    print "Install all repositories from source"        
     os.makedirs(repositorysourcespace)
     call("rosinstall %s %s/repository.rosinstall --catkin"%(repositorysourcespace, workspace))
 
