@@ -207,7 +207,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
 
     #Make sure to build in dependency order
     for name in build_order:
-        if not name in manifest_packages:
+        if not name in manifest_packages or name == 'rosdoc_lite':
             continue
 
         path = manifest_packages[name]
@@ -249,7 +249,10 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
             #to add it to our package path because other packages may depend on it
             ros_env['ROS_PACKAGE_PATH'] = '%s:%s' % (path, ros_env['ROS_PACKAGE_PATH'])
 
-    return "export PYTHONPATH=%s:$PYTHONPATH" % path_string
+    if path_string:
+        return "export PYTHONPATH=%s:$PYTHONPATH" % path_string
+
+    return "export PYTHONPATH=$PYTHONPATH"
 
 def build_repo_messages(docspace, ros_distro):
     #For groovy, this isn't too bad, we just set up a workspace
@@ -422,7 +425,7 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
 
     #Everything that is after fuerte supports catkin workspaces, so everything
     #that has packages with package.xml files
-    if catkin_packages:
+    if catkin_packages and not 'rosdoc_lite' in catkin_packages.keys():
         sources.append(build_repo_messages(docspace, ros_distro))
 
     #For all our manifest packages (dry or fuerte catkin) we want to build

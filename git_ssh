@@ -1,0 +1,3 @@
+#!/bin/sh
+#exec ssh -o IdentityFile=/tmp/your_ssh_pkey -o User=git -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"
+exec ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"
