@@ -98,7 +98,9 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
 
     # build repositories
     print "Build repositories"
+    print "before build, CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
     call("make", ros_env)
+    print "after build, CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
 
     # get the repositories test dependencies
     print "Get test dependencies of repositories"
@@ -108,7 +110,9 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
 
     # run tests
     print "Test repositories"
+    print "before test, CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
     call("make run_tests", ros_env)
+    print "after test, CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
 
     # see if we need to do more work or not
     if not test_depends_on:
