@@ -7,6 +7,7 @@ import yaml
 import threading
 import time
 import datetime
+import pkg_resources
 from Queue import Queue
 from threading import Thread
 from xml.etree.ElementTree import ElementTree
@@ -432,9 +433,9 @@ def copy_test_results(workspace, buildspace):
             count += 1
     if count == 0:
         print "No test results, so I'll create a dummy test result xml file"
-        call("cp %s %s"%(os.path.join(workspace, 'buildfarm/templates/junit_dummy_ouput_template.xml'),
-                         os.path.join(workspace, 'test_results/')))
-
+        dummy_xml = pkg_resources.resource_string('jenkins_tools', 'resources/templates/junit_dummy_ouput_template.xml')
+        with open(os.path.join(workspace, 'test_results/'), 'w') as f:
+            f.write(dummy_xml)
 
 
 def get_ros_env(setup_file):
