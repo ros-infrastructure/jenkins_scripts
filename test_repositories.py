@@ -46,7 +46,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
 
     # install stuff we need
     print "Installing stuff we need for testing"
-    call("apt-get install mercurial subversion python-catkin-pkg python-support cmake --yes")
+    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall cmake --yes")
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
