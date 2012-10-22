@@ -254,28 +254,34 @@ class RosDistroPackage:
         self.depends1 = None
 
     def get_dependencies(self):
+        if self.depends1:
+            return self.depends1
+
+        url = self.url
+        url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
+        url = url.replace('git://', 'https://raw.')
+        print url
+        retries = 5
+        while not self.depends1 and retries > 0:
+            package_xml = urllib.urlopen(url).read()
+            append_pymodules_if_needed()
+            from catkin_pkg import package
+            try:
+                pkg = package.parse_package_string(package_xml)
+            except package.InvalidPackage as e:
+                print "!!!! Failed to download package.xml for package %s at url %s"%(self.name, url)
+                time.sleep(5.0)
+
+            res = {}
+            res['build'] = [d.name for d in pkg.build_depends]
+            res['test'] = [d.name for d in pkg.test_depends]
+            self.depends1 = res
+            return self.depends1
+
         if not self.depends1:
-            url = self.url
-            url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
-            url = url.replace('git://', 'https://raw.')
-            print url
-            retries = 5
-            while not self.depends1 and retries > 0:
-                package_xml = urllib.urlopen(url).read()
-                append_pymodules_if_needed()
-                from catkin_pkg import package
-                try:
-                    pkg = package.parse_package_string(package_xml)
-                except package.InvalidPackage as e:
-                    print "!!!! Failed to download package.xml for package %s at url %s"%(self.name, url)
-                    time.sleep(5.0)
+            raise BuildException("Failed to get package.xml at %s"%url)
 
-                res = {}
-                res['build'] = [d.name for d in pkg.build_depends]
-                res['test'] = [d.name for d in pkg.test_depends]
-                self.depends1 = res
-
-        return self.depends1
+            
 
 
 
