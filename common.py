@@ -433,10 +433,8 @@ def copy_test_results(workspace, buildspace):
             count += 1
     if count == 0:
         print "No test results, so I'll create a dummy test result xml file"
-        call('apt-get install --yes python-jenkins-tools')
-        dummy_xml = pkg_resources.resource_string('jenkins_tools', 'resources/templates/junit_dummy_ouput_template.xml')
         with open(os.path.join(workspace, 'test_results/'), 'w') as f:
-            f.write(dummy_xml)
+            f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="0" name="dummy test"> <testcase name="dummy rapport" classname="Results" /></testsuite>')
 
 
 def get_ros_env(setup_file):
