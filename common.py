@@ -96,7 +96,7 @@ class RosDistro:
         self.packages = {}
         for repo_name, data in distro.iteritems():
             if not 'packages' in data.keys():
-                data['packages'] = [repo_name]
+                data['packages'] = {repo_name: ''}
             distro_pkgs = []
             url = data['url']
             version = data['version']
