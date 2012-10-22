@@ -95,16 +95,19 @@ class RosDistro:
         self.repositories = {}
         self.packages = {}
         for repo_name, data in distro.iteritems():
-            if not 'packages' in data.keys():
-                data['packages'] = {repo_name: ''}
-            distro_pkgs = []
-            url = data['url']
-            version = data['version']
-            for pkg_name in data['packages'].keys():
-                pkg = RosDistroPackage(pkg_name, url, version)
-                distro_pkgs.append(pkg)
-                self.packages[pkg_name] = pkg
-            self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
+            # only work on already released stacks
+            if data['version']:
+                # support unary disto's
+                if not 'packages' in data.keys():
+                    data['packages'] = {repo_name: ''}
+                distro_pkgs = []
+                url = data['url']
+                version = data['version']
+                for pkg_name in data['packages'].keys():
+                    pkg = RosDistroPackage(pkg_name, url, version)
+                    distro_pkgs.append(pkg)
+                    self.packages[pkg_name] = pkg
+                self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
 
         # prefetch package dependencies
         if prefetch_dependencies:
