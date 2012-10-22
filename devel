@@ -32,5 +32,7 @@ if __name__ == '__main__':
         print ex.msg
 
     except Exception as ex:
+        import traceback
+        traceback.print_tb()
         print "devel script failed. Check out the console output above for details."
         raise ex
