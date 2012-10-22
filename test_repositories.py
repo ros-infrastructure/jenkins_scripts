@@ -29,7 +29,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
 
 
     # set directories
-    tmpdir = os.path.join('/tmp', 'test_repositories', get_timestamp())
+    tmpdir = os.path.join(workspace, 'tmp', 'test_repositories', get_timestamp())
     repositorysourcespace = os.path.join(tmpdir, 'src_repository')
     dependssourcespace = os.path.join(tmpdir, 'src_depends_on')
     repositorybuildspace = os.path.join(tmpdir, 'build_repository')
