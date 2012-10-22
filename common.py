@@ -467,7 +467,7 @@ def call_with_list(command, envir=None):
     return res
 
 def call(command, envir=None):
-    return call_with_list(command.split(' '))
+    return call_with_list(command.split(' '), envir)
 
 def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     append_pymodules_if_needed()
