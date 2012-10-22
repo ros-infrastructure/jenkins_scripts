@@ -257,7 +257,6 @@ class RosDistroPackage:
         url = self.url
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
         url = url.replace('git://', 'https://raw.')
-        print url
         retries = 1
         while not self.depends1 and retries > 0:
             package_xml = urllib.urlopen(url).read()
