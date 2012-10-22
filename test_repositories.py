@@ -78,7 +78,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
         f.write(rosinstall)
     print "Install all repositories from source"        
     os.makedirs(repositorysourcespace)
-    call("ls -l %s"%repositorysourcespace)
+    call("ls -l %s/"%repositorysourcespace)
     call("ls -l %s"%os.path.join(workspace, "repository.rosinstall"))
     call("rosinstall %s %s/repository.rosinstall --catkin"%(repositorysourcespace, workspace))
 
