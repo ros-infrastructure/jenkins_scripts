@@ -2,7 +2,6 @@
 from test_repositories import *
 import optparse
 
-
 def main():
     parser = optparse.OptionParser()
     parser.add_option("--depends_on", action="store_true", default=False)
@@ -33,6 +32,9 @@ if __name__ == '__main__':
 
     except Exception as ex:
         import traceback
-        traceback.print_tb()
+        import sys
+        e_type,e_value,e_traceback = sys.exc_info()
+        print 'Traceback (most recent call last):'
+        traceback.print_tb(e_traceback)
         print "devel script failed. Check out the console output above for details."
         raise ex
