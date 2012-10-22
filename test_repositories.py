@@ -74,11 +74,12 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
             print "Using release distro file to download repositories"
             rosinstall += distro.repositories[repository].get_rosinstall_latest()
     print "rosinstall file for all repositories: \n %s"%rosinstall
-    with open(workspace+"/repository.rosinstall", 'w') as f:
+    with open(os.path.join(workspace, "repository.rosinstall"), 'w') as f:
         f.write(rosinstall)
     print "Install all repositories from source"        
     os.makedirs(repositorysourcespace)
     call("ls -l %s"%repositorysourcespace)
+    call("ls -l %s"%os.path.join(workspace, "repository.rosinstall"))
     call("rosinstall %s %s/repository.rosinstall --catkin"%(repositorysourcespace, workspace))
 
     # get the repositories build dependencies
