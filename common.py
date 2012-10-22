@@ -95,15 +95,16 @@ class RosDistro:
         self.repositories = {}
         self.packages = {}
         for repo_name, data in distro.iteritems():
-            if 'packages' in data.keys():
-                distro_pkgs = []
-                url = data['url']
-                version = data['version']
-                for pkg_name in data['packages'].keys():
-                    pkg = RosDistroPackage(pkg_name, url, version)
-                    distro_pkgs.append(pkg)
-                    self.packages[pkg_name] = pkg
-                self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
+            if not 'packages' in data.keys():
+                data['packages'] = repo_name
+            distro_pkgs = []
+            url = data['url']
+            version = data['version']
+            for pkg_name in data['packages'].keys():
+                pkg = RosDistroPackage(pkg_name, url, version)
+                distro_pkgs.append(pkg)
+                self.packages[pkg_name] = pkg
+            self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
 
         # prefetch package dependencies
         if prefetch_dependencies:
@@ -257,7 +258,7 @@ class RosDistroPackage:
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
         url = url.replace('git://', 'https://raw.')
         print url
-        retries = 5
+        retries = 1
         while not self.depends1 and retries > 0:
             package_xml = urllib.urlopen(url).read()
             append_pymodules_if_needed()
