@@ -95,7 +95,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
     ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
     call("catkin_init_workspace %s"%repositorysourcespace, ros_env)
     print ros_env
-    call("cmake ../src/", ros_env)        
+    call("cmake ../%s/"%repositorysourcespace, ros_env)        
     ros_env_repo = get_ros_env(os.path.join(repositorybuildspace, 'buildspace/setup.bash'))
 
     # build repositories
@@ -173,7 +173,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
     call("catkin_init_workspace %s"%dependssourcespace, ros_env)
     call("ls -l /opt/ros/groovy/share/genmsg/manifest.xml")
     print ros_env
-    call("cmake ../src/", ros_env)        
+    call("cmake ../%s/"%dependssourcespace, ros_env)        
     ros_env_depends_on = get_ros_env(os.path.join(dependbuildspace, 'buildspace/setup.bash'))
 
     # build repositories
