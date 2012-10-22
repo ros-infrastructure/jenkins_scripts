@@ -367,7 +367,7 @@ class RosDepResolver:
 
     def to_ros(self, apt_entry):
         if not apt_entry in self.a2r.keys():
-            print "Could not find %s in keys. Have keys %s"%(apt_entry, ', '.join(self.a2r.keys()))
+            print "Could not find %s in rosdep keys. Rosdep knows about these keys: %s"%(apt_entry, ', '.join(self.a2r.keys()))
         return self.a2r[apt_entry]
 
     def to_apt(self, ros_entry):
