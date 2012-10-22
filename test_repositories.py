@@ -34,8 +34,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
     dependssourcespace = os.path.join(tmpdir, 'src_depends_on')
     repositorybuildspace = os.path.join(tmpdir, 'build_repository')
     dependbuildspace = os.path.join(tmpdir, 'build_depend_on')
-    os.makedirs(repositorysourcespace)
-    os.makedirs(dependssourcespace)
+
 
     # Add ros to apt
     print "Add ros to apt sources"
@@ -78,6 +77,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
     with open(workspace+"/repository.rosinstall", 'w') as f:
         f.write(rosinstall)
     print "Create rosinstall file for repositories %s"%(', '.join(repositories))
+    os.makedirs(repositorysourcespace)
     call("rosinstall %s %s/repository.rosinstall --catkin"%(repositorysourcespace, workspace))
 
     # get the repositories build dependencies
@@ -145,6 +145,7 @@ def test_repositories(ros_distro, repositories, workspace, use_devel_repo, test_
 
     # install all repository and system dependencies of the depends_on list
     print "Install all build_depends_on from source"        
+    os.makedirs(dependssourcespace)
     call("rosinstall --catkin %s %s/depends_on.rosinstall"%(dependssourcespace, workspace))
 
     # get build and test dependencies of depends_on list
