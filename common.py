@@ -124,12 +124,8 @@ class RosDistro:
                 
         # wait for queue to be finished
         for name, pkg in self.packages.iteritems():
-            last_pkg = None
             while not pkg.depends1:
-                time.sleep(1.0)
-                if not pkg.depends1 and pkg == last_pkg:
-                    print "Still waiting for package %s"%pkg.name
-            last_pkg = pkg
+                time.sleep(0.1)
 
 
     def prefetch_repository_upstream(self):
