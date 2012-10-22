@@ -31,10 +31,5 @@ if __name__ == '__main__':
         print ex.msg
 
     except Exception as ex:
-        import traceback
-        import sys
-        e_type,e_value,e_traceback = sys.exc_info()
-        print 'Traceback (most recent call last):'
-        traceback.print_tb(e_traceback)
         print "devel script failed. Check out the console output above for details."
         raise ex
