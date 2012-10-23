@@ -518,8 +518,7 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
     except:
         pass
 
-    call("cp %s %s"%(os.path.join(workspace, 'buildfarm/templates/junit_dummy_ouput_template.xml'),
-                     os.path.join(workspace, 'test_results/')))
+    copy_test_results(workspace, docspace)
 
 def main():
     arguments = sys.argv[1:]
