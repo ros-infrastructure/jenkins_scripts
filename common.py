@@ -243,6 +243,10 @@ class RosDistroRepo:
                     if res['type'] == 'hg':
                         res['version'] = 'default'
                 self.upstream = res
+                
+                # fix for svn trunk
+                if res['type'] == 'svn':
+                    res['url'] += "/trunk"
         return self.upstream
 
 
