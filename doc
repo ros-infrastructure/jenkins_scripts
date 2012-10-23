@@ -94,7 +94,7 @@ def main():
 
     #Install rosdoc lite
     print "Installing ros and rosdoc_lite..."
-    call("apt-get install python-catkin-pkg python-rospkg python-networkx --yes")
+    call("apt-get install python-catkin-pkg python-rospkg python-networkx python-rosinstall --yes")
     call("apt-get install ros-%s-ros --yes" % ros_distro)
     #TODO: Replace with commented line below
     call("apt-get install graphviz python-sphinx python-yaml doxygen ros-%s-genmsg python-epydoc --yes" % ros_distro)
