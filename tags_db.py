@@ -132,7 +132,7 @@ class TagsDb(object):
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
 
         env = os.environ
-        env['GIT_SSH'] = "%s/buildfarm/scripts/git_ssh" % self.workspace
+        env['GIT_SSH'] = "%s/jenkins_scripts/git_ssh" % self.workspace
 
         #Have some tolerance for things commiting to the db at the same time
         num_retries = 3
