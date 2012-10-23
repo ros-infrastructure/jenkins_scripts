@@ -308,12 +308,10 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
     #TODO: Change this or parameterize or whatever
     homepage = 'http://ros.org/rosdoclite'
 
-    #Select the appropriate rosinstall file
-    rosinstall = yaml.dump(conf + depends_conf, default_style=False)
+    with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
+        print "Rosinstall for repo %s:\n%s"%(repo, conf + depends_conf)
+        yaml.safe_dump(conf + depends_conf, f, default_style=False)
 
-    print "Rosinstall for repo %s:\n%s"%(repo, rosinstall)
-    with open(workspace+"/repo.rosinstall", 'w') as f:
-        f.write(rosinstall)
     print "Created rosinstall file for repo %s, installing repo..."%repo
     #TODO Figure out why rosinstall insists on having ROS available when called with nobuild, but not catkin
     call("rosinstall %s %s/repo.rosinstall --nobuild --catkin" % (docspace, workspace))
