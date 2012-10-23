@@ -43,7 +43,7 @@ import copy
 from common import *
 from tags_db import *
 
-def write_stack_manifest(output_dir, stack_name, manifest, vcs_type, vcs_url, api_homepage, packages, tags_db):
+def write_stack_manifest(output_dir, stack_name, manifest, vcs_type, vcs_url, api_homepage, packages, tags_db, repo_name):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -62,6 +62,7 @@ def write_stack_manifest(output_dir, stack_name, manifest, vcs_type, vcs_url, ap
     m_yaml['srvs'] = []
     m_yaml['url'] = manifest.url or ''
     m_yaml['package_type'] = 'stack'
+    m_yaml['repo_name'] = repo_name
 
     m_yaml['depends_on'] = []
     if tags_db.has_reverse_deps(stack_name):
@@ -77,7 +78,7 @@ def write_stack_manifest(output_dir, stack_name, manifest, vcs_type, vcs_url, ap
     with open(os.path.join(output_dir, 'manifest.yaml'), 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
-def write_distro_specific_manifest(manifest_file, package, vcs_type, vcs_url, api_homepage, tags_db):
+def write_distro_specific_manifest(manifest_file, package, vcs_type, vcs_url, api_homepage, tags_db, repo_name):
     m_yaml = {}
     if os.path.isfile(manifest_file):
         with open(manifest_file, 'r') as f:
@@ -86,6 +87,7 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type, vcs_url, ap
     m_yaml['api_documentation'] = api_homepage
     m_yaml['vcs'] = vcs_type
     m_yaml['vcs_url'] = vcs_url
+    m_yaml['repo_name'] = repo_name
 
     m_yaml['depends_on'] = []
     if tags_db.has_reverse_deps(package):
@@ -398,7 +400,7 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
         deps = [d.name for d in stack_manifest.depends]
         stack_relative_doc_path = "%s/doc/%s/api/%s" % (docspace, ros_distro, stack)
         stack_doc_path = os.path.abspath(stack_relative_doc_path)
-        write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, stack), stack_packages, tags_db)
+        write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, stack), stack_packages, tags_db, repo_map[stack]['name'])
 
     #Need to make sure to re-order packages to be run in dependency order
     build_order = get_dependency_build_order(local_dep_graph)
@@ -482,7 +484,7 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
         #have availalbe in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, package),
-                                       tags_db)
+                                       tags_db, repo_map[package]['name'])
 
         print "Done"
 
