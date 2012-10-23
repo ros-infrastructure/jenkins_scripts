@@ -47,7 +47,7 @@ class TagsDb(object):
         if os.path.exists(self.path):
             shutil.rmtree(self.path)
 
-        command = ['bash', '-c', 'export GIT_SSH="%s/buildfarm/scripts/git_ssh" \
+        command = ['bash', '-c', 'export GIT_SSH="%s/jenkins_scripts/git_ssh" \
                    && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s' \
                    %(workspace, self.path) ]
 
