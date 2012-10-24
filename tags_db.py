@@ -83,7 +83,6 @@ class TagsDb(object):
         for key, values in folder_dict.iteritems():
             with open(os.path.join(folder, key), 'w') as f:
                 yaml.safe_dump(values, f)
-            call("git add %s" % os.path.join(folder, key))
 
     def build_metapackage_index(self):
         #Build reverse dependencies
@@ -148,6 +147,7 @@ class TagsDb(object):
         i = 0
         while True:
             try:
+                call("git add %s" % os.path.join(self.path, self.distro_name))
                 call("git fetch origin", env)
                 call("git merge origin/master", env)
                 call("git push origin master", env)
