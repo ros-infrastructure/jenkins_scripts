@@ -18,6 +18,7 @@ from time import sleep
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on):
     print "Testing on distro %s"%ros_distro    
     print "Testing repositories %s"%', '.join(repo_list)
+    print "Testing versions %s"%', '.join(version_list)
     if test_depends_on:
         print "Testing depends-on"
     else:
