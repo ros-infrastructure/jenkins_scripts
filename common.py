@@ -131,6 +131,7 @@ class RosDistro:
                 
         # wait for queue to be finished
         failed = []
+        print "Waiting for prefetching of package dependencies to finish"
         for name, pkg in self.packages.iteritems():
             while not pkg.depends1 or not pkg.depends1 == "Failure":
                 time.sleep(0.1)
@@ -142,6 +143,7 @@ class RosDistro:
             if self.repositories.has_key(self.packages[f].repo):
                 self.repositories.pop(self.packages[f].repo)
             self.packages.pop(f)
+        print "All package dependencies have been prefetched"
 
 
     def prefetch_repository_upstream(self):
