@@ -139,8 +139,8 @@ class RosDistro:
                 failed.append(name)
 
         # remove failed packages
+        print "Could not fetch dependencies of the following packages from githib; pretending they do not exist: %s"%', '.join(failed)
         for f in failed:
-            print "Could not get dependencies of package %s. Pretending this package does not exist"%f
             if self.repositories.has_key(self.packages[f].repo):
                 self.repositories.pop(self.packages[f].repo)
             self.packages.pop(f)
