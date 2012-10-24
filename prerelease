@@ -13,10 +13,11 @@ def main():
 
     ros_distro = args[0]
     repositories = args[1:]
+    versions = ['latest' for r in repositories]
     workspace = os.environ['WORKSPACE']
     print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
 
-    test_repositories(ros_distro, repositories, workspace, use_devel_repo=False, test_depends_on=options.depends_on)
+    test_repositories(ros_distro, repositories, versions, workspace, test_depends_on=options.depends_on)
 
 
 

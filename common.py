@@ -107,7 +107,7 @@ class RosDistro:
             if version and not data.has_key('packages'):   # support unary disto's
                 data['packages'] = {repo_name: ''}
             for pkg_name in data['packages'].keys:
-                pkg = RosDistroPackage(pkg_name, url, version)
+                pkg = RosDistroPackage(pkg_name, repo_name, url, version)
                 distro_pkgs.append(pkg)
                 self.packages[pkg_name] = pkg
             self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
@@ -139,6 +139,8 @@ class RosDistro:
 
         # remove failed packages
         for f in failed:
+            if self.repositories.has_key(self.packages[f].repo):
+                self.repositories.pop(self.packages[f].repo)
             self.packages.pop(f)
 
 
@@ -214,7 +216,10 @@ class RosDistroRepo:
     def __init__(self, name, url, version, pkgs):
         self.name = name
         self.url = url
-        self.version = version.split('-')[0]
+        if version:
+            self.version = version.split('-')[0]
+        else:
+            self.version = version
         self.pkgs = pkgs
         self.upstream = None
     
@@ -261,8 +266,9 @@ class RosDistroRepo:
 
 
 class RosDistroPackage:
-    def __init__(self, name, url, version):
+    def __init__(self, name, repo, url, version):
         self.name = name
+        self.repo = repo
         self.url = url
         if version:
             self.version = version.split('-')[0]
