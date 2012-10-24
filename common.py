@@ -140,6 +140,7 @@ class RosDistro:
 
         # remove failed packages
         for f in failed:
+            print "Could not get dependencies of package %s. Pretending this package does not exist"%f
             if self.repositories.has_key(self.packages[f].repo):
                 self.repositories.pop(self.packages[f].repo)
             self.packages.pop(f)
@@ -274,6 +275,7 @@ class RosDistroPackage:
         self.url = url
         if version:
             self.version = version.split('-')[0]
+            self.depends1 = None
         else:
             self.version = version
             self.depends1 = {'build': [], 'test': []}
@@ -282,7 +284,6 @@ class RosDistroPackage:
         if self.depends1:
             return self.depends1
 
-        print "get dependencies of package %s"%self.name
         url = self.url
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
         url = url.replace('git://', 'https://raw.')
