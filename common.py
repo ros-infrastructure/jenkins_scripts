@@ -282,12 +282,11 @@ class RosDistroPackage:
         if self.depends1:
             return self.depends1
 
-
         url = self.url
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
         url = url.replace('git://', 'https://raw.')
         retries = 5
-        while not self.depends1 and retries > 0:
+        while retries > 0:
             package_xml = urllib.urlopen(url).read()
             append_pymodules_if_needed()
             from catkin_pkg import package
@@ -298,6 +297,7 @@ class RosDistroPackage:
             except package.InvalidPackage as e:
                 print "!!!! Failed to download package.xml for package %s at url %s"%(self.name, url)
                 time.sleep(2.0)
+                retries -= 1
 
         if not self.depends1:
             self.depends1 = "Failure"
