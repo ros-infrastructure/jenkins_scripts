@@ -106,7 +106,7 @@ class RosDistro:
             version = data['version']
             if version and not data.has_key('packages'):   # support unary disto's
                 data['packages'] = {repo_name: ''}
-            for pkg_name in data['packages'].keys:
+            for pkg_name in data['packages'].keys():
                 pkg = RosDistroPackage(pkg_name, repo_name, url, version)
                 distro_pkgs.append(pkg)
                 self.packages[pkg_name] = pkg
