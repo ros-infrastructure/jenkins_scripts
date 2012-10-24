@@ -46,7 +46,7 @@ def test_repositories(ros_distro, repo_list, workspace, use_devel_repo, test_dep
 
     # install stuff we need
     print "Installing Debian packages we need for running this script"
-    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall cmake --yes")
+    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml cmake --yes")
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
@@ -56,7 +56,7 @@ def test_repositories(ros_distro, repo_list, workspace, use_devel_repo, test_dep
         print "Checking if repo %s exists in distr or devel file"%repo
         if not use_devel_repo and not repo in distro.repositories.keys():
             raise BuildException("Repository %s does not exist in Ros Distro"%repo)
-        if use_devel_repo and not repository in devel.repositories.keys():
+        if use_devel_repo and not repo in devel.repositories.keys():
             raise BuildException("Repository %s does not exist in Devel Distro"%repo)
 
     # Create rosdep object

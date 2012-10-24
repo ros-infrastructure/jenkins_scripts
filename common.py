@@ -12,6 +12,12 @@ from Queue import Queue
 from threading import Thread
 from xml.etree.ElementTree import ElementTree
 
+def print_env(env):
+    print "Using environment:"
+    for key, value in env.iteritems():
+        if key != 'LS_COLORS':
+            print "%s  -->  %s"%(key, value)
+
 def append_pymodules_if_needed():
     #TODO: This is a hack, in the chroot, the default python path does not
     if not os.path.abspath("/usr/lib/pymodules/python2.7") in sys.path:
@@ -73,8 +79,8 @@ class DevelDistro:
 class DevelDistroRepo:
     def __init__(self, name, data):
         self.name = name
-        self.url = data['url']
         self.type = data['type']
+        self.url = data['url']
         self.version = None
         if 'version' in data.keys():
             self.version = data['version']
