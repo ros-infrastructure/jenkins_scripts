@@ -133,7 +133,7 @@ class RosDistro:
         failed = []
         print "Waiting for prefetching of package dependencies to finish"
         for name, pkg in self.packages.iteritems():
-            while not pkg.depends1 or not pkg.depends1 == "Failure":
+            while not pkg.depends1:
                 time.sleep(0.1)
             if pkg.depends1 == "Failure":
                 failed.append(name)
