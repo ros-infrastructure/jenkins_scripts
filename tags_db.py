@@ -54,22 +54,36 @@ class TagsDb(object):
         proc = subprocess.Popen(command)
         proc.communicate()
 
-        with open(os.path.join(self.path, "%s.yaml" % self.distro_name), 'r') as f:
-            self.tags = yaml.load(f)
-            self.tags = self.tags or {}
+        self.tags = self.read_folder('tags')
 
-        with open(os.path.join(self.path, "%s-deps.yaml" % self.distro_name), 'r') as f:
-            self.forward_deps = yaml.load(f)
-            self.forward_deps = self.forward_deps or {}
-
+        self.forward_deps = self.read_folder('deps')
         self.build_reverse_deps()
 
-        with open(os.path.join(self.path, "%s-metapackages.yaml" % self.distro_name), 'r') as f:
-            self.metapackages = yaml.load(f)
-            self.metapackages = self.metapackages or {}
-
+        self.metapackages = self.read_folder('metapackages')
         self.build_metapackage_index()
 
+    #Turn a folder of files into a dict
+    def read_folder(self, folder_name):
+        folder_dict = {}
+        folder = os.path.join(self.path, self.distro_name, folder_name)
+        if os.path.exists(folder):
+            for key in os.listdir(folder):
+                with open(os.path.join(folder, key), 'r') as f:
+                    folder_dict[key] = yaml.load(f)
+        return folder_dict
+
+    #Write a dict to a file with an entry per key
+    def write_folder(self, folder_name, folder_dict):
+        folder = os.path.join(self.path, self.distro_name, folder_name)
+
+        #Make sure to create the directory we want to write to if it doesn't exist
+        if not os.path.isdir(folder):
+            os.makedirs(folder)
+
+        for key, values in folder_dict.iteritems():
+            with open(os.path.join(folder, key), 'w') as f:
+                yaml.safe_dump(values, f)
+            call("git add %s" % os.path.join(folder, key))
 
     def build_metapackage_index(self):
         #Build reverse dependencies
@@ -116,14 +130,9 @@ class TagsDb(object):
 
     #Write new tag locations for a list of packages
     def commit_db(self):
-        with open(os.path.join(self.path, "%s.yaml" % self.distro_name), 'w') as f:
-            yaml.safe_dump(self.tags, f)
-
-        with open(os.path.join(self.path, "%s-deps.yaml" % self.distro_name), 'w') as f:
-            yaml.safe_dump(self.forward_deps, f)
-
-        with open(os.path.join(self.path, "%s-metapackages.yaml" % self.distro_name), 'w') as f:
-            yaml.safe_dump(self.metapackages, f)
+        self.write_folder('tags', self.tags)
+        self.write_folder('deps', self.forward_deps)
+        self.write_folder('metapackages', self.metapackages)
 
         old_dir = os.getcwd()
         os.chdir(self.path)
