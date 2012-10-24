@@ -282,6 +282,7 @@ class RosDistroPackage:
         if self.depends1:
             return self.depends1
 
+        print "get dependencies of package %s"%self.name
         url = self.url
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
         url = url.replace('git://', 'https://raw.')
