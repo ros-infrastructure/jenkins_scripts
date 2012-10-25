@@ -9,7 +9,6 @@ import time
 import pkg_resources
 from Queue import Queue
 from threading import Thread
-from xml.etree.ElementTree import ElementTree
 
 
 def append_pymodules_if_needed():
