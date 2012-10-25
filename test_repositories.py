@@ -2,7 +2,6 @@
 import os
 import sys
 import subprocess
-import urllib
 import string
 import datetime
 import fnmatch

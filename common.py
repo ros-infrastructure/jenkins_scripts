@@ -1,4 +1,4 @@
-import urllib
+import urllib2
 import os
 import subprocess
 import sys
@@ -67,7 +67,7 @@ class ThreadPool:
 
 class DevelDistro:
     def __init__(self, name):
-        url = urllib.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s-devel.yaml'%name)
+        url = urllib2.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s-devel.yaml'%name)
         distro = yaml.load(url.read())['repositories']
         self.repositories = {}
         for name, data in distro.iteritems():
@@ -96,7 +96,7 @@ class DevelDistroRepo:
 
 class RosDistro:
     def __init__(self, name, prefetch_dependencies=False, prefetch_upstream=False):
-        url = urllib.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s.yaml'%name)
+        url = urllib2.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s.yaml'%name)
         distro = yaml.load(url.read())['repositories']
         self.repositories = {}
         self.packages = {}
@@ -246,7 +246,7 @@ class RosDistroRepo:
             retries = 5
             while not self.upstream and retries > 0:
                 res = {'version': ''}
-                repo_conf = urllib.urlopen(url).read()
+                repo_conf = urllib2.urlopen(url).read()
                 for r in repo_conf.split('\n'):
                     conf = r.split(' = ')
                     if conf[0] == '\tupstream':
@@ -289,7 +289,7 @@ class RosDistroPackage:
         url = url.replace('git://', 'https://raw.')
         retries = 5
         while retries > 0:
-            package_xml = urllib.urlopen(url).read()
+            package_xml = urllib2.urlopen(url).read()
             append_pymodules_if_needed()
             from catkin_pkg import package
             try:
@@ -325,7 +325,7 @@ class RosDistroPackage:
 
 class AptDepends:
     def __init__(self, ubuntudistro, arch):
-        url = urllib.urlopen('http://packages.ros.org/ros-shadow-fixed/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
+        url = urllib2.urlopen('http://packages.ros.org/ros-shadow-fixed/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
         self.dep = {}
         package = None
         for l in url.read().split('\n'):
