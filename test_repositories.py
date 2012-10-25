@@ -10,7 +10,6 @@ from common import *
 from time import sleep
 
 
-
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on):
     print "Testing on distro %s"%ros_distro    
     print "Testing repositories %s"%', '.join(repo_list)
@@ -37,9 +36,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
     # install stuff we need
     print "Installing Debian packages we need for running this script"
-    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml python-lxml cmake --yes")
-    import yaml
-    from xml.etree.ElementTree import ElementTree
+    call("apt-get install python-catkin-pkg python-rosinstall --yes")
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
