@@ -136,6 +136,7 @@ class TagsDb(object):
 
         old_dir = os.getcwd()
         os.chdir(self.path)
+        call("git add %s" % os.path.join(self.path, self.distro_name))
         print "Commiting changes to tags and deps lists...."
         command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -148,7 +149,6 @@ class TagsDb(object):
         i = 0
         while True:
             try:
-                call("git add %s" % os.path.join(self.path, self.distro_name))
                 call("git fetch origin", env)
                 call("git merge origin/master", env)
                 call("git push origin master", env)
