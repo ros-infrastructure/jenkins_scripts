@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-import yaml
 import subprocess
 import urllib
 import string
@@ -24,6 +23,10 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     else:
         print "Not testing depends on"
 
+    # install stuff we need
+    print "Installing Debian packages we need for running this script"
+    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml cmake --yes")
+    import yaml
 
     # set directories
     tmpdir = os.path.join('/tmp', get_timestamp())
@@ -41,9 +44,6 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     call("apt-key add %s/ros.key"%workspace)
     call("apt-get update")
 
-    # install stuff we need
-    print "Installing Debian packages we need for running this script"
-    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml cmake --yes")
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
