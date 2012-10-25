@@ -82,6 +82,7 @@ class TagsDb(object):
 
         for key, values in folder_dict.iteritems():
             with open(os.path.join(folder, key), 'w') as f:
+                print "Wtiting keys to file %s" % os.path.join(folder, key)
                 yaml.safe_dump(values, f)
 
     def build_metapackage_index(self):
@@ -135,6 +136,7 @@ class TagsDb(object):
 
         old_dir = os.getcwd()
         os.chdir(self.path)
+        call("git add %s" % os.path.join(self.path, self.distro_name))
         print "Commiting changes to tags and deps lists...."
         command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -147,7 +149,6 @@ class TagsDb(object):
         i = 0
         while True:
             try:
-                call("git add %s" % os.path.join(self.path, self.distro_name))
                 call("git fetch origin", env)
                 call("git merge origin/master", env)
                 call("git push origin master", env)
