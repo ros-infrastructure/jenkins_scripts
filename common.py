@@ -467,7 +467,7 @@ def copy_test_results(workspace, buildspace, errors=False):
             num_errors = 1
         else:
             num_errors = 0
-        print "No test results, so I'll create a dummy test result xml file"
+        print "No test results, so I'll create a dummy test result xml file, with errors %d" % num_errors
         with open(os.path.join(workspace, 'test_results/dummy.xml'), 'w') as f:
             f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="%d" name="dummy test"> <testcase name="dummy rapport" classname="Results" /></testsuite>' % num_errors)
 
