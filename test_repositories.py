@@ -3,11 +3,9 @@ import os
 import sys
 import subprocess
 import string
-import datetime
 import fnmatch
 import shutil
 import optparse
-from xml.etree.ElementTree import ElementTree
 from common import *
 from time import sleep
 
@@ -23,12 +21,11 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         print "Not testing depends on"
 
     # set directories
-    tmpdir = os.path.join('/tmp', get_timestamp())
+    tmpdir = os.path.join('/tmp', 'test_repositories')
     repo_sourcespace = os.path.join(tmpdir, 'src_repository')
     dependson_sourcespace = os.path.join(tmpdir, 'src_depends_on')
     repo_buildspace = os.path.join(tmpdir, 'build_repository')
     dependson_buildspace = os.path.join(tmpdir, 'build_depend_on')
-
 
     # Add ros sources to apt
     print "Add ros sources to apt"
@@ -40,8 +37,9 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
     # install stuff we need
     print "Installing Debian packages we need for running this script"
-    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml cmake --yes")
+    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml python-lxml cmake --yes")
     import yaml
+    from xml.etree.ElementTree import ElementTree
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
@@ -166,7 +164,6 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s"%dependson_sourcespace, ros_env)
-    print ros_env
     call("cmake %s"%dependson_sourcespace, ros_env)        
     ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'buildspace/setup.bash'))
 

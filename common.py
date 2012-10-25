@@ -6,7 +6,6 @@ import fnmatch
 import yaml
 import threading
 import time
-import datetime
 import pkg_resources
 from Queue import Queue
 from threading import Thread
@@ -448,8 +447,6 @@ class RosDep:
 
 
 
-def get_timestamp():
-    return str(datetime.datetime.now()).replace(' ','_').replace(':','.')
 
 def copy_test_results(workspace, buildspace, errors=False):
     print "Preparing xml test results"
