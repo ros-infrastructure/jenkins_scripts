@@ -11,11 +11,6 @@ from Queue import Queue
 from threading import Thread
 from xml.etree.ElementTree import ElementTree
 
-def print_env(env):
-    print "Using environment:"
-    for key, value in env.iteritems():
-        if key != 'LS_COLORS':
-            print "%s  -->  %s"%(key, value)
 
 def append_pymodules_if_needed():
     #TODO: This is a hack, in the chroot, the default python path does not
@@ -481,7 +476,6 @@ def get_ros_env(setup_file):
         msg = "Failed to source %s"%setup_file
         print "/!\  %s"%msg
         raise BuildException(msg)
-    print "ROS environment: %s"%str(res)
     return res
 
 
