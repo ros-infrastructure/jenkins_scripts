@@ -6,7 +6,6 @@ import string
 import fnmatch
 import shutil
 import optparse
-from xml.etree.ElementTree import ElementTree
 from common import *
 from time import sleep
 
@@ -38,8 +37,9 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
     # install stuff we need
     print "Installing Debian packages we need for running this script"
-    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml cmake --yes")
+    call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml python-lxml cmake --yes")
     import yaml
+    from xml.etree.ElementTree import ElementTree
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
