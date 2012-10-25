@@ -1,4 +1,4 @@
-import urllib
+import urllib2
 import os
 import subprocess
 import sys
@@ -67,7 +67,7 @@ class ThreadPool:
 
 class DevelDistro:
     def __init__(self, name):
-        url = urllib.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s-devel.yaml'%name)
+        url = urllib2.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s-devel.yaml'%name)
         distro = yaml.load(url.read())['repositories']
         self.repositories = {}
         for name, data in distro.iteritems():
@@ -82,7 +82,7 @@ class DevelDistroRepo:
         self.type = data['type']
         self.url = data['url']
         self.version = None
-        if 'version' in data.keys():
+        if data.has_key('version'):
             self.version = data['version']
             
     def get_rosinstall(self):
@@ -96,24 +96,21 @@ class DevelDistroRepo:
 
 class RosDistro:
     def __init__(self, name, prefetch_dependencies=False, prefetch_upstream=False):
-        url = urllib.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s.yaml'%name)
+        url = urllib2.urlopen('https://raw.github.com/ros/rosdistro/master/releases/%s.yaml'%name)
         distro = yaml.load(url.read())['repositories']
         self.repositories = {}
         self.packages = {}
         for repo_name, data in distro.iteritems():
-            # only work on already released stacks
-            if data['version']:
-                # support unary disto's
-                if not 'packages' in data.keys():
-                    data['packages'] = {repo_name: ''}
-                distro_pkgs = []
-                url = data['url']
-                version = data['version']
-                for pkg_name in data['packages'].keys():
-                    pkg = RosDistroPackage(pkg_name, url, version)
-                    distro_pkgs.append(pkg)
-                    self.packages[pkg_name] = pkg
-                self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
+            distro_pkgs = []
+            url = data['url']
+            version = data['version']
+            if not data.has_key('packages'):   # support unary disto's
+                data['packages'] = {repo_name: ''}
+            for pkg_name in data['packages'].keys():
+                pkg = RosDistroPackage(pkg_name, repo_name, url, version)
+                distro_pkgs.append(pkg)
+                self.packages[pkg_name] = pkg
+            self.repositories[repo_name] = RosDistroRepo(repo_name, url, version, distro_pkgs)
 
         # prefetch package dependencies
         if prefetch_dependencies:
@@ -133,9 +130,21 @@ class RosDistro:
             threadpool.add_task(pkg.get_dependencies)
                 
         # wait for queue to be finished
+        failed = []
+        print "Waiting for prefetching of package dependencies to finish"
         for name, pkg in self.packages.iteritems():
             while not pkg.depends1:
                 time.sleep(0.1)
+            if pkg.depends1 == "Failure":
+                failed.append(name)
+
+        # remove failed packages
+        print "Could not fetch dependencies of the following packages from githib; pretending they do not exist: %s"%', '.join(failed)
+        for f in failed:
+            if self.repositories.has_key(self.packages[f].repo):
+                self.repositories.pop(self.packages[f].repo)
+            self.packages.pop(f)
+        print "All package dependencies have been prefetched"
 
 
     def prefetch_repository_upstream(self):
@@ -210,7 +219,10 @@ class RosDistroRepo:
     def __init__(self, name, url, version, pkgs):
         self.name = name
         self.url = url
-        self.version = version.split('-')[0]
+        if version:
+            self.version = version.split('-')[0]
+        else:
+            self.version = version
         self.pkgs = pkgs
         self.upstream = None
     
@@ -234,7 +246,7 @@ class RosDistroRepo:
             retries = 5
             while not self.upstream and retries > 0:
                 res = {'version': ''}
-                repo_conf = urllib.urlopen(url).read()
+                repo_conf = urllib2.urlopen(url).read()
                 for r in repo_conf.split('\n'):
                     conf = r.split(' = ')
                     if conf[0] == '\tupstream':
@@ -257,11 +269,16 @@ class RosDistroRepo:
 
 
 class RosDistroPackage:
-    def __init__(self, name, url, version):
+    def __init__(self, name, repo, url, version):
         self.name = name
+        self.repo = repo
         self.url = url
-        self.version = version.split('-')[0]
-        self.depends1 = None
+        if version:
+            self.version = version.split('-')[0]
+            self.depends1 = None
+        else:
+            self.version = version
+            self.depends1 = {'build': [], 'test': []}
 
     def get_dependencies(self):
         if self.depends1:
@@ -270,23 +287,22 @@ class RosDistroPackage:
         url = self.url
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
         url = url.replace('git://', 'https://raw.')
-        retries = 1
-        while not self.depends1 and retries > 0:
-            package_xml = urllib.urlopen(url).read()
+        retries = 5
+        while retries > 0:
+            package_xml = urllib2.urlopen(url).read()
             append_pymodules_if_needed()
             from catkin_pkg import package
             try:
                 pkg = package.parse_package_string(package_xml)
-                res = {}
-                res['build'] = [d.name for d in pkg.build_depends]
-                res['test'] = [d.name for d in pkg.test_depends]
-                self.depends1 = res
+                self.depends1 = {'build': [d.name for d in pkg.build_depends], 'test':  [d.name for d in pkg.test_depends]}
                 return self.depends1
             except package.InvalidPackage as e:
                 print "!!!! Failed to download package.xml for package %s at url %s"%(self.name, url)
-                time.sleep(5.0)
+                time.sleep(2.0)
+                retries -= 1
 
         if not self.depends1:
+            self.depends1 = "Failure"
             raise BuildException("Failed to get package.xml at %s"%url)
 
             
@@ -309,7 +325,7 @@ class RosDistroPackage:
 
 class AptDepends:
     def __init__(self, ubuntudistro, arch):
-        url = urllib.urlopen('http://packages.ros.org/ros-shadow-fixed/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
+        url = urllib2.urlopen('http://packages.ros.org/ros-shadow-fixed/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
         self.dep = {}
         package = None
         for l in url.read().split('\n'):
@@ -384,12 +400,12 @@ class RosDepResolver:
         return res
 
     def to_ros(self, apt_entry):
-        if not apt_entry in self.a2r.keys():
+        if not self.a2r.has_key(apt_entry):
             print "Could not find %s in rosdep keys. Rosdep knows about these keys: %s"%(apt_entry, ', '.join(self.a2r.keys()))
         return self.a2r[apt_entry]
 
     def to_apt(self, ros_entry):
-        if not ros_entry in self.r2a.keys():
+        if not self.r2a.has_key(ros_entry):
             print "Could not find %s in keys. Have keys %s"%(ros_entry, ', '.join(self.r2a.keys()))
         return self.r2a[ros_entry]
 

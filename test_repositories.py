@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-import yaml
 import subprocess
-import urllib
 import string
 import datetime
 import fnmatch
@@ -15,18 +13,14 @@ from time import sleep
 
 
 
-def test_repositories(ros_distro, repo_list, workspace, use_devel_repo, test_depends_on):
+def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on):
     print "Testing on distro %s"%ros_distro    
     print "Testing repositories %s"%', '.join(repo_list)
-    if use_devel_repo:
-        print "Testing from devel repo"
-    else:
-        print "Testing from release repo"
+    print "Testing versions %s"%', '.join(version_list)
     if test_depends_on:
         print "Testing depends-on"
     else:
         print "Not testing depends on"
-
 
     # set directories
     tmpdir = os.path.join('/tmp', get_timestamp())
@@ -47,17 +41,12 @@ def test_repositories(ros_distro, repo_list, workspace, use_devel_repo, test_dep
     # install stuff we need
     print "Installing Debian packages we need for running this script"
     call("apt-get install mercurial subversion python-catkin-pkg python-support python-rosinstall python-yaml cmake --yes")
+    import yaml
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
     distro = RosDistro(ros_distro, prefetch_dependencies=test_depends_on, prefetch_upstream=False)
     devel = DevelDistro(ros_distro)
-    for repo in repo_list:
-        print "Checking if repo %s exists in distr or devel file"%repo
-        if not use_devel_repo and not repo in distro.repositories.keys():
-            raise BuildException("Repository %s does not exist in Ros Distro"%repo)
-        if use_devel_repo and not repo in devel.repositories.keys():
-            raise BuildException("Repository %s does not exist in Devel Distro"%repo)
 
     # Create rosdep object
     print "Create rosdep object"
@@ -66,13 +55,21 @@ def test_repositories(ros_distro, repo_list, workspace, use_devel_repo, test_dep
     # download the repo_list from source
     print "Creating rosinstall file for repo list"
     rosinstall = ""
-    for repo in repo_list:
-        if use_devel_repo:
+    for repo, version in zip(repo_list, version_list):
+        if version == 'devel':
+            if not devel.repositories.has_key(repo):
+                raise BuildException("Repository %s does not exist in Devel Distro"%repo)
             print "Using devel distro file to download repositories"
             rosinstall += devel.repositories[repo].get_rosinstall()
         else:
-            print "Using release distro file to download repositories"
-            rosinstall += distro.repositories[repo].get_rosinstall_latest()
+            if not distro.repositories.has_key(repo):
+                raise BuildException("Repository %s does not exist in Ros Distro"%repo)
+            if version == 'latest':
+                print "Using latest release distro file to download repositories"
+                rosinstall += distro.repositories[repo].get_rosinstall_latest()
+            else:
+                print "Using version %s of release distro file to download repositories"%version
+                rosinstall += distro.repositories[repo].get_rosinstall_release(version)
     print "rosinstall file for all repositories: \n %s"%rosinstall
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         f.write(rosinstall)
