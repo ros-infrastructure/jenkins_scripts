@@ -168,7 +168,7 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
 
         relative_tags_path = "doc/%s/api/%s/tags/%s.tag" % (ros_distro, dep, dep)
         if os.path.isfile(os.path.join(docspace, relative_tags_path)):
-            tags.append({'docs_url': '../../api/%s/html' % dep, 
+            tags.append({'docs_url': '../../%s/html' % dep, 
                          'location': 'file://%s' % os.path.join(docspace, relative_tags_path),
                          'package': '%s' % dep})
         else:
