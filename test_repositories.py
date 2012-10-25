@@ -166,7 +166,6 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s"%dependson_sourcespace, ros_env)
-    print ros_env
     call("cmake %s"%dependson_sourcespace, ros_env)        
     ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'buildspace/setup.bash'))
 
