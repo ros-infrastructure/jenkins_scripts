@@ -82,6 +82,7 @@ class TagsDb(object):
 
         for key, values in folder_dict.iteritems():
             with open(os.path.join(folder, key), 'w') as f:
+                print "Wtiting keys to file %s" % os.path.join(folder, key)
                 yaml.safe_dump(values, f)
 
     def build_metapackage_index(self):
