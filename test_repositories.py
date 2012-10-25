@@ -3,7 +3,6 @@ import os
 import sys
 import subprocess
 import string
-import datetime
 import fnmatch
 import shutil
 import optparse
@@ -23,12 +22,11 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         print "Not testing depends on"
 
     # set directories
-    tmpdir = os.path.join('/tmp', get_timestamp())
+    tmpdir = os.path.join('/tmp', 'test_repositories')
     repo_sourcespace = os.path.join(tmpdir, 'src_repository')
     dependson_sourcespace = os.path.join(tmpdir, 'src_depends_on')
     repo_buildspace = os.path.join(tmpdir, 'build_repository')
     dependson_buildspace = os.path.join(tmpdir, 'build_depend_on')
-
 
     # Add ros sources to apt
     print "Add ros sources to apt"
