@@ -182,20 +182,25 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
 def main():
     parser = optparse.OptionParser()
-    parser.add_option("--devel", action="store_true", default=False)
-    parser.add_option("--depends-on", action="store_true", default=False)
+    parser.add_option("--depends_on", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
-    if len(args) <= 1:
-        print "Usage: %s ros_distro repository_name"%sys.argv[0]
-        raise BuildException("Wrong number of parameters for test_repositories script")
+    if len(args) <= 2 or len(args)%2 != 1:
+        print "Usage: %s ros_distro repo1 version1 repo2 version2 ..."%sys.argv[0]
+        print " - with ros_distro the name of the ros distribution (e.g. 'fuerte' or 'groovy')"
+        print " - with repo the name of the repository"
+        print " - with version 'latest', 'devel', or the actual version number (e.g. 0.2.5)."
+        raise BuildException("Wrong arguments for test_repositories script")
 
     ros_distro = args[0]
-    repo_list = args[1:]
-    workspace = os.environ['WORKSPACE']    
-    print "Running test_repositories test on distro %s and repositories %s"%(ros_distro, ', '.join(repo_list))
 
-    test_repositories(ros_distro, repo_list, workspace, options.devel, options.depends-on)
+    repo_list = [args[i] for i in range(1, len(args), 2)]
+    version_list = [args[i+1] for i in range(1, len(args), 2)]
+    workspace = os.environ['WORKSPACE']
+
+    print "Running test_repositories test on distro %s and repositories %s"%(ros_distro, 
+                                                                      ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
+    test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
 
 
 

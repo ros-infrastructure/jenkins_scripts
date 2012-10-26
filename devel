@@ -4,7 +4,6 @@ import optparse
 
 def main():
     parser = optparse.OptionParser()
-    parser.add_option("--depends_on", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
@@ -15,9 +14,9 @@ def main():
     repositories = args[1:]
     versions = ['devel' for r in repositories]
     workspace = os.environ['WORKSPACE']
-    print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
 
-    test_repositories(ros_distro, repositories, versions, workspace, test_depends_on=options.depends_on)
+    print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
+    test_repositories(ros_distro, repositories, versions, workspace, test_depends_on=False)
 
 
 
