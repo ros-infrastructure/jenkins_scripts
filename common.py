@@ -126,9 +126,14 @@ class RosDistro:
         failed = []
         print "Waiting for prefetching of package dependencies to finish"
         for name, pkg in self.packages.iteritems():
+            count = 0
             while not pkg.depends1:
                 time.sleep(0.1)
+                count += 1
+                if not count%10:
+                    print "Still waiting for package %s to complete"%pkg.name
             if pkg.depends1 == "Failure":
+                print "Failed to complete package %s"%pkg.name
                 failed.append(name)
 
         # remove failed packages
@@ -282,14 +287,14 @@ class RosDistroPackage:
         url = url.replace('git://', 'https://raw.')
         retries = 5
         while retries > 0:
-            package_xml = urllib2.urlopen(url).read()
-            append_pymodules_if_needed()
-            from catkin_pkg import package
             try:
-                pkg = package.parse_package_string(package_xml)
+                package_xml = urllib2.urlopen(url).read()
+                append_pymodules_if_needed()
+                from catkin_pkg import package as catkin_pkg
+                pkg = catkin_pkg.parse_package_string(package_xml)
                 self.depends1 = {'build': [d.name for d in pkg.build_depends], 'test':  [d.name for d in pkg.test_depends]}
                 return self.depends1
-            except package.InvalidPackage as e:
+            except:
                 print "!!!! Failed to download package.xml for package %s at url %s"%(self.name, url)
                 time.sleep(2.0)
                 retries -= 1

@@ -41,6 +41,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
     distro = RosDistro(ros_distro, prefetch_dependencies=test_depends_on, prefetch_upstream=False)
+    print "Parsing devel file for %s"%ros_distro
     devel = DevelDistro(ros_distro)
 
     # Create rosdep object
