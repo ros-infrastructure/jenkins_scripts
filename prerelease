@@ -5,6 +5,7 @@ import optparse
 def main():
     parser = optparse.OptionParser()
     parser.add_option("--depends_on", action="store_true", default=False)
+    parser.add_option("--versions", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
     if len(args) <= 1:
@@ -12,8 +13,15 @@ def main():
         raise BuildException("Wrong number of parameters for test_repositories script")
 
     ros_distro = args[0]
-    repositories = args[1:]
-    versions = ['latest' for r in repositories]
+
+    if not options.versions:
+        repositories = args[1:]
+        versions = ['latest' for r in repositories]
+    else:
+        num_repo = (len(args)-1)/2
+        repositories = args[1:num_repo+1]
+        versions = args[num_repo+1:]
+        
     workspace = os.environ['WORKSPACE']
     print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
 
