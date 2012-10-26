@@ -377,7 +377,7 @@ class RosDepResolver:
         call("rosdep update", self.env)
 
         print "Building dictionaries from a rosdep's db"
-        raw_db = call("rosdep db", self.env).split('\n')
+        raw_db = call("rosdep db", self.env, verbose=False).split('\n')
 
         for entry in raw_db:
             split_entry = entry.split(' -> ')
@@ -486,11 +486,12 @@ def get_ros_env(setup_file):
     return res
 
 
-def call_with_list(command, envir=None):
+def call_with_list(command, envir=None, verbose=True):
     print "Executing command '%s'"%' '.join(command)
     helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, env=envir)
     res, err = helper.communicate()
-    print str(res)
+    if verbose:
+        print str(res)
     print str(err)
     if helper.returncode != 0:
         msg = "Failed to execute command '%s'"%command
@@ -498,8 +499,8 @@ def call_with_list(command, envir=None):
         raise BuildException(msg)
     return res
 
-def call(command, envir=None):
-    return call_with_list(command.split(' '), envir)
+def call(command, envir=None, verbose=True):
+    return call_with_list(command.split(' '), envir, verbose)
 
 def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     append_pymodules_if_needed()
