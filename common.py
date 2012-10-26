@@ -442,7 +442,7 @@ class RosDep:
 
 
 
-def copy_test_results(workspace, buildspace, errors=False):
+def copy_test_results(workspace, buildspace, errors=None):
     print "Preparing xml test results"
     try:
         os.makedirs(os.path.join(workspace, 'test_results'))
@@ -457,13 +457,12 @@ def copy_test_results(workspace, buildspace, errors=False):
             call("cp %s %s/test_results/"%(os.path.join(root, filename), workspace))
             count += 1
     if count == 0:
-        if errors:
-            num_errors = 1
-        else:
-            num_errors = 0
-        print "No test results, so I'll create a dummy test result xml file"
+        print "No test results, so I'll create a dummy test result xml file, with errors %s" % errors
         with open(os.path.join(workspace, 'test_results/dummy.xml'), 'w') as f:
-            f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="%d" name="dummy test"> <testcase name="dummy rapport" classname="Results" /></testsuite>' % num_errors)
+            if errors:
+                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="1" name="dummy test"> <testcase name="dummy rapport" classname="Results" /><testcase classname="dummy_class" name="DummyFailure"><error type="DummyException">%s</error></testcase></testsuite>' % errors)
+            else:
+                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="0" name="dummy test"> <testcase name="dummy rapport" classname="Results" /></testsuite>')
 
 
 def get_ros_env(setup_file):

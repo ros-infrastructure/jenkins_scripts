@@ -206,7 +206,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     #messages, or add them to the pythonpath if they turn out to be catkin
     ros_env = get_ros_env('/opt/ros/%s/setup.bash' %ros_distro)
     path_string = ''
-    build_errors = False
+    build_errors = []
 
     #Make sure to build in dependency order
     for name in build_order:
@@ -248,7 +248,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
                     print "FAILED TO CALL CMAKE ON %s, messages for this package cannot be generated." % (name)
                     print "Are you sure that the package specifies its dependencies correctly?"
                     print "Exception: %s" % e
-                    build_errors = True
+                    build_errors.append(name)
                 os.chdir(old_dir)
         else:
             #If the package does not have a CmakeLists.txt file, we still want
@@ -261,7 +261,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     return ("export PYTHONPATH=$PYTHONPATH", build_errors)
 
 def build_repo_messages(docspace, ros_distro):
-    build_errors = False
+    build_errors = []
     #For groovy, this isn't too bad, we just set up a workspace
     old_dir = os.getcwd()
     repo_buildspace = os.path.join(docspace, 'build_repo')
@@ -283,7 +283,7 @@ def build_repo_messages(docspace, ros_distro):
         print "There will be no messages in documentation and some python docs may fail"
         print "Exception: %s" % e
         source = ''
-        build_errors = True
+        build_errors.append("catkin_workspace for repository")
     os.chdir(old_dir)
     return (source, build_errors)
 
@@ -437,20 +437,21 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
     sources = ['source /opt/ros/%s/setup.bash' % ros_distro]
 
     #We assume that there will be no build errors to start
-    build_errors = False
+    build_errors = []
 
     #Everything that is after fuerte supports catkin workspaces, so everything
     #that has packages with package.xml files
     if catkin_packages and not 'rosdoc_lite' in catkin_packages.keys():
-        source, build_errors = build_repo_messages(docspace, ros_distro)
+        source, errs = build_repo_messages(docspace, ros_distro)
+        build_errors.extend(errs)
         if source:
             sources.append(source)
 
     #For all our manifest packages (dry or fuerte catkin) we want to build
     #messages. Note, for fuerte catkin the messages arent' generated, TODO
     #to come back and fix this if necessary
-    source, err = build_repo_messages_manifest(manifest_packages, build_order, ros_distro)
-    build_errors = build_errors or err
+    source, errs = build_repo_messages_manifest(manifest_packages, build_order, ros_distro)
+    build_errors.extend(errs)
     sources.append(source)
 
     repo_tags = {}
@@ -540,7 +541,10 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch):
     except:
         pass
 
-    copy_test_results(workspace, docspace, build_errors)
+    if build_errors:
+        copy_test_results(workspace, docspace, "Failed to generate messages by calling cmake for %s. Look in console for cmake failures." % build_errors)
+    else:
+        copy_test_results(workspace, docspace)
 
 def main():
     arguments = sys.argv[1:]
