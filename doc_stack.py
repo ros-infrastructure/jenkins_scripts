@@ -45,7 +45,7 @@ from common import *
 from tags_db import *
 
 def write_stack_manifest(output_dir, stack_name, manifest, 
-                         vcs_type, vcs_url, api_homepage, 
+                         vcs_type, vcs_uri, api_homepage, 
                          packages, tags_db, repo_name, doc_job):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -53,7 +53,7 @@ def write_stack_manifest(output_dir, stack_name, manifest,
     m_yaml = {}
     m_yaml['api_documentation'] = api_homepage
     m_yaml['vcs'] = vcs_type
-    m_yaml['vcs_url'] = vcs_url
+    m_yaml['vcs_uri'] = vcs_uri
 
     m_yaml['authors'] = manifest.author or ''
     m_yaml['brief'] = manifest.brief or ''
@@ -84,7 +84,7 @@ def write_stack_manifest(output_dir, stack_name, manifest,
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
 def write_distro_specific_manifest(manifest_file, package, vcs_type, 
-                                   vcs_url, api_homepage, tags_db, 
+                                   vcs_uri, api_homepage, tags_db, 
                                    repo_name, doc_job):
     m_yaml = {}
     if os.path.isfile(manifest_file):
@@ -93,7 +93,7 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
 
     m_yaml['api_documentation'] = api_homepage
     m_yaml['vcs'] = vcs_type
-    m_yaml['vcs_url'] = vcs_url
+    m_yaml['vcs_uri'] = vcs_uri
     m_yaml['repo_name'] = repo_name
     m_yaml['doc_job'] = doc_job
     m_yaml['timestamp'] = time.time()
