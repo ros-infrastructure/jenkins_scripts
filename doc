@@ -4,8 +4,9 @@ import sys
 import subprocess
 import urllib
 import datetime
-from doc_stack import *
 import shutil
+from common import get_ros_env, call
+from doc_stack import document_repo
 
 #TODO: Eventually, pull rosdoc lite from debs
 def install_rosdoc_lite(workspace, ros_distro):
