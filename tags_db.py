@@ -39,6 +39,35 @@ from common import *
 import subprocess
 import time
 
+def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_deps, docspace, ros_distro):
+    #Get the relevant tags from the database
+    tags = []
+
+    for dep in apt_deps:
+        if tags_db.has_tags(dep):
+            #Make sure that we don't pass our own tagfile to ourself
+            #bad things happen when we do this
+            for tag in tags_db.get_tags(dep):
+                if tag['package'] != current_package:
+                    tags.append(tag)
+
+    #Add tags built locally in dependency order
+    for dep in ordered_deps:
+        #we'll exit the loop when we reach ourself
+        if dep == current_package:
+            break
+
+        relative_tags_path = "doc/%s/api/%s/tags/%s.tag" % (ros_distro, dep, dep)
+        if os.path.isfile(os.path.join(docspace, relative_tags_path)):
+            tags.append({'docs_url': '../../%s/html' % dep, 
+                         'location': 'file://%s' % os.path.join(docspace, relative_tags_path),
+                         'package': '%s' % dep})
+        else:
+            print "DID NOT FIND TAG FILE at: %s" % os.path.join(docspace, relative_tags_path)
+
+    with open(rosdoc_tagfile, 'w+') as tags_file:
+        yaml.dump(tags, tags_file)
+
 class TagsDb(object):
     def __init__(self, distro_name, workspace):
         self.workspace = workspace
