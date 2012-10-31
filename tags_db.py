@@ -35,7 +35,7 @@ import yaml
 import urllib
 import os
 import shutil
-from common import *
+from common import call_with_list, BuildException
 import subprocess
 import time
 
@@ -80,8 +80,7 @@ class TagsDb(object):
                    && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s' \
                    %(workspace, self.path) ]
 
-        proc = subprocess.Popen(command)
-        proc.communicate()
+        call_with_list(command)
 
         self.tags = self.read_folder('tags')
 
@@ -167,7 +166,7 @@ class TagsDb(object):
         call("git add %s" % os.path.join(self.path, self.distro_name))
         print "Commiting changes to tags and deps lists...."
         command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+        call_with_list(command)
 
         env = os.environ
         env['GIT_SSH'] = "%s/jenkins_scripts/git_ssh" % self.workspace

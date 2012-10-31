@@ -32,7 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 import os
-from common import call, get_ros_env
+from common import call, get_ros_env, BuildException
 
 def generate_messages_catkin(env):
     try:

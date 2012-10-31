@@ -33,7 +33,7 @@
 #
 
 import os
-from common import append_pymodules_if_needed
+from common import append_pymodules_if_needed, BuildException
 
 def get_repo_manifests(repo_folder, manifest='package'):
     append_pymodules_if_needed()

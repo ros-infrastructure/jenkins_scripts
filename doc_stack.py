@@ -38,15 +38,16 @@ import os
 import sys
 import yaml
 import subprocess
-import fnmatch
 import copy
 import time
-from common import call, call_with_list, append_pymodules_if_needed, AptDepends, RosDepResolver
+from common import call, call_with_list, append_pymodules_if_needed, AptDepends, RosDepResolver, \
+                   get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
+                   copy_test_results
 from tags_db import TagsDb, build_tagfile
 from doc_manifest import write_stack_manifest, write_distro_specific_manifest, write_stack_manifests
-from repo_structure import get_repo_manifests, get_repo_packages, get_repositories_from_rosinstall, 
+from repo_structure import get_repo_manifests, get_repo_packages, get_repositories_from_rosinstall, \
                            load_configuration, install_repo, build_repo_structure
-from message_generation import generate_messages_catkin, generate_messages_dry,
+from message_generation import generate_messages_catkin, generate_messages_dry, \
                                build_repo_messages_manifest, build_repo_messages
 
 def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages):
@@ -66,7 +67,7 @@ def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_pac
 
     return apt_deps
 
-def get_full_apt_deps(apt_deps):
+def get_full_apt_deps(apt_deps, apt):
     full_apt_deps = copy.deepcopy(apt_deps)
     for dep in apt_deps:
         print "Getting dependencies for %s" % dep
@@ -75,7 +76,10 @@ def get_full_apt_deps(apt_deps):
     #Make sure that we don't have any duplicates
     return list(set(full_apt_deps))
 
-def document_packages(build_order, repos_to_doc, sources, tags_db, ros_dep, repo_map, docspace, ros_distro):
+def document_packages(manifest_packages, catkin_packages, build_order, 
+                      repos_to_doc, sources, tags_db, full_apt_deps,
+                      ros_dep, repo_map, repo_path, docspace, ros_distro, 
+                      homepage, doc_job):
     repo_tags = {}
     for package in build_order:
         #don't document packages that we're supposed to build but not supposed to document
@@ -171,14 +175,14 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
 
     #Write stack manifest files for all stacks, we can just do this off the
     #stack.xml files
-    write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_job)
+    write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_job, homepage)
 
     #Need to make sure to re-order packages to be run in dependency order
     build_order = get_dependency_build_order(local_dep_graph)
     print "Build order that honors deps:\n%s" % build_order
 
     #We'll need the full list of apt_deps to get tag files
-    full_apt_deps = get_full_apt_deps(apt_deps)
+    full_apt_deps = get_full_apt_deps(apt_deps, apt)
 
     print "Installing all dependencies for %s" % repo
     if apt_deps:
@@ -206,7 +210,10 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
     build_errors.extend(errs)
     sources.append(source)
 
-    repo_tags = document_packages(build_order, repos_to_doc, sources, tags_db, ros_dep, repo_map, docspace, ros_distro):
+    repo_tags = document_packages(manifest_packages, catkin_packages, build_order, 
+                                  repos_to_doc, sources, tags_db, full_apt_deps,
+                                  ros_dep, repo_map, repo_path, docspace, ros_distro,
+                                  homepage, doc_job)
 
     doc_path = os.path.abspath("%s/doc/%s" % (docspace, ros_distro))
 
