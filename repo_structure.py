@@ -119,7 +119,7 @@ def build_repo_structure(repo_path, doc_conf, depends_conf):
     local_info = []
     for install_item in doc_conf + depends_conf:
         key = install_item.keys()[0]
-        local_info.append({'type': key, 'name': install_item[key]['local-name'], 'url': install_item[key]['uri']})
+        local_info.append({'type': key, 'name': install_item[key]['local-name'], 'url': install_item[key]['uri'], 'version': install_item[key].get('version', None)})
 
     #Get any stacks, manifest packages, or catkin packages (package.xml) in each repo
     for item in local_info:

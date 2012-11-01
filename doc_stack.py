@@ -131,7 +131,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #have availalbe in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, package),
-                                       tags_db, repo_map[package]['name'], doc_job)
+                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'])
 
         print "Done"
     return repo_tags

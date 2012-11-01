@@ -38,7 +38,8 @@ import yaml
 
 def write_stack_manifest(output_dir, stack_name, manifest, 
                          vcs_type, vcs_uri, api_homepage, 
-                         packages, tags_db, repo_name, doc_job):
+                         packages, tags_db, repo_name, doc_job,
+                         version):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -60,6 +61,7 @@ def write_stack_manifest(output_dir, stack_name, manifest,
     m_yaml['repo_name'] = repo_name
     m_yaml['doc_job'] = doc_job
     m_yaml['timestamp'] = time.time()
+    m_yaml['vcs_version'] = version
 
     m_yaml['depends_on'] = []
     if tags_db.has_reverse_deps(stack_name):
@@ -77,7 +79,7 @@ def write_stack_manifest(output_dir, stack_name, manifest,
 
 def write_distro_specific_manifest(manifest_file, package, vcs_type, 
                                    vcs_uri, api_homepage, tags_db, 
-                                   repo_name, doc_job):
+                                   repo_name, doc_job, version):
     m_yaml = {}
     if os.path.isfile(manifest_file):
         with open(manifest_file, 'r') as f:
@@ -89,6 +91,7 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
     m_yaml['repo_name'] = repo_name
     m_yaml['doc_job'] = doc_job
     m_yaml['timestamp'] = time.time()
+    m_yaml['vcs_version'] = version
 
     m_yaml['depends_on'] = []
     if tags_db.has_reverse_deps(package):
@@ -124,5 +127,5 @@ def write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_j
         stack_packages = get_repo_manifests(path, manifest='package').keys()
         stack_relative_doc_path = "%s/doc/%s/api/%s" % (docspace, ros_distro, stack)
         stack_doc_path = os.path.abspath(stack_relative_doc_path)
-        write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, stack), stack_packages, tags_db, repo_map[stack]['name'], doc_job)
+        write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, stack), stack_packages, tags_db, repo_map[stack]['name'], doc_job, repo_map[stack]['version'])
 
