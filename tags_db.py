@@ -165,7 +165,10 @@ class TagsDb(object):
         call("git add %s" % os.path.join(self.path, self.distro_name))
         print "Commiting changes to tags and deps lists...."
         command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
-        call_with_list(command)
+        try:
+            call_with_list(command)
+        except BuildException:
+            pass
 
         env = os.environ
         env['GIT_SSH'] = "%s/jenkins_scripts/git_ssh" % self.workspace
