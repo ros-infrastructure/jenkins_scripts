@@ -104,7 +104,7 @@ def main():
     print "Done installing ros and rosdoc_lite"
 
     #Run documentation generation on the stack
-    homepage = 'http://ros.org/rosdoclite'
+    homepage = 'http://ros.org/doc'
     document_repo(workspace, docspace, ros_distro, stack, os.environ['OS_PLATFORM'], os.environ['ARCH'], homepage)
 
 if __name__ == '__main__':

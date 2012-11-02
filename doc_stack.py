@@ -258,7 +258,7 @@ def main():
     stack = arguments[1]
     workspace = 'workspace'
     docspace = 'docspace'
-    homepage = 'http://ros.org/rosdoclite'
+    homepage = 'http://ros.org/doc'
 
     document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage)
 
