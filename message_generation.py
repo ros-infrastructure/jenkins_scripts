@@ -34,6 +34,55 @@
 import os
 from common import call, get_ros_env, BuildException
 
+catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
+find_package(catkin_basic REQUIRED)
+catkin_basic()
+catkin_python_setup()"""
+
+actionlib_manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
+include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+rosbuild_find_ros_package(actionlib_msgs)
+include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
+genaction()
+rosbuild_init()
+rosbuild_genmsg()
+rosbuild_gensrv()"""
+
+manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
+include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+rosbuild_init()
+rosbuild_genmsg()
+rosbuild_gensrv()"""
+
+
+def replace_catkin_cmake_files(catkin_packages):
+    for pkg, path in catkin_packages.iteritems():
+        cmake_file = os.path.join(path, "CMakeLists.txt")
+        if os.path.isfile(cmake_file):
+            with open(cmake_file, 'w') as f:
+                f.write(catkin_cmake_file)
+
+def replace_manifest_cmake_files(manifest_packages):
+    for pkg, path in manifest_packages.iteritems():
+        cmake_file = os.path.join(path, "CMakeLists.txt")
+        if os.path.isfile(cmake_file):
+            catkin = False
+            actions = False
+            with open(cmake_file, 'r') as f:
+                if 'catkin_project' in f.read():
+                    catkin = True
+                if 'genaction' in f.read():
+                    actions = True
+
+            #There's nothing to do really for catkin on fuerte, we'll just skip
+            if not catkin:
+                with open(cmake_file, 'w') as f:
+                    if actions:
+                        f.write(actionlib_manifest_cmake_file)
+                    else:
+                        f.write(manifest_cmake_file)
+
+
 def generate_messages_catkin(env):
     try:
         targets = call("make help", env).split('\n')
@@ -64,6 +113,9 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     ros_env = get_ros_env('/opt/ros/%s/setup.bash' %ros_distro)
     path_string = ''
     build_errors = []
+
+    #Make sure to build with our special cmake file to only do message generation
+    replace_manifest_cmake_files(manifest_packages)
 
     #Make sure to build in dependency order
     for name in build_order:
@@ -117,7 +169,9 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
 
     return ("export PYTHONPATH=$PYTHONPATH", build_errors)
 
-def build_repo_messages(docspace, ros_distro):
+def build_repo_messages(catkin_packages, docspace, ros_distro):
+    #we'll replace cmake files with our own since we only want to do message generation
+    replace_catkin_cmake_files(catkin_packages)
     build_errors = []
     #For groovy, this isn't too bad, we just set up a workspace
     old_dir = os.getcwd()

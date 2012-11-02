@@ -2,11 +2,23 @@
 import os
 import sys
 import subprocess
-import urllib
+import urllib2
 import datetime
 import shutil
-from common import get_ros_env, call
+from common import get_ros_env, call, BuildException
 from doc_stack import document_repo
+
+def install_catkin_basic(ros_distro):
+    catkin_basic_url = 'https://raw.github.com/wmeeusse/catkin_basic/master/opt/ros/groovy/share/catkin_basic/cmake/catkin_basicConfig.cmake'
+    try:
+        web_file = urllib2.urlopen(catkin_basic_url)
+        install_dir = "/opt/ros/%s/share/catkin_basic/cmake" % ros_distro
+        os.makedirs(install_dir)
+        with open(os.path.join(install_dir, 'catkin_basicConfig.cmake'), 'wb+') as f:
+            f.write(web_file.read())
+    except Exception:
+        raise BuildException("Could not install catkin_basic.")
+    print "Installed catkin_basic"
 
 #TODO: Eventually, pull rosdoc lite from debs
 def install_rosdoc_lite(workspace, ros_distro):
@@ -100,6 +112,7 @@ def main():
     call("apt-get install graphviz python-sphinx python-yaml doxygen ros-%s-genmsg python-epydoc --yes" % ros_distro)
     #TODO: Put back in
     #call("apt-get install ros-%s-rosdoc-lite --yes" % ros_distro)
+    install_catkin_basic(ros_distro)
     install_rosdoc_lite(workspace, ros_distro)
     print "Done installing ros and rosdoc_lite"
 
