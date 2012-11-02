@@ -36,8 +36,7 @@ from common import call, get_ros_env, BuildException
 
 catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
 find_package(catkin_basic REQUIRED)
-catkin_basic()
-catkin_python_setup()"""
+catkin_basic()"""
 
 actionlib_manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
