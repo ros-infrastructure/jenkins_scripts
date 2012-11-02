@@ -32,8 +32,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+import yaml
+import urllib2
 import os
-from common import append_pymodules_if_needed, BuildException
+from common import append_pymodules_if_needed, BuildException, call
 
 def get_repo_manifests(repo_folder, manifest='package'):
     append_pymodules_if_needed()

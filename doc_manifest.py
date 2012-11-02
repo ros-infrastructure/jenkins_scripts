@@ -35,6 +35,7 @@
 import os
 import time
 import yaml
+from repo_structure import get_repo_manifests
 
 def write_stack_manifest(output_dir, stack_name, manifest, 
                          vcs_type, vcs_uri, api_homepage, 

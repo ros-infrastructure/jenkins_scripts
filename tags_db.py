@@ -32,10 +32,9 @@
 #
 
 import yaml
-import urllib
 import os
 import shutil
-from common import call_with_list, BuildException
+from common import call, call_with_list, BuildException
 import subprocess
 import time
 
