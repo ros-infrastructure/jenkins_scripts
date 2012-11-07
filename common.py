@@ -10,8 +10,8 @@ import pkg_resources
 from Queue import Queue
 from threading import Thread
 
-ros_os_overrides = {'precise': 'Ubuntu:12.04:precise', 'oneiric': 'Ubuntu:11.10:oneiric', 'natty': 'Ubuntu:11.04:natty',
-                    'quantal': 'Ubuntu:12.10:quantal', 'raring': 'Ubuntu:13.04:raring'}
+ros_os_overrides = {'precise': 'ubuntu:12.04:precise', 'oneiric': 'ubuntu:11.10:oneiric', 'natty': 'ubuntu:11.04:natty',
+                    'quantal': 'ubuntu:12.10:quantal', 'raring': 'ubuntu:13.04:raring'}
 
 
 def append_pymodules_if_needed():
