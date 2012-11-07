@@ -88,7 +88,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
     call("cmake %s"%repo_sourcespace, ros_env)        
-    ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'buildspace/setup.bash'))
+    ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'develspace/setup.bash'))
 
     # build repositories
     print "Build repo list"
@@ -163,7 +163,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s"%dependson_sourcespace, ros_env)
     call("cmake %s"%dependson_sourcespace, ros_env)        
-    ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'buildspace/setup.bash'))
+    ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'develspace/setup.bash'))
 
     # build repositories
     print "Build depends-on repositories"
