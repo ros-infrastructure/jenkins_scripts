@@ -197,7 +197,8 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
 
     #Everything that is after fuerte supports catkin workspaces, so everything
     #that has packages with package.xml files
-    if catkin_packages and not 'rosdoc_lite' in catkin_packages.keys():
+    if catkin_packages \
+       and not 'rosdoc_lite' in catkin_packages.keys() and not 'catkin' in catkin_packages.keys():
         source, errs = build_repo_messages(catkin_packages, docspace, ros_distro, platform)
         build_errors.extend(errs)
         if source:

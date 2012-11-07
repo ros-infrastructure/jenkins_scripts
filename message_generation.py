@@ -118,7 +118,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro, pla
 
     #Make sure to build in dependency order
     for name in build_order:
-        if not name in manifest_packages or name == 'rosdoc_lite':
+        if not name in manifest_packages or name in ['rosdoc_lite', 'catkin']:
             continue
 
         path = manifest_packages[name]
