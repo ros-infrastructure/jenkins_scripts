@@ -32,7 +32,7 @@ def install_rosdoc_lite(workspace, ros_distro):
     call("git checkout %s-devel" % ros_distro)
     os.makedirs("build")
     os.chdir("build")
-    ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro, os.environ('OS_PLATFORM'))
     call("cmake ..", ros_env)
     call("make", ros_env)
     call("make install", ros_env)
