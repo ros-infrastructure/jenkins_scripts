@@ -77,7 +77,9 @@ def replace_manifest_cmake_files(manifest_packages):
             #There's nothing to do really for catkin on fuerte, we'll just skip
             if not catkin:
                 with open(cmake_file, 'w') as f:
-                    f.write(manifest_cmake_file + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv))
+                    build_file = manifest_cmake_file + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
+                    print "Generated the following cmake file:\n%s" % build_file
+                    f.write(build_file)
 
 
 def generate_messages_catkin(env):
