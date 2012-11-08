@@ -84,7 +84,6 @@ def replace_manifest_cmake_files(manifest_packages):
                         build_file = manifest_cmake_file + actionlib_msgs_include + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
                     else:
                         build_file = manifest_cmake_file + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
-                    print "Generated the following cmake file:\n%s" % build_file
                     f.write(build_file)
 
 
