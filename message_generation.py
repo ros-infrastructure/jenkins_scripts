@@ -38,21 +38,14 @@ catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
 find_package(catkin_basic REQUIRED)
 catkin_basic()"""
 
-actionlib_manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
+manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 rosbuild_find_ros_package(actionlib_msgs)
 include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
 genaction()
 rosbuild_init()
-rosbuild_genmsg()
-rosbuild_gensrv()"""
-
-manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-rosbuild_init()
-rosbuild_genmsg()
-rosbuild_gensrv()"""
-
+{genmsg}
+{gensrv}"""
 
 def replace_catkin_cmake_files(catkin_packages):
     for pkg, path in catkin_packages.iteritems():
@@ -66,20 +59,23 @@ def replace_manifest_cmake_files(manifest_packages):
         cmake_file = os.path.join(path, "CMakeLists.txt")
         if os.path.isfile(cmake_file):
             catkin = False
-            actions = False
+            genaction = genmsg = gensrv = ''
+            #Only build targets that should be built
             with open(cmake_file, 'r') as f:
-                if 'catkin_project' in f.read():
+                read_file = r.read()
+                if 'catkin_project' in read_file:
                     catkin = True
-                if 'genaction' in f.read():
-                    actions = True
+                if 'genaction' in read_file:
+                    genaction = 'genaction()'
+                if 'rosbuild_genmsg' in read_file:
+                    genmsg = 'rosbuild_genmsg()'
+                if 'rosbuild_gensrv' in read_file:
+                    gensrv = 'rosbuild_gensrv()'
 
             #There's nothing to do really for catkin on fuerte, we'll just skip
             if not catkin:
                 with open(cmake_file, 'w') as f:
-                    if actions:
-                        f.write(actionlib_manifest_cmake_file)
-                    else:
-                        f.write(manifest_cmake_file)
+                    f.write(manifest_cmake_file.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv))
 
 
 def generate_messages_catkin(env):
