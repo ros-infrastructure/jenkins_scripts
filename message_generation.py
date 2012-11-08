@@ -148,13 +148,13 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
                     os.makedirs('build')
                 os.chdir('build')
                 ros_env['ROS_PACKAGE_PATH'] = '%s:%s' % (path, ros_env['ROS_PACKAGE_PATH'])
-                print "Calling cmake .. on %s, with env path %s" % (name, ros_env)
                 try:
                     call("cmake ..", ros_env)
                     generate_messages_dry(ros_env, name)
                 except BuildException as e:
                     print "FAILED TO CALL CMAKE ON %s, messages for this package cannot be generated." % (name)
                     print "Are you sure that the package specifies its dependencies correctly?"
+                    print "Failure on %s, with env path %s" % (name, ros_env)
                     print "Exception: %s" % e
                     build_errors.append(name)
                 os.chdir(old_dir)
