@@ -93,7 +93,7 @@ def generate_messages_catkin(env):
     for t in genpy_targets:
         call("make %s" % t, env)
 
-def generate_messages_dry(env, name):
+def generate_messages_dry(env, name, messages, services):
     try:
         targets = call("make help", env).split('\n')
     except BuildException as e:
@@ -102,9 +102,13 @@ def generate_messages_dry(env, name):
     if [t for t in targets if t.endswith("ROSBUILD_genaction_msgs")]:
         call("make ROSBUILD_genaction_msgs", env)
 
-    if [t for t in targets if t.endswith("ROSBUILD_genmsg_py")]:
-        call("make ROSBUILD_genmsg_py", env)
+    if [t for t in targets if t.endswith("rospack_genmsg")] and messages:
+        call("make rospack_genmsg", env)
         print "Generated messages for %s" % name
+
+    if [t for t in targets if t.endswith("rospack_gensrv")] and services:
+        call("make rospack_gensrv", env)
+        print "Generated services for %s" % name
         
 def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     #Now, we go through all of our manifest packages and try to generate
@@ -126,10 +130,20 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
         cmake_file = os.path.join(path, 'CMakeLists.txt')
         if os.path.isfile(cmake_file):
             catkin = False
+            messages = False
+            services = False
             #Check to see whether the package is catkin or not
+            #Also check whether we actually need to build messages
+            #and services since rosbuild creates the build targets
+            #no matter what
             with open(cmake_file, 'r') as f:
-                if 'catkin_project' in f.read():
+                read_file = f.read()
+                if 'catkin_project' in read_file:
                     catkin = True
+                if 'rosbuild_genmsg' in read_file:
+                    messages = True
+                if 'rosbuild_gensrv' in read_file:
+                    services = True
 
             #If it is catkin, then we'll do our best to put the right things on the python path
             #TODO: Note that this will not generate messages, we can try to put this in later
@@ -150,7 +164,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
                 ros_env['ROS_PACKAGE_PATH'] = '%s:%s' % (path, ros_env['ROS_PACKAGE_PATH'])
                 try:
                     call("cmake ..", ros_env)
-                    generate_messages_dry(ros_env, name)
+                    generate_messages_dry(ros_env, name, messages, services)
                 except BuildException as e:
                     print "FAILED TO CALL CMAKE ON %s, messages for this package cannot be generated." % (name)
                     print "Are you sure that the package specifies its dependencies correctly?"
