@@ -62,7 +62,7 @@ def replace_manifest_cmake_files(manifest_packages):
             genaction = genmsg = gensrv = ''
             #Only build targets that should be built
             with open(cmake_file, 'r') as f:
-                read_file = r.read()
+                read_file = f.read()
                 if 'catkin_project' in read_file:
                     catkin = True
                 if 'genaction' in read_file:
