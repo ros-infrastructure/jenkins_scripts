@@ -10,10 +10,6 @@ import pkg_resources
 from Queue import Queue
 from threading import Thread
 
-ros_os_overrides = {'precise': 'ubuntu:12.04:precise', 'oneiric': 'ubuntu:11.10:oneiric', 'natty': 'ubuntu:11.04:natty',
-                    'quantal': 'ubuntu:12.10:quantal', 'raring': 'ubuntu:13.04:raring'}
-
-
 def append_pymodules_if_needed():
     #TODO: This is a hack, in the chroot, the default python path does not
     if not os.path.abspath("/usr/lib/pymodules/python2.7") in sys.path:
@@ -473,14 +469,8 @@ def copy_test_results(workspace, buildspace, errors=None):
                 f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="0" name="dummy test"> <testcase name="dummy rapport" classname="Results" /></testsuite>')
 
 
-def get_ros_env(setup_file, platform='precise'):
+def get_ros_env(setup_file):
     res = os.environ
-    if platform in ros_os_overrides:
-        #Needed for rospack to work properly within a chroot
-        res['ROS_OS_OVERRIDE'] = ros_os_overrides[platform]
-    else:
-        msg = "%s not in known list of os options" % platform
-        raise BuildException(msg)
     print "Retrieve the ROS build environment by sourcing %s"%setup_file
     command = ['bash', '-c', 'source %s && env'%setup_file]
     proc = subprocess.Popen(command, stdout = subprocess.PIPE)

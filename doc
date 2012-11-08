@@ -89,6 +89,9 @@ def main():
     call("apt-key add %s/ros.key"%workspace)
     call("apt-get update")
 
+    print "Installing lsb-release and pkg-config"
+    call("apt-get install pkg-config lsb-release --yes")
+
     # install vcs tools
     print "Installing vcs tools..."
     call("apt-get install mercurial --yes")
