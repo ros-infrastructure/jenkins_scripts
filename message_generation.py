@@ -39,10 +39,13 @@ find_package(catkin_basic REQUIRED)
 catkin_basic()"""
 
 manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)"""
+
+actionlib_msgs_include = """
 rosbuild_find_ros_package(actionlib_msgs)
 include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
 """
+
 manifest_build_targets = """
 {genaction}
 rosbuild_init()
@@ -77,7 +80,10 @@ def replace_manifest_cmake_files(manifest_packages):
             #There's nothing to do really for catkin on fuerte, we'll just skip
             if not catkin:
                 with open(cmake_file, 'w') as f:
-                    build_file = manifest_cmake_file + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
+                    if genaction:
+                        build_file = manifest_cmake_file + actionlib_msgs_include + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
+                    else:
+                        build_file = manifest_cmake_file + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
                     print "Generated the following cmake file:\n%s" % build_file
                     f.write(build_file)
 
