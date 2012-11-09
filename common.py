@@ -284,7 +284,8 @@ class RosDistroPackage:
 
         url = self.url
         url = url.replace('.git', '/release/%s/%s/package.xml'%(self.name, self.version))
-        url = url.replace('git://', 'https://raw.')
+        url = url.replace('git://', 'https://')
+        url = url.replace('https://', 'https://raw.')
         retries = 5
         while retries > 0:
             try:
