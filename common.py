@@ -34,7 +34,7 @@ class Worker(Thread):
         self.tasks = tasks
         self.daemon = True
         self.start()
-    
+
     def run(self):
         while True:
             func, args, kargs = self.tasks.get()
@@ -77,7 +77,7 @@ class DevelDistroRepo:
         self.version = None
         if data.has_key('version'):
             self.version = data['version']
-            
+
     def get_rosinstall(self):
         if self.version:
             return yaml.dump([{self.type: {'local-name': self.name, 'uri': '%s'%self.url, 'version': '%s'%self.version}}], default_style=False)
@@ -113,15 +113,15 @@ class RosDistro:
         if prefetch_upstream:
             self.prefetch_repository_upstream()
 
-                
+
 
     def prefetch_package_dependencies(self):
         threadpool = ThreadPool(5)
-            
+
         # add jobs to queue
         for name, pkg in self.packages.iteritems():
             threadpool.add_task(pkg.get_dependencies)
-                
+
         # wait for queue to be finished
         failed = []
         print "Waiting for prefetching of package dependencies to finish"
@@ -151,7 +151,7 @@ class RosDistro:
         # add jobs to queue
         for name, repo in self.repositories.iteritems():
             threadpool.add_task(repo.get_upstream)
-                
+
         # wait for queue to be finished
         for name, repo in self.repositories.iteritems():
             while not repo.upstream:
@@ -202,14 +202,14 @@ class RosDistro:
             for p in package:
                 self.depends_on(p, dep_type, res)
         else:
-            for d in self.depends_on1(package, dep_type):        
+            for d in self.depends_on1(package, dep_type):
                 if d in self.packages and not d in res:
                     res.append(d)
                     self.depends_on(d, dep_type, res)
         return res
-            
-                    
-        
+
+
+
 
 
 
@@ -223,7 +223,7 @@ class RosDistroRepo:
             self.version = version
         self.pkgs = pkgs
         self.upstream = None
-    
+
     def get_rosinstall_release(self, version=None):
         rosinstall = ""
         for p in self.pkgs:
@@ -240,7 +240,8 @@ class RosDistroRepo:
         if not self.upstream:
             url = self.url
             url = url.replace('.git', '/bloom/bloom.conf')
-            url = url.replace('git://', 'https://raw.')
+            url = url.replace('git://', 'https://')
+            url = url.replace('https://', 'https://raw.')
             retries = 5
             while not self.upstream and retries > 0:
                 res = {'version': ''}
@@ -259,7 +260,7 @@ class RosDistroRepo:
                     if res['type'] == 'hg':
                         res['version'] = 'default'
                 self.upstream = res
-                
+
                 # fix for svn trunk
                 if res['type'] == 'svn':
                     res['url'] += "/trunk"
@@ -303,18 +304,18 @@ class RosDistroPackage:
             self.depends1 = "Failure"
             raise BuildException("Failed to get package.xml at %s"%url)
 
-            
+
 
 
 
     def get_rosinstall_release(self, version=None):
         if not version:
             version = self.version
-        return yaml.safe_dump([{'git': {'local-name': self.name, 'uri': self.url, 'version': '?'.join(['release', self.name, version])}}], 
+        return yaml.safe_dump([{'git': {'local-name': self.name, 'uri': self.url, 'version': '?'.join(['release', self.name, version])}}],
                               default_style=False).replace('?', '/')
 
     def get_rosinstall_latest(self):
-        return yaml.dump([{'git': {'local-name': self.name, 'uri': self.url, 'version': '?'.join(['release', self.name])}}], 
+        return yaml.dump([{'git': {'local-name': self.name, 'uri': self.url, 'version': '?'.join(['release', self.name])}}],
                          default_style=False).replace('?', '/')
 
 
@@ -337,7 +338,7 @@ class AptDepends:
 
     def has_package(self, package):
         return package in self.dep
-        
+
     def depends1(self, package):
         return self.depends(package, one=True)
 
@@ -349,7 +350,7 @@ class AptDepends:
                 if not one:
                     self.depends(d, res, one)
         return res
-            
+
     def depends_on1(self, package):
         return self.depends_on(package, one=True)
 
@@ -412,7 +413,7 @@ class RosDepResolver:
 
     def has_apt(self, apt_entry):
         return apt_entry in self.a2r
-        
+
 class RosDep:
     def __init__(self, ros_distro):
         self.r2a = {}
@@ -430,7 +431,7 @@ class RosDep:
         if r in self.r2a:
             return self.r2a[r]
         else:
-            res = call("rosdep resolve %s"%r, self.env).split('\n') 
+            res = call("rosdep resolve %s"%r, self.env).split('\n')
             if len(res) == 1:
                 raise Exception("Could not resolve rosdep")
             a = call("rosdep resolve %s"%r, self.env).split('\n')[1]
