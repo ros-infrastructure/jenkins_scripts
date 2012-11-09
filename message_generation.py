@@ -38,21 +38,19 @@ catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
 find_package(catkin_basic REQUIRED)
 catkin_basic()"""
 
-actionlib_manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
+include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)"""
+
+actionlib_msgs_include = """
 rosbuild_find_ros_package(actionlib_msgs)
 include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
-genaction()
-rosbuild_init()
-rosbuild_genmsg()
-rosbuild_gensrv()"""
+"""
 
-manifest_cmake_file = """cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+manifest_build_targets = """
+{genaction}
 rosbuild_init()
-rosbuild_genmsg()
-rosbuild_gensrv()"""
-
+{genmsg}
+{gensrv}"""
 
 def replace_catkin_cmake_files(catkin_packages):
     for pkg, path in catkin_packages.iteritems():
@@ -66,20 +64,27 @@ def replace_manifest_cmake_files(manifest_packages):
         cmake_file = os.path.join(path, "CMakeLists.txt")
         if os.path.isfile(cmake_file):
             catkin = False
-            actions = False
+            genaction = genmsg = gensrv = ''
+            #Only build targets that should be built
             with open(cmake_file, 'r') as f:
-                if 'catkin_project' in f.read():
+                read_file = f.read()
+                if 'catkin_project' in read_file:
                     catkin = True
-                if 'genaction' in f.read():
-                    actions = True
+                if 'genaction' in read_file:
+                    genaction = 'genaction()'
+                if 'rosbuild_genmsg' in read_file:
+                    genmsg = 'rosbuild_genmsg()'
+                if 'rosbuild_gensrv' in read_file:
+                    gensrv = 'rosbuild_gensrv()'
 
             #There's nothing to do really for catkin on fuerte, we'll just skip
             if not catkin:
                 with open(cmake_file, 'w') as f:
-                    if actions:
-                        f.write(actionlib_manifest_cmake_file)
+                    if genaction:
+                        build_file = manifest_cmake_file + actionlib_msgs_include + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
                     else:
-                        f.write(manifest_cmake_file)
+                        build_file = manifest_cmake_file + manifest_build_targets.format(genaction=genaction, genmsg=genmsg, gensrv=gensrv)
+                    f.write(build_file)
 
 
 def generate_messages_catkin(env):
@@ -93,7 +98,7 @@ def generate_messages_catkin(env):
     for t in genpy_targets:
         call("make %s" % t, env)
 
-def generate_messages_dry(env, name):
+def generate_messages_dry(env, name, messages, services):
     try:
         targets = call("make help", env).split('\n')
     except BuildException as e:
@@ -102,9 +107,13 @@ def generate_messages_dry(env, name):
     if [t for t in targets if t.endswith("ROSBUILD_genaction_msgs")]:
         call("make ROSBUILD_genaction_msgs", env)
 
-    if [t for t in targets if t.endswith("ROSBUILD_genmsg_py")]:
-        call("make ROSBUILD_genmsg_py", env)
+    if [t for t in targets if t.endswith("rospack_genmsg")] and messages:
+        call("make rospack_genmsg", env)
         print "Generated messages for %s" % name
+
+    if [t for t in targets if t.endswith("rospack_gensrv")] and services:
+        call("make rospack_gensrv", env)
+        print "Generated services for %s" % name
         
 def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     #Now, we go through all of our manifest packages and try to generate
@@ -118,7 +127,7 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
 
     #Make sure to build in dependency order
     for name in build_order:
-        if not name in manifest_packages or name == 'rosdoc_lite':
+        if not name in manifest_packages or name in ['rosdoc_lite', 'catkin']:
             continue
 
         path = manifest_packages[name]
@@ -126,10 +135,20 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
         cmake_file = os.path.join(path, 'CMakeLists.txt')
         if os.path.isfile(cmake_file):
             catkin = False
+            messages = False
+            services = False
             #Check to see whether the package is catkin or not
+            #Also check whether we actually need to build messages
+            #and services since rosbuild creates the build targets
+            #no matter what
             with open(cmake_file, 'r') as f:
-                if 'catkin_project' in f.read():
+                read_file = f.read()
+                if 'catkin_project' in read_file:
                     catkin = True
+                if 'rosbuild_genmsg' in read_file:
+                    messages = True
+                if 'rosbuild_gensrv' in read_file:
+                    services = True
 
             #If it is catkin, then we'll do our best to put the right things on the python path
             #TODO: Note that this will not generate messages, we can try to put this in later
@@ -148,13 +167,13 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
                     os.makedirs('build')
                 os.chdir('build')
                 ros_env['ROS_PACKAGE_PATH'] = '%s:%s' % (path, ros_env['ROS_PACKAGE_PATH'])
-                print "Calling cmake .. on %s, with env path %s" % (name, ros_env)
                 try:
                     call("cmake ..", ros_env)
-                    generate_messages_dry(ros_env, name)
+                    generate_messages_dry(ros_env, name, messages, services)
                 except BuildException as e:
                     print "FAILED TO CALL CMAKE ON %s, messages for this package cannot be generated." % (name)
                     print "Are you sure that the package specifies its dependencies correctly?"
+                    print "Failure on %s, with env path %s" % (name, ros_env)
                     print "Exception: %s" % e
                     build_errors.append(name)
                 os.chdir(old_dir)
@@ -174,10 +193,10 @@ def build_repo_messages(catkin_packages, docspace, ros_distro):
     build_errors = []
     #For groovy, this isn't too bad, we just set up a workspace
     old_dir = os.getcwd()
-    repo_buildspace = os.path.join(docspace, 'build_repo')
-    if not os.path.exists(repo_buildspace):
-        os.makedirs(repo_buildspace)
-    os.chdir(repo_buildspace)
+    repo_develspace = os.path.join(docspace, 'build_repo')
+    if not os.path.exists(repo_develspace):
+        os.makedirs(repo_develspace)
+    os.chdir(repo_develspace)
     print "Removing the CMakeLists.txt file generated by rosinstall"
     os.remove(os.path.join(docspace, 'CMakeLists.txt'))
     ros_env = get_ros_env('/opt/ros/%s/setup.bash' %ros_distro)
@@ -185,9 +204,9 @@ def build_repo_messages(catkin_packages, docspace, ros_distro):
     call("catkin_init_workspace %s"%docspace, ros_env)
     try:
         call("cmake ..", ros_env)
-        ros_env = get_ros_env(os.path.join(repo_buildspace, 'buildspace/setup.bash'))
+        ros_env = get_ros_env(os.path.join(repo_develspace, 'develspace/setup.bash'))
         generate_messages_catkin(ros_env)
-        source = 'source %s' % (os.path.abspath(os.path.join(repo_buildspace, 'buildspace/setup.bash')))
+        source = 'source %s' % (os.path.abspath(os.path.join(repo_develspace, 'develspace/setup.bash')))
     except BuildException as e:
         print "FAILED TO CALL CMAKE ON CATKIN REPOS"
         print "There will be no messages in documentation and some python docs may fail"
