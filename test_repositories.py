@@ -11,7 +11,7 @@ from time import sleep
 
 
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on):
-    print "Testing on distro %s"%ros_distro    
+    print "Testing on distro %s"%ros_distro
     print "Testing repositories %s"%', '.join(repo_list)
     print "Testing versions %s"%', '.join(version_list)
     if test_depends_on:
@@ -69,7 +69,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     print "rosinstall file for all repositories: \n %s"%rosinstall
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         f.write(rosinstall)
-    print "Install repo list from source"        
+    print "Install repo list from source"
     os.makedirs(repo_sourcespace)
     call("rosinstall %s %s/repo.rosinstall --catkin"%(repo_sourcespace, workspace))
 
@@ -87,8 +87,8 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     call("catkin_init_workspace %s"%repo_sourcespace, ros_env)
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
-    call("cmake %s"%repo_sourcespace, ros_env)        
-    ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'develspace/setup.bash'))
+    call("cmake %s"%repo_sourcespace, ros_env)
+    ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
 
     # build repositories
     print "Build repo list"
@@ -134,7 +134,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     print "Created rosinstall file for depends on"
 
     # install all repository and system dependencies of the depends_on list
-    print "Install all depends_on from source"        
+    print "Install all depends_on from source"
     os.makedirs(dependson_sourcespace)
     call("rosinstall --catkin %s %s/depends_on.rosinstall"%(dependson_sourcespace, workspace))
 
@@ -162,8 +162,8 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s"%dependson_sourcespace, ros_env)
-    call("cmake %s"%dependson_sourcespace, ros_env)        
-    ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'develspace/setup.bash'))
+    call("cmake %s"%dependson_sourcespace, ros_env)
+    ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
 
     # build repositories
     print "Build depends-on repositories"
@@ -199,7 +199,7 @@ def main():
     version_list = [args[i+1] for i in range(1, len(args), 2)]
     workspace = os.environ['WORKSPACE']
 
-    print "Running test_repositories test on distro %s and repositories %s"%(ros_distro, 
+    print "Running test_repositories test on distro %s and repositories %s"%(ros_distro,
                                                                       ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
     test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
 
