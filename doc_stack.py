@@ -139,7 +139,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
 
 def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepage):
     append_pymodules_if_needed()
-    doc_job = "doc-%s-%s-%s-%s" % (ros_distro, repo, platform, arch)
+    doc_job = "doc-%s-%s" % (ros_distro, repo)
     print "Working on distro %s and repo %s" % (ros_distro, repo)
 
     #Load the rosinstall configurations for the repository
