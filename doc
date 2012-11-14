@@ -13,11 +13,13 @@ def install_catkin_basic(ros_distro):
     try:
         web_file = urllib2.urlopen(catkin_basic_url)
         install_dir = "/opt/ros/%s/share/catkin_basic/cmake" % ros_distro
-        os.makedirs(install_dir)
+        if not os.path.exists(install_dir):
+            os.makedirs(install_dir)
         with open(os.path.join(install_dir, 'catkin_basicConfig.cmake'), 'wb+') as f:
             f.write(web_file.read())
-    except Exception:
-        raise BuildException("Could not install catkin_basic.")
+    except Exception as e:
+        print "Error: %s" % e
+        raise BuildException("Could not install catkin_basic. %s" % e)
     print "Installed catkin_basic"
 
 #TODO: Eventually, pull rosdoc lite from debs
@@ -97,7 +99,7 @@ def main():
     # install vcs tools
     print "Installing vcs tools..."
     call("apt-get install mercurial --yes")
-    call("apt-get install git --yes")   
+    call("apt-get install git-core --yes")   
     call("apt-get install subversion --yes")
 
     call("apt-get install rsync --yes")
@@ -112,7 +114,13 @@ def main():
 
     #Install rosdoc lite
     print "Installing ros and rosdoc_lite..."
-    call("apt-get install python-kitchen python-catkin-pkg python-rospkg python-networkx python-rosinstall --yes")
+    #TODO Hack for electric
+    if ros_distro == 'electric':
+        call("apt-get install python-pip python-setuptools build-essential --yes")
+        call("pip install kitchen")
+    else:
+        call("apt-get install python-kitchen --yes")
+    call("apt-get install python-catkin-pkg python-rospkg python-networkx python-rosinstall --yes")
 
     #TODO: Hack to install fuerte tools to document electric
     install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
