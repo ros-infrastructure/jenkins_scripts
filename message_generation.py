@@ -118,12 +118,7 @@ def generate_messages_dry(env, name, messages, services):
 def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     #Now, we go through all of our manifest packages and try to generate
     #messages, or add them to the pythonpath if they turn out to be catkin
-    #TODO: Hack for electric
-    if ros_distro == 'electric':
-        ros_env = get_ros_env('/opt/ros/fuerte/setup.bash')
-        ros_env['ROS_PACKAGE_PATH'] = '/opt/ros/electric/stacks:' + ros_env['ROS_PACKAGE_PATH']
-    else:
-        ros_env = get_ros_env('/opt/ros/%s/setup.bash' %ros_distro)
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash' %ros_distro)
     path_string = ''
     build_errors = []
 
