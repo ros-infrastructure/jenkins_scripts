@@ -166,7 +166,10 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
 
     #Get any non local apt dependencies
     ros_dep = RosDepResolver(ros_distro)
-    apt = AptDepends(platform, arch)
+    if ros_distro == 'electric':
+        apt = AptDepends(platform, arch, shadow=False)
+    else:
+        apt = AptDepends(platform, arch, shadow=True)
     apt_deps = get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages)
     print "Apt dependencies: %s" % apt_deps
 

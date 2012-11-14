@@ -322,8 +322,11 @@ class RosDistroPackage:
 
 
 class AptDepends:
-    def __init__(self, ubuntudistro, arch):
-        url = urllib2.urlopen('http://packages.ros.org/ros-shadow-fixed/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
+    def __init__(self, ubuntudistro, arch, shadow=True):
+        if shadow:
+            url = urllib2.urlopen('http://packages.ros.org/ros-shadow-fixed/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
+        else:
+            url = urllib2.urlopen('http://packages.ros.org/ros/ubuntu/dists/%s/main/binary-%s/Packages'%(ubuntudistro, arch))
         self.dep = {}
         package = None
         for l in url.read().split('\n'):
