@@ -6,7 +6,6 @@ import fnmatch
 import yaml
 import threading
 import time
-import pkg_resources
 from Queue import Queue
 from threading import Thread
 
