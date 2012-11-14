@@ -190,7 +190,13 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
     print "Done installing dependencies"
 
     #Set up the list of things that need to be sourced to run rosdoc_lite
-    sources = ['source /opt/ros/%s/setup.bash' % ros_distro]
+    #TODO: Hack for electric
+    if ros_distro == 'electric':
+        sources = ['source /opt/ros/fuerte/setup.bash']
+        #TODO: Make sure this path is right
+        sources.append('export ROS_PACKAGE_PATH=/opt/ros/electric/stacks:$ROS_PACKAGE_PATH')
+    else:
+        sources = ['source /opt/ros/%s/setup.bash' % ros_distro]
 
     #We assume that there will be no build errors to start
     build_errors = []
