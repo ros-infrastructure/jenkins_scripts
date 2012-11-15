@@ -63,7 +63,7 @@ def get_revisions(rosinstall, base_dir):
     revisions = {}
     for item in rosinstall:
         vcs_type = item.keys()[0]
-        local_name = item[key]['local-name']
+        local_name = item[vcs_type]['local-name']
         path = os.path.join(base_dir, local_name)
         rev = get_repo_revision(path, vcs_type)
         if rev:
