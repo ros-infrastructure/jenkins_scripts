@@ -137,7 +137,9 @@ def document_packages(manifest_packages, catkin_packages, build_order,
     return repo_tags
 
 
-def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepage):
+def document_repo(workspace, docspace, ros_distro, repo, 
+                  platform, arch, homepage, 
+                  rosdoc_lite_version, jenkins_scripts_version):
     append_pymodules_if_needed()
     doc_job = "doc-%s-%s" % (ros_distro, repo)
     print "Working on distro %s and repo %s" % (ros_distro, repo)
@@ -170,10 +172,22 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
     for conf in [('%s' % repo, doc_conf), ('%s_depends' % repo, depends_conf)]:
         changes = rev_changes(conf[0], conf[1], docspace, tags_db) or changes
 
-    if not changes:
+    #We also want to make sure that we run documentation generation anytime
+    #jenkins_scripts or rosdoc_lite has changed since the last time this job was
+    #run
+    repo_hashes = tags_db.get_rosinstall_hashes(repo) if tags_db.has_rosinstall_hashes(repo) else {}
+    old_rosdoc_lite_hash = repo_hashes.get('rosdoc_lite-sys', None)
+    old_jenkins_scripts_hash = repo_hashes.get('jenkins_scripts-sys', None)
+
+    if not changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
         print "There were no changes to any of the repositories we document. Not running documentation."
         copy_test_results(workspace, docspace)
         return
+
+    #Make sure to update the versions of jenkins_scripts and rosdoc_lite for this repo list
+    repo_hashes['rosdoc_lite-sys'] = rosdoc_lite_version
+    repo_hashes['jenkins_scripts-sys'] = jenkins_scripts_version
+    tags_db.set_rosinstall_hashes(repo, repo_hashes)
 
     #Get any non local apt dependencies
     ros_dep = RosDepResolver(ros_distro)
@@ -301,7 +315,7 @@ def main():
     docspace = 'docspace'
     homepage = 'http://ros.org/doc'
 
-    document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage)
+    document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage, None, None)
 
 if __name__ == '__main__':
     main()
