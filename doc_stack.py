@@ -263,9 +263,16 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
                           """Failed to generate messages by calling cmake for %s. 
 Look in the console for cmake failures, search for "CMake Error"
 
-Also, are you sure that the rosinstall file is pulling from the right branch for %s? Check the repos below:
+Also, are you sure that the rosinstall files are pulling from the right branch for %s? Check the repos below,
+you can update information the %s.rosinstall and %s-depends.rosinstall files by submitting a pull request at
+https://github.com/ros/rosdistro/tree/master/doc/%s
+
 Documentation rosinstall:\n%s
+
 Depends rosinstall:\n%s""" % (build_errors, 
+                              ros_distro,
+                              repo,
+                              repo,
                               ros_distro,
                               yaml.safe_dump(doc_conf, default_flow_style=False), 
                               yaml.safe_dump(depends_conf, default_flow_style=False)),
