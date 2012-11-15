@@ -89,6 +89,17 @@ class TagsDb(object):
         self.metapackages = self.read_folder('metapackages')
         self.build_metapackage_index()
 
+        self.rosinstall_hashes = self.read_folder('rosinstall_hashes')
+
+    def has_rosinstall_hashes(self, rosinstall_name):
+        return self.rosinstall_hashes.has_key(rosinstall_name)
+
+    def get_rosinstall_hashes(self, rosinstall_name):
+        return self.rosinstall_hashes[rosinstall_name]
+
+    def set_rosinstall_hashes(self, rosinstall_name, hashes):
+        self.rosinstall_hashes[rosinstall_name] = hashes
+
     #Turn a folder of files into a dict
     def read_folder(self, folder_name):
         folder_dict = {}
@@ -159,6 +170,7 @@ class TagsDb(object):
         self.write_folder('tags', self.tags)
         self.write_folder('deps', self.forward_deps)
         self.write_folder('metapackages', self.metapackages)
+        self.write_folder('rosinstall_hashes', self.rosinstall_hashes)
 
         old_dir = os.getcwd()
         os.chdir(self.path)

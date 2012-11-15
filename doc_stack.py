@@ -46,7 +46,7 @@ from common import call, call_with_list, append_pymodules_if_needed, AptDepends,
 from tags_db import TagsDb, build_tagfile
 from doc_manifest import write_stack_manifest, write_distro_specific_manifest, write_stack_manifests
 from repo_structure import get_repo_manifests, get_repo_packages, get_repositories_from_rosinstall, \
-                           load_configuration, install_repo, build_repo_structure
+                           load_configuration, install_repo, build_repo_structure, rev_changes
 from message_generation import generate_messages_catkin, generate_messages_dry, \
                                build_repo_messages_manifest, build_repo_messages
 
@@ -163,6 +163,17 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
 
     #Load information about existing tags
     tags_db = TagsDb(ros_distro, workspace)
+
+    #Check to see if we need to document this repo list by checking if any of
+    #the repositories revision numbers/hashes have changed
+    changes = False
+    for conf in [('%s' % repo, doc_conf), ('%s_depends' % repo, depends_conf)]:
+        changes = rev_changes(conf[0], conf[1], docspace, tags_db) or changes
+
+    if not changes:
+        print "There were no changes to any of the repositories we document. Not running documentation."
+        copy_test_results(workspace, docspace)
+        return
 
     #Get any non local apt dependencies
     ros_dep = RosDepResolver(ros_distro)
