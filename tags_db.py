@@ -166,11 +166,15 @@ class TagsDb(object):
         self.build_metapackage_index()
 
     #Write new tag locations for a list of packages
-    def commit_db(self):
-        self.write_folder('tags', self.tags)
-        self.write_folder('deps', self.forward_deps)
-        self.write_folder('metapackages', self.metapackages)
-        self.write_folder('rosinstall_hashes', self.rosinstall_hashes)
+    def commit_db(self, exclude=[]):
+        if not 'tags' in exclude:
+            self.write_folder('tags', self.tags)
+        if not 'deps' in exclude:
+            self.write_folder('deps', self.forward_deps)
+        if not 'metapackages' in exclude:
+            self.write_folder('metapackages', self.metapackages)
+        if not 'rosinstall_hashes' in exclude:
+            self.write_folder('rosinstall_hashes', self.rosinstall_hashes)
 
         old_dir = os.getcwd()
         os.chdir(self.path)

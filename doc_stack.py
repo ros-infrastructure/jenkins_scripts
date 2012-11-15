@@ -259,7 +259,9 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
             tags_db.set_tags(deb_name, tags)
 
     #Make sure to write changes to tag files and deps
-    tags_db.commit_db()
+    #We don't want to write hashes on an unsuccessful build
+    excludes = ['rosinstall_hashes'] if build_errors else []
+    tags_db.commit_db(excludes)
 
     #Tell jenkins that we've succeeded
     print "Preparing xml test results"
