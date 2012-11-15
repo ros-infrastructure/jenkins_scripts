@@ -168,10 +168,7 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
     #the repositories revision numbers/hashes have changed
     changes = False
     for conf in [('%s' % repo, doc_conf), ('%s_depends' % repo, depends_conf)]:
-        rev_changes_result = rev_changes(conf[0], conf[1], docspace, tags_db)
-        print "REV_CHANGES: %s" % rev_changes_result
-        changes = rev_changes_result or changes
-    print "CHANGES: %s" % changes
+        changes = rev_changes(conf[0], conf[1], docspace, tags_db) or changes
 
     if not changes:
         print "There were no changes to any of the repositories we document. Not running documentation."
