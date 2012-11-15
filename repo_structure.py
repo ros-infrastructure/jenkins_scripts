@@ -104,7 +104,7 @@ def load_configuration(ros_distro, repo):
 def install_repo(docspace, workspace, repo, doc_conf, depends_conf):
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         print "Rosinstall for repo %s:\n%s"%(repo, doc_conf + depends_conf)
-        yaml.safe_dump(doc_conf + depends_conf, f, default_style=False)
+        yaml.safe_dump(doc_conf + depends_conf, f, default_flow_style=False)
 
     print "Created rosinstall file for repo %s, installing repo..."%repo
     #TODO Figure out why rosinstall insists on having ROS available when called with nobuild, but not catkin
