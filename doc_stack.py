@@ -178,6 +178,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     repo_hashes = tags_db.get_rosinstall_hashes(repo) if tags_db.has_rosinstall_hashes(repo) else {}
     old_rosdoc_lite_hash = repo_hashes.get('rosdoc_lite-sys', None)
     old_jenkins_scripts_hash = repo_hashes.get('jenkins_scripts-sys', None)
+    print "REPO HASHES: %s" % repo_hashes
 
     if not changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
         print "There were no changes to any of the repositories we document. Not running documentation."
