@@ -66,8 +66,10 @@ def get_revisions(rosinstall, base_dir):
         local_name = item[vcs_type]['local-name']
         path = os.path.join(base_dir, local_name)
         rev = get_repo_revision(path, vcs_type)
+        print "REV: %s" % rev
         if rev:
             revisions[local_name] = rev
+            print "REVISIONS: %s" % revisions
     return revisions
 
 #Check the repos in a rosinstall file for any changes from the last run, update tags_db if necessary
