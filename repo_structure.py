@@ -87,7 +87,8 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
         changes = True
 
     #Make sure to update the tags db to the latest list of revisions
-    tags_db.set_rosinstall_hashes(rosinstall_name, revisions)
+    if revisions:
+        tags_db.set_rosinstall_hashes(rosinstall_name, revisions)
     return changes
 
 
