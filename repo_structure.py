@@ -69,7 +69,7 @@ def get_revisions(rosinstall, base_dir):
         print "REV: %s" % rev
         if rev:
             revisions[local_name] = rev
-            print "REVISIONS: %s" % revisions
+    print "REVISIONS: %s" % revisions
     return revisions
 
 #Check the repos in a rosinstall file for any changes from the last run, update tags_db if necessary
