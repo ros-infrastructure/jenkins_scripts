@@ -260,9 +260,14 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
 
     if build_errors:
         copy_test_results(workspace, docspace, 
-                          'Failed to generate messages by calling cmake for %s. Look in console for cmake failures, search for "CMake Error\nDocumentation rosinstall:\n%s\nDepends rosinstall:\n%s"' % (build_errors, 
-                                                                                                                                                                                                         yaml.safe_dump(doc_conf, default_flow_style=False), 
-                                                                                                                                                                                                         yaml.safe_dump(depends_conf, default_flow_style=False)),
+                          """Failed to generate messages by calling cmake for %s. 
+                          Look in console for cmake failures, search for "CMake Error"
+                          Are you sure that the rosinstall file is pulling from the right branch for %s?
+                          Documentation rosinstall:\n%s
+                          Depends rosinstall:\n%s""" % (build_errors, 
+                                                        ros_distro,
+                                                        yaml.safe_dump(doc_conf, default_flow_style=False), 
+                                                        yaml.safe_dump(depends_conf, default_flow_style=False)),
                           "message_generation_failure")
     else:
         copy_test_results(workspace, docspace)
