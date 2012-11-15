@@ -77,6 +77,8 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
     changes = False
     last_revisions = tags_db.get_rosinstall_hashes(rosinstall_name) if tags_db.has_rosinstall_hashes(rosinstall_name) else {}
     revisions = get_revisions(rosinstall, docspace)
+    print "last: %s" % last_revisions
+    print "current_rev: %s" % revisions
     if last_revisions.keys().sort() == revisions.keys().sort():
         for name, rev in last_revisions.iteritems():
             if rev != revisions[name]:
