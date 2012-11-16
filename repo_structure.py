@@ -84,6 +84,11 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
 
     #Make sure to update the tags db to the latest list of revisions
     if revisions:
+        #Make sure to copy over any information that's not just stored in the repo
+        for key, value in last_revisions.iteritems():
+            if key not in revisions:
+                revisions[key] = value
+
         tags_db.set_rosinstall_hashes(rosinstall_name, revisions)
     return changes
 
