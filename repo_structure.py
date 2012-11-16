@@ -75,10 +75,9 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
     changes = False
     last_revisions = tags_db.get_rosinstall_hashes(rosinstall_name) if tags_db.has_rosinstall_hashes(rosinstall_name) else {}
     revisions = get_revisions(rosinstall, docspace)
-    if sorted(last_revisions.keys()) == sorted(revisions.keys()):
-        for name, rev in last_revisions.iteritems():
-            if rev != revisions[name]:
-                changes = True
+    for name, rev in revisions.iteritems():
+        if rev != last_revisions[name]:
+            changes = True
     else:
         changes = True
 
@@ -87,6 +86,10 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
         #Make sure to copy over any information that's not just stored in the repo
         for key, value in last_revisions.iteritems():
             if key not in revisions:
+                #The only two keys we expect to be different are listed below,
+                #otherwise something has changed in the repo list
+                if key not in ['rosdoc_lite-sys', 'jenkins_scripts-sys']:
+                    changes = True
                 revisions[key] = value
 
         tags_db.set_rosinstall_hashes(rosinstall_name, revisions)
