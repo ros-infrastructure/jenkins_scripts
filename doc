@@ -13,11 +13,13 @@ def install_catkin_basic(ros_distro):
     try:
         web_file = urllib2.urlopen(catkin_basic_url)
         install_dir = "/opt/ros/%s/share/catkin_basic/cmake" % ros_distro
-        os.makedirs(install_dir)
+        if not os.path.exists(install_dir):
+            os.makedirs(install_dir)
         with open(os.path.join(install_dir, 'catkin_basicConfig.cmake'), 'wb+') as f:
             f.write(web_file.read())
-    except Exception:
-        raise BuildException("Could not install catkin_basic.")
+    except Exception as e:
+        print "Error: %s" % e
+        raise BuildException("Could not install catkin_basic. %s" % e)
     print "Installed catkin_basic"
 
 #TODO: Eventually, pull rosdoc lite from debs
@@ -30,6 +32,7 @@ def install_rosdoc_lite(workspace, ros_distro):
     old_dir = os.getcwd()
     os.chdir("rosdoc_lite")
     call("git checkout %s-devel" % ros_distro)
+    rev = call("git rev-parse HEAD").split('\n')[0]
     os.makedirs("build")
     os.chdir("build")
     ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
@@ -37,6 +40,7 @@ def install_rosdoc_lite(workspace, ros_distro):
     call("make", ros_env)
     call("make install", ros_env)
     os.chdir(old_dir)
+    return rev
 
 def install_catkin_sphinx(workspace):
     checkout_path = "%s/catkin_sphinx" % workspace
@@ -54,6 +58,13 @@ def install_catkin_sphinx(workspace):
     os.chdir(old_dir)
     #print "Copying themes to %s" % sphinx_path
     #shutil.copytree(os.path.join(checkout_path, 'theme', 'ros-theme'), os.path.join(sphinx_path, 'ros-theme'))
+
+def get_jenkins_scripts_version(workspace):
+    old_dir = os.getcwd()
+    os.chdir(os.path.join(workspace, 'jenkins_scripts'))
+    rev = call("git rev-parse HEAD").split('\n')[0]
+    os.chdir(old_dir)
+    return rev
 
 def main():
     print
@@ -82,9 +93,11 @@ def main():
     #Add ros to apt
     print "Add ROS to apt sources"
     with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:
-        #TODO: Decide whether normal or shadow fixed makes sense here
-        #f.write("deb http://packages.ros.org/ros/ubuntu %s main"%os.environ['OS_PLATFORM'])
-        f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main"%os.environ['OS_PLATFORM'])
+        #TODO, perhaps this should move away from shadow fixed, also hack for electric
+        if ros_distro == 'electric':
+            f.write("deb http://packages.ros.org/ros/ubuntu %s main"%os.environ['OS_PLATFORM'])
+        else:
+            f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main"%os.environ['OS_PLATFORM'])
     call("wget http://packages.ros.org/ros.key -O %s/ros.key"%workspace)
     call("apt-key add %s/ros.key"%workspace)
     call("apt-get update")
@@ -95,7 +108,7 @@ def main():
     # install vcs tools
     print "Installing vcs tools..."
     call("apt-get install mercurial --yes")
-    call("apt-get install git --yes")   
+    call("apt-get install git-core --yes")   
     call("apt-get install subversion --yes")
 
     call("apt-get install rsync --yes")
@@ -104,24 +117,42 @@ def main():
     call("apt-get install openssh-client --yes")
 
     print "Installing catkin-sphinx"
+    #TODO: Switch to apt for catkin-sphinx
     install_catkin_sphinx(workspace)
     print "Done installing catkin-sphinx"
 
     #Install rosdoc lite
     print "Installing ros and rosdoc_lite..."
+    #TODO Hack for electric
+    if ros_distro == 'electric':
+        call("apt-get install python-pip python-setuptools build-essential --yes")
+        call("pip install kitchen")
+    else:
+        call("apt-get install python-kitchen --yes")
     call("apt-get install python-catkin-pkg python-rospkg python-networkx python-rosinstall --yes")
-    call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (ros_distro, ros_distro))
+
+    #TODO: Hack to install fuerte tools to document electric
+    install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
+    call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
+
     #TODO: Replace with commented line below
     call("apt-get install graphviz python-sphinx python-yaml doxygen python-epydoc --yes")
     #TODO: Put back in
     #call("apt-get install ros-%s-rosdoc-lite --yes" % ros_distro)
-    install_catkin_basic(ros_distro)
-    install_rosdoc_lite(workspace, ros_distro)
+    install_catkin_basic(install_distro)
+    rosdoc_lite_version = install_rosdoc_lite(workspace, install_distro)
     print "Done installing ros and rosdoc_lite"
+
+    jenkins_scripts_version = get_jenkins_scripts_version(workspace)
+
+    print "rosdoc_lite version: %s" % rosdoc_lite_version
+    print "jenkins_scripts version: %s" % jenkins_scripts_version
 
     #Run documentation generation on the stack
     homepage = 'http://ros.org/doc'
-    document_repo(workspace, docspace, ros_distro, stack, os.environ['OS_PLATFORM'], os.environ['ARCH'], homepage)
+    document_repo(workspace, docspace, ros_distro, stack, 
+                  os.environ['OS_PLATFORM'], os.environ['ARCH'], 
+                  homepage, rosdoc_lite_version, jenkins_scripts_version)
 
 if __name__ == '__main__':
     main()

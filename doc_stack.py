@@ -46,7 +46,7 @@ from common import call, call_with_list, append_pymodules_if_needed, AptDepends,
 from tags_db import TagsDb, build_tagfile
 from doc_manifest import write_stack_manifest, write_distro_specific_manifest, write_stack_manifests
 from repo_structure import get_repo_manifests, get_repo_packages, get_repositories_from_rosinstall, \
-                           load_configuration, install_repo, build_repo_structure
+                           load_configuration, install_repo, build_repo_structure, rev_changes
 from message_generation import generate_messages_catkin, generate_messages_dry, \
                                build_repo_messages_manifest, build_repo_messages
 
@@ -137,9 +137,11 @@ def document_packages(manifest_packages, catkin_packages, build_order,
     return repo_tags
 
 
-def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepage):
+def document_repo(workspace, docspace, ros_distro, repo, 
+                  platform, arch, homepage, 
+                  rosdoc_lite_version, jenkins_scripts_version):
     append_pymodules_if_needed()
-    doc_job = "doc-%s-%s-%s-%s" % (ros_distro, repo, platform, arch)
+    doc_job = "doc-%s-%s" % (ros_distro, repo)
     print "Working on distro %s and repo %s" % (ros_distro, repo)
 
     #Load the rosinstall configurations for the repository
@@ -164,9 +166,36 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
     #Load information about existing tags
     tags_db = TagsDb(ros_distro, workspace)
 
+    #Check to see if we need to document this repo list by checking if any of
+    #the repositories revision numbers/hashes have changed
+    changes = False
+    for conf in [('%s' % repo, doc_conf), ('%s_depends' % repo, depends_conf)]:
+        changes = rev_changes(conf[0], conf[1], docspace, tags_db) or changes
+
+    #We also want to make sure that we run documentation generation anytime
+    #jenkins_scripts or rosdoc_lite has changed since the last time this job was
+    #run
+    repo_hashes = tags_db.get_rosinstall_hashes(repo) if tags_db.has_rosinstall_hashes(repo) else {}
+    old_rosdoc_lite_hash = repo_hashes.get('rosdoc_lite-sys', None)
+    old_jenkins_scripts_hash = repo_hashes.get('jenkins_scripts-sys', None)
+    print "REPO HASHES: %s" % repo_hashes
+
+    if not changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
+        print "There were no changes to any of the repositories we document. Not running documentation."
+        copy_test_results(workspace, docspace)
+        return
+
+    #Make sure to update the versions of jenkins_scripts and rosdoc_lite for this repo list
+    repo_hashes['rosdoc_lite-sys'] = rosdoc_lite_version
+    repo_hashes['jenkins_scripts-sys'] = jenkins_scripts_version
+    tags_db.set_rosinstall_hashes(repo, repo_hashes)
+
     #Get any non local apt dependencies
     ros_dep = RosDepResolver(ros_distro)
-    apt = AptDepends(platform, arch)
+    if ros_distro == 'electric':
+        apt = AptDepends(platform, arch, shadow=False)
+    else:
+        apt = AptDepends(platform, arch, shadow=True)
     apt_deps = get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages)
     print "Apt dependencies: %s" % apt_deps
 
@@ -190,7 +219,14 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
     print "Done installing dependencies"
 
     #Set up the list of things that need to be sourced to run rosdoc_lite
-    sources = ['source /opt/ros/%s/setup.bash' % ros_distro]
+    #TODO: Hack for electric
+    if ros_distro == 'electric':
+        #lucid doesn't have /usr/local on the path by default... weird
+        sources = ['export PATH=/usr/local/sbin:/usr/local/bin:$PATH']
+        sources.append('source /opt/ros/fuerte/setup.bash')
+        sources.append('export ROS_PACKAGE_PATH=/opt/ros/electric/stacks:$ROS_PACKAGE_PATH')
+    else:
+        sources = ['source /opt/ros/%s/setup.bash' % ros_distro]
 
     #We assume that there will be no build errors to start
     build_errors = []
@@ -238,7 +274,9 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
             tags_db.set_tags(deb_name, tags)
 
     #Make sure to write changes to tag files and deps
-    tags_db.commit_db()
+    #We don't want to write hashes on an unsuccessful build
+    excludes = ['rosinstall_hashes'] if build_errors else []
+    tags_db.commit_db(excludes)
 
     #Tell jenkins that we've succeeded
     print "Preparing xml test results"
@@ -250,7 +288,22 @@ def document_repo(workspace, docspace, ros_distro, repo, platform, arch, homepag
 
     if build_errors:
         copy_test_results(workspace, docspace, 
-                          "Failed to generate messages by calling cmake for %s. Look in console for cmake failures." % build_errors,
+                          """Failed to generate messages by calling cmake for %s. 
+Look in the console for cmake failures, search for "CMake Error"
+
+Also, are you sure that the rosinstall files are pulling from the right branch for %s? Check the repos below,
+you can update information the %s.rosinstall and %s-depends.rosinstall files by submitting a pull request at
+https://github.com/ros/rosdistro/tree/master/doc/%s
+
+Documentation rosinstall:\n%s
+
+Depends rosinstall:\n%s""" % (build_errors, 
+                              ros_distro,
+                              repo,
+                              repo,
+                              ros_distro,
+                              yaml.safe_dump(doc_conf, default_flow_style=False), 
+                              yaml.safe_dump(depends_conf, default_flow_style=False)),
                           "message_generation_failure")
     else:
         copy_test_results(workspace, docspace)
@@ -263,7 +316,7 @@ def main():
     docspace = 'docspace'
     homepage = 'http://ros.org/doc'
 
-    document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage)
+    document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage, None, None)
 
 if __name__ == '__main__':
     main()

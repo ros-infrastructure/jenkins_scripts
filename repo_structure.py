@@ -35,7 +35,66 @@
 import yaml
 import urllib2
 import os
+import sys
 from common import append_pymodules_if_needed, BuildException, call
+
+def get_repo_revision(repo_folder, vcs_type):
+    #Make sure we're in the right directory
+    old_dir = os.getcwd()
+    os.chdir(repo_folder)
+
+    if vcs_type == 'git':
+        rev = call("git rev-parse HEAD").split('\n')[0]
+    elif vcs_type == 'hg':
+        rev = call("hg id -i").split('\n')[0]
+    elif vcs_type == 'bzr':
+        rev = call("bzr revno").split('\n')[0]
+    elif vcs_type == 'svn':
+        rev = call("svnversion").split('\n')[0]
+    else:
+        rev = ""
+        print >> sys.stderr, "Don't know how to get the version for vcs_type %s, doc generation will always run" % vcs_type
+
+    #Make sure we go back to the original dir
+    os.chdir(old_dir)
+    return rev
+
+def get_revisions(rosinstall, base_dir):
+    revisions = {}
+    for item in rosinstall:
+        vcs_type = item.keys()[0]
+        local_name = item[vcs_type]['local-name']
+        path = os.path.join(base_dir, local_name)
+        rev = get_repo_revision(path, vcs_type)
+        if rev:
+            revisions[local_name] = rev
+    return revisions
+
+#Check the repos in a rosinstall file for any changes from the last run, update tags_db if necessary
+def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
+    changes = False
+    last_revisions = tags_db.get_rosinstall_hashes(rosinstall_name) if tags_db.has_rosinstall_hashes(rosinstall_name) else {}
+    revisions = get_revisions(rosinstall, docspace)
+    for name, rev in revisions.iteritems():
+        if rev != last_revisions.get(name, None):
+            print "Change in repo due to %s: (%s) -> (%s)" % (name, rev, last_revisions.get(name, None))
+            changes = True
+
+    #Make sure to update the tags db to the latest list of revisions
+    if revisions:
+        #Make sure to copy over any information that's not just stored in the repo
+        for key, value in last_revisions.iteritems():
+            if key not in revisions:
+                #The only two keys we expect to be different are listed below,
+                #otherwise something has changed in the repo list
+                if key not in ['rosdoc_lite-sys', 'jenkins_scripts-sys']:
+                    print "Change in repo due to %s: (%s), not listed in new repo" % (key, value)
+                    changes = True
+                revisions[key] = value
+
+        tags_db.set_rosinstall_hashes(rosinstall_name, revisions)
+    return changes
+
 
 def get_repo_manifests(repo_folder, manifest='package'):
     append_pymodules_if_needed()
@@ -104,7 +163,7 @@ def load_configuration(ros_distro, repo):
 def install_repo(docspace, workspace, repo, doc_conf, depends_conf):
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         print "Rosinstall for repo %s:\n%s"%(repo, doc_conf + depends_conf)
-        yaml.safe_dump(doc_conf + depends_conf, f, default_style=False)
+        yaml.safe_dump(doc_conf + depends_conf, f, default_flow_style=False)
 
     print "Created rosinstall file for repo %s, installing repo..."%repo
     #TODO Figure out why rosinstall insists on having ROS available when called with nobuild, but not catkin
