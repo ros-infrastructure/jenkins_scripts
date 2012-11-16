@@ -20,7 +20,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         print "Not testing depends on"
 
     # clean up old tmp directory
-    shutil.rmtree(os.path.join(workspace, 'tmp'))
+    shutil.rmtree(os.path.join(workspace, 'tmp'), ignore_errors=True)
 
     # set directories
     tmpdir = os.path.join('/tmp', 'test_repositories')
