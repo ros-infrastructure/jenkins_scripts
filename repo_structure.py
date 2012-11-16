@@ -77,9 +77,8 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
     revisions = get_revisions(rosinstall, docspace)
     for name, rev in revisions.iteritems():
         if rev != last_revisions.get(name, None):
+            print "Change in repo due to %s: (%s) -> (%s)" % (name, rev, last_revisions.get(name, None))
             changes = True
-    else:
-        changes = True
 
     #Make sure to update the tags db to the latest list of revisions
     if revisions:
@@ -89,6 +88,7 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
                 #The only two keys we expect to be different are listed below,
                 #otherwise something has changed in the repo list
                 if key not in ['rosdoc_lite-sys', 'jenkins_scripts-sys']:
+                    print "Change in repo due to %s: (%s), not listed in new repo" % (key, value)
                     changes = True
                 revisions[key] = value
 
