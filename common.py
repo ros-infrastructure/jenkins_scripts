@@ -314,8 +314,8 @@ class RosDistroPackage:
                               default_style=False).replace('?', '/')
 
     def get_rosinstall_latest(self):
-        return yaml.dump([{'git': {'local-name': self.name, 'uri': self.url, 'version': '?'.join(['release', self.name])}}],
-                         default_style=False).replace('?', '/')
+        return yaml.dump([{'git': {'local-name': self.name, 'uri': self.url, 'version': '/'.join(['release', self.name])}}],
+                         default_style=False)
 
 
 
