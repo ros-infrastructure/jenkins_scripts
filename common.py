@@ -163,7 +163,9 @@ class RosDistro:
                 res.append(self.depends1(p, dep_type))
             return res
         else:
-            d = self.packages[package].get_dependencies()[dep_type]
+            dep_list = dep_type if type(dep_type) == list else [dep_type]
+            for dt in dep_list:
+                d = self.packages[package].get_dependencies()[dt]
             print "%s depends on %s"%(package, str(d))
             return d
 
@@ -190,8 +192,10 @@ class RosDistro:
         else:
             depends_on1 = []
             for name, pkg in self.packages.iteritems():
-                if package in pkg.get_dependencies()[dep_type]:
-                    depends_on1.append(name)
+                dep_list = dep_type if type(dep_type) == list else [dep_type]
+                for dt in dep_list:
+                    if package in pkg.get_dependencies()[dt]:
+                        depends_on1.append(name)
             return depends_on1
 
 
@@ -275,7 +279,7 @@ class RosDistroPackage:
             self.depends1 = None
         else:
             self.version = version
-            self.depends1 = {'build': [], 'test': []}
+            self.depends1 = {'build': [], 'test': [], 'run': []}
 
     def get_dependencies(self):
         if self.depends1:
@@ -292,7 +296,7 @@ class RosDistroPackage:
                 append_pymodules_if_needed()
                 from catkin_pkg import package as catkin_pkg
                 pkg = catkin_pkg.parse_package_string(package_xml)
-                self.depends1 = {'build': [d.name for d in pkg.build_depends], 'test':  [d.name for d in pkg.test_depends]}
+                self.depends1 = {'build': [d.name for d in pkg.build_depends], 'test':  [d.name for d in pkg.test_depends], 'run': [d.name for d in pkg.run_depends]}
                 return self.depends1
             except:
                 print "!!!! Failed to download package.xml for package %s at url %s"%(self.name, url)
