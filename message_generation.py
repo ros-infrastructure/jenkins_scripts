@@ -52,15 +52,36 @@ rosbuild_init()
 {genmsg}
 {gensrv}"""
 
+#We want to remove all export lines from package.xml and manifest.xml files
+def remove_export_tags(path):
+    import xml.etree.ElementTree as ElementTree
+    et = ElementTree.parse(path)
+    root = et.getroot()
+    for export in root.findall('export'):
+        root.remove(export)
+    et.write(path)
+
 def replace_catkin_cmake_files(catkin_packages):
     for pkg, path in catkin_packages.iteritems():
+        #Replace cmake files with custom version
         cmake_file = os.path.join(path, "CMakeLists.txt")
         if os.path.isfile(cmake_file):
             with open(cmake_file, 'w') as f:
                 f.write(catkin_cmake_file)
 
+        #Remove export lines from manifest files
+        pkg_file = os.path.join(path, "package.xml")
+        if os.path.isfile(pkg_file):
+            remove_export_tags(pkg_file)
+
 def replace_manifest_cmake_files(manifest_packages):
     for pkg, path in manifest_packages.iteritems():
+        #Remove export lines from manifest files
+        pkg_file = os.path.join(path, "manifest.xml")
+        if os.path.isfile(pkg_file):
+            remove_export_tags(pkg_file)
+
+        #Replace Cmake files with custom version
         cmake_file = os.path.join(path, "CMakeLists.txt")
         if os.path.isfile(cmake_file):
             catkin = False
