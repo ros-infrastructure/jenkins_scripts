@@ -41,7 +41,7 @@ import shutil
 import subprocess
 import copy
 import time
-from common import call, call_with_list, append_pymodules_if_needed, AptDepends, RosDepResolver, \
+from common import call, call_with_list, append_pymodules_if_needed, RosDepResolver, \
                    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
                    copy_test_results
 from tags_db import TagsDb, build_tagfile
