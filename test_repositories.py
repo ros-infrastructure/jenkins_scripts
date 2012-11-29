@@ -39,13 +39,14 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
     # install stuff we need
     print "Installing Debian packages we need for running this script"
-    call("apt-get install python-catkin-pkg python-rosinstall --yes")
+    call("apt-get install python-catkin-pkg python-rosinstall python-rosdistro --yes")
+    import rosdistro
 
     # parse the rosdistro file
     print "Parsing rosdistro file for %s"%ros_distro
-    distro = RosDistro(ros_distro, prefetch_dependencies=test_depends_on, prefetch_upstream=False)
+    distro = rosdistro.RosDistro(ros_distro)
     print "Parsing devel file for %s"%ros_distro
-    devel = DevelDistro(ros_distro)
+    devel = rosdistro.DevelDistro(ros_distro)
 
     # Create rosdep object
     print "Create rosdep object"
@@ -61,14 +62,14 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
             print "Using devel distro file to download repositories"
             rosinstall += devel.repositories[repo].get_rosinstall()
         else:
-            if not distro.repositories.has_key(repo):
+            if not distro.get_repositories().has_key(repo):
                 raise BuildException("Repository %s does not exist in Ros Distro"%repo)
-            if version == 'latest':
+            if version in ['latest', 'master']:
                 print "Using latest release distro file to download repositories"
-                rosinstall += distro.repositories[repo].get_rosinstall_latest()
+                rosinstall += distro.get_rosinstall(repo, version='master')
             else:
                 print "Using version %s of release distro file to download repositories"%version
-                rosinstall += distro.repositories[repo].get_rosinstall_release(version)
+                rosinstall += distro.get_rosinstall(repo, version)
     print "rosinstall file for all repositories: \n %s"%rosinstall
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         f.write(rosinstall)
@@ -118,7 +119,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # get repo_list depends-on list
     print "Get list of wet repositories that build-depend on repo list %s"%', '.join(repo_list)
     depends_on = []
-    for d in distro.depends_on(repo_list, 'build'):
+    for d in distro.depends_on(repo_list)['build']:
         if not d in depends_on and not d in repo_list:
             depends_on.append(d)
     print "Build depends_on list of repo list: %s"%(', '.join(depends_on))
@@ -128,9 +129,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         return
 
     # install depends_on repositories from source
-    rosinstall = ""
-    for d in depends_on:
-        rosinstall += distro.packages[d].get_rosinstall_release()
+    rosinstall = distro.get_rosinstall(depends_on)
     print "Rosinstall for depends_on:\n %s"%rosinstall
     with open(workspace+"/depends_on.rosinstall", 'w') as f:
         f.write(rosinstall)

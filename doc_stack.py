@@ -77,9 +77,9 @@ def get_full_apt_deps(apt_deps, apt):
     #Make sure that we don't have any duplicates
     return list(set(full_apt_deps))
 
-def document_packages(manifest_packages, catkin_packages, build_order, 
+def document_packages(manifest_packages, catkin_packages, build_order,
                       repos_to_doc, sources, tags_db, full_apt_deps,
-                      ros_dep, repo_map, repo_path, docspace, ros_distro, 
+                      ros_dep, repo_map, repo_path, docspace, ros_distro,
                       homepage, doc_job):
     repo_tags = {}
     for package in build_order:
@@ -114,8 +114,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Some doc runs won't generate tag files, so we need to check if they
         #exist before adding them to the list
         if(os.path.exists(tags_path)):
-            package_tags = {'location':'%s/%s'%(homepage, relative_tags_path), 
-                                 'docs_url':'../../../api/%s/html'%(package), 
+            package_tags = {'location':'%s/%s'%(homepage, relative_tags_path),
+                                 'docs_url':'../../../api/%s/html'%(package),
                                  'package':'%s'%package}
 
             #If the package has a deb name, then we'll store the tags for it
@@ -138,8 +138,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
     return repo_tags
 
 
-def document_repo(workspace, docspace, ros_distro, repo, 
-                  platform, arch, homepage, 
+def document_repo(workspace, docspace, ros_distro, repo,
+                  platform, arch, homepage,
                   rosdoc_lite_version, jenkins_scripts_version):
     append_pymodules_if_needed()
     doc_job = "doc-%s-%s" % (ros_distro, repo)
@@ -193,10 +193,11 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Get any non local apt dependencies
     ros_dep = RosDepResolver(ros_distro)
+    import rosdistro
     if ros_distro == 'electric':
-        apt = AptDepends(platform, arch, shadow=False)
+        apt = rosdistro.AptDistro(platform, arch, shadow=False)
     else:
-        apt = AptDepends(platform, arch, shadow=True)
+        apt = rosdistro.AptDistro(platform, arch, shadow=True)
     apt_deps = get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages)
     print "Apt dependencies: %s" % apt_deps
 
@@ -248,7 +249,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     build_errors.extend(errs)
     sources.append(source)
 
-    repo_tags = document_packages(manifest_packages, catkin_packages, build_order, 
+    repo_tags = document_packages(manifest_packages, catkin_packages, build_order,
                                   repos_to_doc, sources, tags_db, full_apt_deps,
                                   ros_dep, repo_map, repo_path, docspace, ros_distro,
                                   homepage, doc_job)
@@ -291,8 +292,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
         pass
 
     if build_errors:
-        copy_test_results(workspace, docspace, 
-                          """Failed to generate messages by calling cmake for %s. 
+        copy_test_results(workspace, docspace,
+                          """Failed to generate messages by calling cmake for %s.
 Look in the console for cmake failures, search for "CMake Error"
 
 Also, are you sure that the rosinstall files are pulling from the right branch for %s? Check the repos below,
@@ -301,12 +302,12 @@ https://github.com/ros/rosdistro/tree/master/doc/%s
 
 Documentation rosinstall:\n%s
 
-Depends rosinstall:\n%s""" % (build_errors, 
+Depends rosinstall:\n%s""" % (build_errors,
                               ros_distro,
                               repo,
                               repo,
                               ros_distro,
-                              yaml.safe_dump(doc_conf, default_flow_style=False), 
+                              yaml.safe_dump(doc_conf, default_flow_style=False),
                               yaml.safe_dump(depends_conf, default_flow_style=False)),
                           "message_generation_failure")
     else:
