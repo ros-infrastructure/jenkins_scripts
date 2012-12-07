@@ -1,0 +1,209 @@
+metrics:
+    STCYC:
+        name: STCYC
+        brief: Cyclomatic complexity
+        description: ''
+        histogram_num_bins: 19
+        histogram_minval: 1
+        histogram_maxval: 20
+        data_type: int
+    STGTO:    
+        name: STGTO
+        brief: Number of goto statements
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        data_type: int   
+    STLIN:    
+        name: STLIN
+        brief: Number of maintainable lines of code
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 200
+        data_type: int
+    STMIF:    
+        name: STMIF
+        brief: Maximum nesting of control structures
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 20
+        data_type: int
+    STPAR:    
+        name: STPAR
+        brief: Number of parameters
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10
+        data_type: int
+    STPTH:    
+        name: STPTH
+        brief: Estimated static path count
+        description: ''
+        histogram_num_bins: 19
+        histogram_minval: 1
+        histogram_maxval: 20
+        data_type: int
+    STSUB:    
+        name: STSUB
+        brief: Number of Function Calls
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 20
+        data_type: int
+    STXLN:    
+        name: STXLN
+        brief: Number of executable lines
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 100
+        data_type: int
+    STCDN:    
+        name: STCDN
+        brief: Comment to code ratio
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 2.0
+        data_type: float
+    STOPN:    
+        name: STOPN
+        brief: Halstead distinct operands
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 500       
+        data_type: int
+    STOPT:    
+        name: STOPT
+        brief: Halstead distinct operators
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 50
+        data_type: int          
+    STTLN:    
+        name: STTLN
+        brief: Total preprocessed code lines
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 200
+        data_type: int                 
+    STTOT:    
+        name: STTOT
+        brief: Total number of tokens used
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10000  
+        data_type: int 
+    STTPP:    
+        name: STTPP
+        brief: Total unpreprocessed source lines
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 500 
+        data_type: int
+    STVAR:    
+        name: STVAR
+        brief: Number of identifiers
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 200 
+        data_type: int
+    STCCA:    
+        name: STCCA
+        brief: Total Number of Characters
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 20000 
+        data_type: int
+    STCCB:    
+        name: STCCB
+        brief: Total Number of Code Characters
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 20000 
+        data_type: int                                       
+    STCCC:    
+        name: STCCC
+        brief: Total Number of Comment Characters
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 20000   
+        data_type: int 
+    STCBO:    
+        name: STCBO
+        brief: Coupling between objects
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        data_type: int 
+    STDIT:    
+        name: STDIT
+        brief: Deepest level of inheritance
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10
+        data_type: int  
+    STLCM:    
+        name: STLCM
+        brief: Lack of cohesion of methods within a class
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        data_type: int 
+    STMTH:    
+        name: STMTH
+        brief: Number of methods available in class
+        description: ''
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 20
+        data_type: int  
+    STNOC:    
+        name: STNOC
+        brief: Number of immediate children
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        data_type: int 
+    STNOP:    
+        name: STNOP
+        brief: Number of immediate parents
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        data_type: int 
+    STRFC:    
+        name: STRFC
+        brief: Response for class
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10
+        data_type: int                        
+    STWMC:    
+        name: STWMC
+        brief: Weighted methods per class
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        data_type: float             
