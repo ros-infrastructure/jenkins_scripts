@@ -4,7 +4,7 @@ import sys
 import subprocess
 import string
 import fnmatch
-import shutil
+#import shutil
 import optparse
 from common import *
 from time import sleep
