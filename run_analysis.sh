@@ -17,4 +17,4 @@ source $HOME/chroot_configs/set_qacpp_path.sh
 sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/ros/rostoolchain.cmake
 
 # call analysis
-python $WORKSPACE/jenkins_code_quality/analyze.py $ROS_DISTRO $STACK_NAME
+python $WORKSPACE/jenkins_scripts/analyze.py $ROS_DISTRO $STACK_NAME
