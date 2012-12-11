@@ -21,6 +21,8 @@ def get_environment2():
     my_env['BUILD_NUMBER'] = os.getenv('BUILD_NUMBER', '')
     my_env['ROS_TEST_RESULTS_DIR'] = os.getenv('ROS_TEST_RESULTS_DIR', my_env['WORKSPACE']+'/test_results')
     my_env['PWD'] = os.getenv('WORKSPACE', '')
+    my_env['ROS_PACKAGE_MIRROR'] = 'http://packages.ros.org/ros/ubuntu'
+    
     return my_env
 
 
