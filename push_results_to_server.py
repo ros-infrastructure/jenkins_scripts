@@ -61,7 +61,7 @@ if __name__ == '__main__':
         print stack_dir
         stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
-	call('sudo scp -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
+	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
 		,env, 'Push stack-yaml-file to ros-wiki ')
 	        
     # get packages
@@ -72,6 +72,6 @@ if __name__ == '__main__':
         package = os.path.basename(package_dir)
         print package
         doc_dir = options.doc + '/' + package
-   	call('sudo scp -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
+   	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
 		,env, 'Push package-yaml-file to ros-wiki ')        
 
