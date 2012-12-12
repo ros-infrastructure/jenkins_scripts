@@ -41,7 +41,7 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
     	print "Setting up environment"
     	env = get_environment()
     	env['INSTALL_DIR'] = os.getcwd()
-    	os.environ['WORKSPACE'] = env['INSTALL_DIR'] + '/build/' + stack_name
+    	env['STACK_BUILD_DIR'] = env['INSTALL_DIR'] + '/build/' + stack_name
     	env['ROS_PACKAGE_PATH'] = '%s:%s:%s:/opt/ros/%s/stacks'%(env['INSTALL_DIR']+'/'+STACK_DIR + '/' + stack_name,
                                                                  env['INSTALL_DIR']+'/'+DEPENDS_DIR,
                                                                  env['INSTALL_DIR']+'/'+DEPENDS_ON_DIR,
