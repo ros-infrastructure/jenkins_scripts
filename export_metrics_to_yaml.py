@@ -14,7 +14,7 @@ from roslib import stack_manifest
 import rosdistro
 from jobs_common import *
 
-
+env= get_environment()
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -241,7 +241,7 @@ class ExportYAML:
                
     def create_loc(self):
         filename = self.doc + '/' + 'code_quantity.yaml'
-	helper = subprocess.Popen(('cloc.pl %s --not-match-d=build --yaml --out %s'%(self.path, filename)).split(' '))
+	helper = subprocess.Popen(('cloc.pl %s --not-match-d=build --yaml --out %s'%(self.path, filename)).split(' '),env=env)
         helper.communicate()
                       
     def export(self):
