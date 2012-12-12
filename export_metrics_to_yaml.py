@@ -15,6 +15,7 @@ import rosdistro
 from jobs_common import *
 
 env= get_environment()
+env['INSTALL_DIR'] = os.getcwd()
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -241,6 +242,7 @@ class ExportYAML:
                
     def create_loc(self):
         filename = self.doc + '/' + 'code_quantity.yaml'
+        print "os.environ['WORKSPACE']: %s"%(os.environ['WORKSPACE'])
 	helper = subprocess.Popen(('%s/jenkins_scripts/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path, filename)).split(' '),env=env)
         helper.communicate()
                       
