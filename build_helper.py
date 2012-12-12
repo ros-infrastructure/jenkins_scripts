@@ -213,7 +213,7 @@ class HudsonHelper:
 	
     def build(self):
 	# Hudson sets the WORKSPACE env var
-        workspace = os.environ['WORKSPACE']
+        workspace = os.environ['STACK_BUILD_DIR']
 	    #workspace = '/tmp'
         os.environ['JOB_NAME'] = 'build'
 
