@@ -289,8 +289,12 @@ if __name__ == '__main__':
         print stack_dir
         doc_dir = options.doc + '/' + stack
         csv_dir = options.csv + '/' + stack
-        if not os.path.isdir(doc_dir):
-            os.makedirs(doc_dir)
+        if os.path.isdir(doc_dir):
+            shutil.rmtree(doc_dir)    
+        os.makedirs(doc_dir)
+	if os.path.isdir(csv_dir):
+            shutil.rmtree(csv_dir)    
+        os.makedirs(csv_dir)
         hh = ExportYAML(config, stack_dir, doc_dir, csv_dir)
         hh.export()
 	
@@ -304,8 +308,12 @@ if __name__ == '__main__':
         print package
         doc_dir = options.doc + '/' + package
         csv_dir = options.csv + '/' + package
-        if not os.path.isdir(doc_dir):
-            os.makedirs(doc_dir)
+        if os.path.isdir(doc_dir):
+            shutil.rmtree(doc_dir)    
+        os.makedirs(doc_dir)
+	if os.path.isdir(csv_dir):
+            shutil.rmtree(csv_dir)    
+        os.makedirs(csv_dir)
         hh = ExportYAML(config, package_dir, doc_dir, csv_dir)
         hh.export()
 	    
