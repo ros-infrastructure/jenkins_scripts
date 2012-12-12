@@ -60,7 +60,17 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
     
     	#distro = rosdistro.Distro(get_rosdistro_file(ros_distro))
 
-	    
+	# Create_new/remove_old STACK_DIR and build folder
+	stack_path = env['INSTALL_DIR']+'/'+STACK_DIR + '/'
+	if os.path.exists(stack_path):
+	    shutil.rmtree(stack_path)
+	os.makedirs(stack_path)
+
+	build_path = env['INSTALL_DIR'] + '/build/'
+	if os.path.exists(build_path):
+	    shutil.rmtree(build_path)
+	os.makedirs(build_path)
+	
         # Parse distro file
         rosdistro_obj = rosdistro.Distro(get_rosdistro_file(ros_distro))
         print 'Operating on ROS distro %s'%rosdistro_obj.release_name
