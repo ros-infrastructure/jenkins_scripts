@@ -63,12 +63,14 @@ class ExportYAML:
         self.path = path
         
         self.doc = doc
-        if not os.path.exists(doc):
-            os.makedirs(doc)
+	if os.path.exists(doc):
+	    shutil.rmtree(doc)
+        os.makedirs(doc)
           
         self.csv = csv
-        if not os.path.exists(csv):
-            os.makedirs(csv)
+	if os.path.exists(csv):
+	    shutil.rmtree(csv)
+        os.makedirs(csv)
           
         self.stack_files = [f for f in all_files(self.path)
             if f.endswith('stack.xml')]
