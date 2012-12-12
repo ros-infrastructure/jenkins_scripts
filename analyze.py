@@ -60,7 +60,7 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
     
     	#distro = rosdistro.Distro(get_rosdistro_file(ros_distro))
 
-	# Create_new/remove_old STACK_DIR and build folder
+	# Create_new/remove_old STACK_DIR,build,doc,cvs folder
 	stack_path = env['INSTALL_DIR']+'/'+STACK_DIR + '/'
 	if os.path.exists(stack_path):
 	    shutil.rmtree(stack_path)
@@ -70,6 +70,16 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
 	if os.path.exists(build_path):
 	    shutil.rmtree(build_path)
 	os.makedirs(build_path)
+	
+	doc_path = env['INSTALL_DIR'] + '/doc/'
+	if os.path.exists(doc_path):
+	    shutil.rmtree(doc_path)
+	os.makedirs(doc_path)
+
+	csv_path = env['INSTALL_DIR'] + '/csv/'
+	if os.path.exists(csv_path):
+	    shutil.rmtree(csv_path)
+	os.makedirs(csv_path)
 	
         # Parse distro file
         rosdistro_obj = rosdistro.Distro(get_rosdistro_file(ros_distro))
