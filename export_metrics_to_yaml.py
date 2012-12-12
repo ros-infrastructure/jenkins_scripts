@@ -3,6 +3,7 @@ import os
 from apt_parser import parse_apt
 import sys
 import os
+import shutil
 import optparse 
 import subprocess
 import traceback
