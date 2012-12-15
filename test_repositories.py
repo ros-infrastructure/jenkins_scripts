@@ -119,7 +119,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # get repo_list depends-on list
     print "Get list of wet repositories that build-depend on repo list %s"%', '.join(repo_list)
     depends_on = []
-    for d in distro.get_depends_on(repo_list)['build']:
+    for d in distro.get_depends_on(repo_list)['build'] + distro.get_depends_on(repo_list)['buildtool']:
         if not d in depends_on and not d in repo_list:
             depends_on.append(d)
     print "Build depends_on list of repo list: %s"%(', '.join(depends_on))
