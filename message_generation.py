@@ -32,6 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 import os
+import shutil
 from common import call, get_ros_env, BuildException
 
 catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
@@ -135,6 +136,50 @@ def generate_messages_dry(env, name, messages, services):
     if [t for t in targets if t.endswith("rospack_gensrv")] and services:
         call("make rospack_gensrv", env)
         print "Generated services for %s" % name
+
+def build_repo_messages_catkin_stacks(stacks, ros_distro, local_install_path):
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash' %ros_distro)
+
+    #Make sure to create the local install path if it doesn't exist
+    if os.path.exists(local_install_path):
+        shutil.rmtree(local_install_path)
+    os.makedirs(local_install_path)
+    os.makedirs(os.path.join(local_install_path, 'lib/python2.7/dist-packages'))
+    os.makedirs(os.path.join(local_install_path, 'share'))
+    os.makedirs(os.path.join(local_install_path, 'bin'))
+    build_errors = []
+
+    for stack, path in stacks.iteritems():
+        #check to see if the stack is catkin or not
+        cmake_file = os.path.join(path, 'CMakeLists.txt')
+
+        catkin = False
+        with open(cmake_file, 'r') as f:
+            read_file = f.read()
+            if 'catkin_stack' in read_file:
+                catkin = True
+
+        #if the stack is a catkin stack, we want to build and install it locally
+        if catkin:
+            old_dir = os.getcwd()
+            os.chdir(path)
+            if not os.path.exists('build'):
+                os.makedirs('build')
+            os.chdir('build')
+            try:
+                call("cmake -DCMAKE_INSTALL_PREFIX:PATH=%s .." % local_install_path, ros_env)
+                call("make", ros_env)
+                call("make install", ros_env)
+            except BuildException as e:
+                print "FAILED TO BUILD %s, messages for this package cannot be generated." % (stack)
+                print "Failure on %s, with env path %s" % (stack, ros_env)
+                print "Exception: %s" % e
+                build_errors.append(stack)
+            os.chdir(old_dir)
+
+    #We'll throw the appropriate stuff on our python path
+    export = "export PYTHONPATH=%s/lib/python2.7/dist-packages:$PYTHONPATH" % local_install_path
+    return (export, build_errors)
         
 def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
     #Now, we go through all of our manifest packages and try to generate
@@ -175,10 +220,11 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
             #TODO: Note that this will not generate messages, we can try to put this in later
             #but fuerte catkin makes it kind of hard to do correctly
             if catkin:
-                print "Creating an export line that guesses the appropriate python paths for each package"
-                print "WARNING: This will not properly generate message files within this repo for python documentation."
-                if os.path.isdir(os.path.join(path, 'src')):
-                    path_string = "%s:%s" %(os.path.join(path, 'src'), path_string)
+                print "Not doing anything for catkin package"
+                #print "Creating an export line that guesses the appropriate python paths for each package"
+                #print "WARNING: This will not properly generate message files within this repo for python documentation."
+                #if os.path.isdir(os.path.join(path, 'src')):
+                #    path_string = "%s:%s" %(os.path.join(path, 'src'), path_string)
 
             #If it's not catkin, then we'll generate python messages
             else:

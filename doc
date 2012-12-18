@@ -124,7 +124,7 @@ def main():
     #Install rosdoc lite
     print "Installing ros and rosdoc_lite..."
     #TODO Hack for electric
-    if ros_distro == 'electric':
+    if ros_distro == 'electric' or os.environ['OS_PLATFORM'] == 'lucid':
         call("apt-get install python-pip python-setuptools build-essential --yes")
         call("pip install kitchen")
     else:
