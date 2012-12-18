@@ -106,7 +106,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Generate the command we'll use to document the stack
         command = ['bash', '-c', '%s \
                    && export ROS_PACKAGE_PATH=%s:$ROS_PACKAGE_PATH \
-                   && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml' \
+                   && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml -q' \
                    %(' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path) ]
         print "Executing %s" % command
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)

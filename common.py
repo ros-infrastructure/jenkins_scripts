@@ -181,7 +181,7 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     for name, path in catkin_packages.iteritems():
         pkg_info = packages.parse_package(path)
         depends.extend([d.name \
-                        for d in pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends \
+                        for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends \
                         if not d.name in catkin_packages and not d.name in depends])
 
     #Next, we build the manifest deps for stacks
@@ -219,7 +219,7 @@ def build_local_dependency_graph(catkin_packages, manifest_packages):
     for name, path in catkin_packages.iteritems():
         depends[name] = []
         pkg_info = packages.parse_package(path)
-        for d in pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends:
+        for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends:
             if d.name in catkin_packages and d.name != name:
                 depends[name].append(d.name)
 
