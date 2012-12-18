@@ -108,7 +108,6 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                    && export ROS_PACKAGE_PATH=%s:$ROS_PACKAGE_PATH \
                    && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml -q' \
                    %(' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path) ]
-        print "Executing %s" % command
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         #proc = subprocess.Popen(command)
         proc.communicate()
@@ -162,9 +161,9 @@ def document_repo(workspace, docspace, ros_distro, repo,
     #Walk through the installed repositories and find old-style packages, new-stye packages, and stacks
     stacks, manifest_packages, catkin_packages, repo_map = build_repo_structure(repo_path, doc_conf, depends_conf)
     print "Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys())
-    print "Catkin packages: %s" % catkin_packages
-    print "Manifest packages: %s" % manifest_packages
-    print "Stacks: %s" % stacks
+    #print "Catkin packages: %s" % catkin_packages
+    #print "Manifest packages: %s" % manifest_packages
+    #print "Stacks: %s" % stacks
 
     #Load information about existing tags
     tags_db = TagsDb(ros_distro, workspace)
