@@ -54,12 +54,19 @@ rosbuild_init()
 {gensrv}"""
 
 #We want to remove all export lines from package.xml and manifest.xml files
+#that are not rosdoc or metpackage related
 def remove_export_tags(path):
     import xml.etree.ElementTree as ElementTree
     et = ElementTree.parse(path)
     root = et.getroot()
     for export in root.findall('export'):
-        root.remove(export)
+        to_remove = []
+        for child in export: 
+            print child.tag
+            if child.tag not in ['metapackage', 'rosdoc']:
+                to_remove.append(child)
+        for child in to_remove:
+            export.remove(child)
     et.write(path)
 
 def replace_catkin_cmake_files(catkin_packages):
