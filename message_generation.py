@@ -145,6 +145,7 @@ def build_repo_messages_catkin_stacks(stacks, ros_distro, local_install_path):
         shutil.rmtree(local_install_path)
     os.makedirs(local_install_path)
     os.makedirs(os.path.join(local_install_path, 'lib/python2.7/dist-packages'))
+    os.makedirs(os.path.join(local_install_path, 'lib/python2.6/dist-packages'))
     os.makedirs(os.path.join(local_install_path, 'share'))
     os.makedirs(os.path.join(local_install_path, 'bin'))
     build_errors = []
