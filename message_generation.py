@@ -161,10 +161,12 @@ def build_repo_messages_catkin_stacks(stacks, ros_distro, local_install_path):
         cmake_file = os.path.join(path, 'CMakeLists.txt')
 
         catkin = False
-        with open(cmake_file, 'r') as f:
-            read_file = f.read()
-            if 'catkin_stack' in read_file:
-                catkin = True
+        #If a CMakeLists.txt file doesn't exist, we assume the stack is not catkinized
+        if os.path.isfile(cmake_file):
+            with open(cmake_file, 'r') as f:
+                read_file = f.read()
+                if 'catkin_stack' in read_file:
+                    catkin = True
 
         #if the stack is a catkin stack, we want to build and install it locally
         if catkin:
