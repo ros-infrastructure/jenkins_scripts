@@ -49,7 +49,8 @@ from doc_manifest import write_stack_manifest, write_distro_specific_manifest, w
 from repo_structure import get_repo_manifests, get_repo_packages, get_repositories_from_rosinstall, \
                            load_configuration, install_repo, build_repo_structure, rev_changes
 from message_generation import generate_messages_catkin, generate_messages_dry, \
-                               build_repo_messages_manifest, build_repo_messages
+                               build_repo_messages_manifest, build_repo_messages, \
+                               build_repo_messages_catkin_stacks
 
 def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages):
     apt_deps = []
@@ -58,7 +59,8 @@ def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_pac
     for dep in deps:
         if ros_dep.has_ros(dep):
             apt_dep = ros_dep.to_apt(dep)
-            apt_deps.extend(apt_dep)
+            if apt_dep and apt_dep[0]:
+                apt_deps.extend(apt_dep)
         else:
             apt_dep = "ros-%s-%s" % (ros_distro, dep.replace('_', '-'))
             if apt.has_package(apt_dep):
@@ -105,10 +107,10 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Generate the command we'll use to document the stack
         command = ['bash', '-c', '%s \
                    && export ROS_PACKAGE_PATH=%s:$ROS_PACKAGE_PATH \
-                   && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml' \
+                   && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml -q' \
                    %(' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path) ]
-        #proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-        proc = subprocess.Popen(command)
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+        #proc = subprocess.Popen(command)
         proc.communicate()
 
         #Some doc runs won't generate tag files, so we need to check if they
@@ -160,9 +162,9 @@ def document_repo(workspace, docspace, ros_distro, repo,
     #Walk through the installed repositories and find old-style packages, new-stye packages, and stacks
     stacks, manifest_packages, catkin_packages, repo_map = build_repo_structure(repo_path, doc_conf, depends_conf)
     print "Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys())
-    print "Catkin packages: %s" % catkin_packages
-    print "Manifest packages: %s" % manifest_packages
-    print "Stacks: %s" % stacks
+    #print "Catkin packages: %s" % catkin_packages
+    #print "Manifest packages: %s" % manifest_packages
+    #print "Stacks: %s" % stacks
 
     #Load information about existing tags
     tags_db = TagsDb(ros_distro, workspace)
@@ -242,9 +244,14 @@ def document_repo(workspace, docspace, ros_distro, repo,
         if source:
             sources.append(source)
 
+    #For fuerte catkin, we need to check if we should build catkin stacks
+    source, errs = build_repo_messages_catkin_stacks(stacks, ros_distro, os.path.join(docspace, 'local_installs'))
+    build_errors.extend(errs)
+    sources.append(source)
+
     #For all our manifest packages (dry or fuerte catkin) we want to build
-    #messages. Note, for fuerte catkin the messages arent' generated, TODO
-    #to come back and fix this if necessary
+    #messages. Note, for fuerte catkin, we have to build all the code and
+    #install locally to get message generation
     source, errs = build_repo_messages_manifest(manifest_packages, build_order, ros_distro)
     build_errors.extend(errs)
     sources.append(source)

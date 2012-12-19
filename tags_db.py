@@ -61,8 +61,6 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
             tags.append({'docs_url': '../../%s/html' % dep, 
                          'location': 'file://%s' % os.path.join(docspace, relative_tags_path),
                          'package': '%s' % dep})
-        else:
-            print "DID NOT FIND TAG FILE at: %s" % os.path.join(docspace, relative_tags_path)
 
     with open(rosdoc_tagfile, 'w+') as tags_file:
         yaml.dump(tags, tags_file)

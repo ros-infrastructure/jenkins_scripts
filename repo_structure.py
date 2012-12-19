@@ -107,7 +107,7 @@ def get_repo_manifests(repo_folder, manifest='package'):
 
     location_cache = {}
 
-    print rospkg.list_by_path(manifest_type, repo_folder, location_cache)
+    rospkg.list_by_path(manifest_type, repo_folder, location_cache)
 
     return location_cache
 
@@ -186,7 +186,7 @@ def build_repo_structure(repo_path, doc_conf, depends_conf):
     for item in local_info:
         local_name = item['name']
         local_path = os.path.join(repo_path, local_name)
-        print "Looking for the following packages in %s" % local_path
+        print "Looking for the packages in %s" % local_path
         local_stacks = get_repo_manifests(local_path, manifest='stack')
         local_manifest_packages = get_repo_manifests(local_path, manifest='package')
         local_catkin_packages = get_repo_packages(local_path)

@@ -163,6 +163,14 @@ def call_with_list(command, envir=None, verbose=True):
 def call(command, envir=None, verbose=True):
     return call_with_list(command.split(' '), envir, verbose)
 
+def get_catkin_stack_deps(xml_path):
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    return list(set([d.text for d in root.findall('depends')] \
+                 + [d.text for d in root.findall('build_depends')] \
+                 + [d.text for d in root.findall('run_depends')]))
+
 def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     append_pymodules_if_needed()
     from catkin_pkg import packages
@@ -173,17 +181,20 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     for name, path in catkin_packages.iteritems():
         pkg_info = packages.parse_package(path)
         depends.extend([d.name \
-                        for d in pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends \
+                        for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends \
                         if not d.name in catkin_packages and not d.name in depends])
 
     #Next, we build the manifest deps for stacks
     for name, path in stacks.iteritems():
         stack_manifest = rospkg.parse_manifest_file(path, rospkg.STACK_FILE)
-        depends.extend([d.name \
-                        for d in stack_manifest.depends + stack_manifest.rosdeps \
-                        if not d.name in catkin_packages \
-                        and not d.name in stacks \
-                        and not d.name in depends])
+        if stack_manifest.is_catkin:
+            depends.extend(get_catkin_stack_deps(os.path.join(path, 'stack.xml')))
+        else:
+            depends.extend([d.name \
+                            for d in stack_manifest.depends + stack_manifest.rosdeps \
+                            if not d.name in catkin_packages \
+                            and not d.name in stacks \
+                            and not d.name in depends])
 
     #Next, we build manifest deps for packages
     for name, path in manifest_packages.iteritems():
@@ -208,7 +219,7 @@ def build_local_dependency_graph(catkin_packages, manifest_packages):
     for name, path in catkin_packages.iteritems():
         depends[name] = []
         pkg_info = packages.parse_package(path)
-        for d in pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends:
+        for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends:
             if d.name in catkin_packages and d.name != name:
                 depends[name].append(d.name)
 
