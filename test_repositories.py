@@ -136,7 +136,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     print "Created rosinstall file for depends on"
 
     # install all repository and system dependencies of the depends_on list
-    print "Install all depends_on from source"
+    print "Install all depends_on from source: %s"%(', '.join(depends_on))
     os.makedirs(dependson_sourcespace)
     call("rosinstall --catkin %s %s/depends_on.rosinstall"%(dependson_sourcespace, workspace))
 
