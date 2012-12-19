@@ -249,8 +249,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
     sources.append(source)
 
     #For all our manifest packages (dry or fuerte catkin) we want to build
-    #messages. Note, for fuerte catkin the messages arent' generated, TODO
-    #to come back and fix this if necessary
+    #messages. Note, for fuerte catkin, we have to build all the code and
+    #install locally to get message generation
     source, errs = build_repo_messages_manifest(manifest_packages, build_order, ros_distro)
     build_errors.extend(errs)
     sources.append(source)
