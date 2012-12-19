@@ -59,7 +59,8 @@ def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_pac
     for dep in deps:
         if ros_dep.has_ros(dep):
             apt_dep = ros_dep.to_apt(dep)
-            apt_deps.extend(apt_dep)
+            if apt_dep and apt_dep[0]:
+                apt_deps.extend(apt_dep)
         else:
             apt_dep = "ros-%s-%s" % (ros_distro, dep.replace('_', '-'))
             if apt.has_package(apt_dep):
