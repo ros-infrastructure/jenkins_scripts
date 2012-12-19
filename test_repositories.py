@@ -136,13 +136,20 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     print "Created rosinstall file for depends on"
 
     # install all repository and system dependencies of the depends_on list
-    print "Install all depends_on from source"
+    print "Install all depends_on from source: %s"%(', '.join(depends_on))
     os.makedirs(dependson_sourcespace)
     call("rosinstall --catkin %s %s/depends_on.rosinstall"%(dependson_sourcespace, workspace))
 
     # get build and test dependencies of depends_on list
     dependson_build_dependencies = []
     for d in get_dependencies(dependson_sourcespace, build_depends=True, test_depends=False):
+        print "  Checking dependency %s"%d
+        if d in dependson_build_dependencies:
+            print "    Already in dependson_build_dependencies"
+        if d in depends_on:
+            print "    Is a direct dependency of the repo list, and is installed from source"
+        if d in repo_list:
+            print "    Is on of the repositories tested"
         if not d in dependson_build_dependencies and not d in depends_on and not d in repo_list:
             dependson_build_dependencies.append(d)
     print "Build dependencies of depends_on list are %s"%(', '.join(dependson_build_dependencies))
