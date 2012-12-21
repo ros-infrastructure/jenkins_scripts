@@ -38,7 +38,7 @@ from common import call, call_with_list, BuildException
 import subprocess
 import time
 
-def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_deps, docspace, ros_distro):
+def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_deps, docspace, ros_distro, tags_location):
     #Get the relevant tags from the database
     tags = []
 
@@ -48,6 +48,8 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
             #bad things happen when we do this
             for tag in tags_db.get_tags(dep):
                 if tag['package'] != current_package:
+                    #build the full path to the tagfiles
+                    tag['location'] = 'file://%s' % os.path.join(tags_location, 'tags', tag['location'])
                     tags.append(tag)
 
     #Add tags built locally in dependency order
@@ -56,7 +58,7 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
         if dep == current_package:
             break
 
-        relative_tags_path = "doc/%s/api/%s/tags/%s.tag" % (ros_distro, dep, dep)
+        relative_tags_path = "doc/%s/tags/%s.tag" % (ros_distro, dep)
         if os.path.isfile(os.path.join(docspace, relative_tags_path)):
             tags.append({'docs_url': '../../%s/html' % dep, 
                          'location': 'file://%s' % os.path.join(docspace, relative_tags_path),

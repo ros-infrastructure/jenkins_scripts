@@ -82,7 +82,7 @@ def get_full_apt_deps(apt_deps, apt):
 def document_packages(manifest_packages, catkin_packages, build_order,
                       repos_to_doc, sources, tags_db, full_apt_deps,
                       ros_dep, repo_map, repo_path, docspace, ros_distro,
-                      homepage, doc_job):
+                      homepage, doc_job, tags_location):
     repo_tags = {}
     for package in build_order:
         #don't document packages that we're supposed to build but not supposed to document
@@ -97,11 +97,11 @@ def document_packages(manifest_packages, catkin_packages, build_order,
             package_path = manifest_packages[package]
 
         #Build a tagfile list from dependencies for use by rosdoc
-        build_tagfile(full_apt_deps, tags_db, 'rosdoc_tags.yaml', package, build_order, docspace, ros_distro)
+        build_tagfile(full_apt_deps, tags_db, 'rosdoc_tags.yaml', package, build_order, docspace, ros_distro, tags_location)
 
         relative_doc_path = "%s/doc/%s/api/%s" % (docspace, ros_distro, package)
         pkg_doc_path = os.path.realpath(relative_doc_path)
-        relative_tags_path = "%s/api/%s/tags/%s.tag" % (ros_distro, package, package)
+        relative_tags_path = "%s/tags/%s.tag" % (ros_distro, package)
         tags_path = os.path.realpath("%s/doc/%s" % (docspace, relative_tags_path))
         print "Documenting %s [%s]..." % (package, package_path)
         #Generate the command we'll use to document the stack
@@ -116,7 +116,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Some doc runs won't generate tag files, so we need to check if they
         #exist before adding them to the list
         if(os.path.exists(tags_path)):
-            package_tags = {'location':'%s/%s'%(homepage, relative_tags_path),
+            package_tags = {'location':'%s' % (os.path.basename(relative_tags_path)),
                                  'docs_url':'../../../api/%s/html'%(package),
                                  'package':'%s'%package}
 
@@ -256,10 +256,16 @@ def document_repo(workspace, docspace, ros_distro, repo,
     build_errors.extend(errs)
     sources.append(source)
 
+    #We want to pull all the tagfiles available once from the server
+    tags_location = os.path.join(workspace, ros_distro)
+    command = ['bash', '-c', 
+               'rsync -e "ssh -o StrictHostKeyChecking=no" -qrz rosbuild@ros.org:/var/www/www.ros.org/html/doc/%s/tags %s' % (ros_distro, tags_location)]
+    call_with_list(command)
+
     repo_tags = document_packages(manifest_packages, catkin_packages, build_order,
                                   repos_to_doc, sources, tags_db, full_apt_deps,
                                   ros_dep, repo_map, repo_path, docspace, ros_distro,
-                                  homepage, doc_job)
+                                  homepage, doc_job, tags_location)
 
     doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
 
