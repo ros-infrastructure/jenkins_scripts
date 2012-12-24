@@ -37,6 +37,7 @@ import shutil
 from common import call, call_with_list, BuildException
 import subprocess
 import time
+import copy
 
 def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_deps, docspace, ros_distro, tags_location):
     #Get the relevant tags from the database
@@ -48,9 +49,10 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
             #bad things happen when we do this
             for tag in tags_db.get_tags(dep):
                 if tag['package'] != current_package:
+                    tag_copy = copy.deepcopy(tag)
                     #build the full path to the tagfiles
-                    tag['location'] = 'file://%s' % os.path.join(tags_location, 'tags', tag['location'])
-                    tags.append(tag)
+                    tag_copy['location'] = 'file://%s' % os.path.join(tags_location, 'tags', tag['location'])
+                    tags.append(tag_copy)
 
     #Add tags built locally in dependency order
     for dep in ordered_deps:
