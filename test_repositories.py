@@ -94,15 +94,16 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     call("cmake %s"%repo_sourcespace, ros_env)
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
 
-    # build repositories
+    # build repositories and tests
     print "Build repo list"
     print "CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
     call("make", ros_env)
+    call("make tests", ros_env)
 
-    # get the repositories test dependencies
+    # get the repositories test and run dependencies
     print "Get test dependencies of repo list"
     repo_test_dependencies = get_dependencies(repo_sourcespace, build_depends=False, test_depends=True)
-    print "Install test dependencies of repo list: %s"%(', '.join(repo_test_dependencies))
+    print "Install test and run dependencies of repo list: %s"%(', '.join(repo_test_dependencies))
     apt_get_install(repo_test_dependencies, rosdep)
 
     # run tests

@@ -276,7 +276,7 @@ def get_dependencies(source_folder, build_depends=True, test_depends=True):
                 if not d.name in depends and not d.name in local_packages:
                     depends.append(d.name)
         if test_depends:
-            for d in pkg.test_depends:
+            for d in pkg.test_depends + pkg.run_depends:
                 if not d.name in depends and not d.name in local_packages:
                     depends.append(d.name)
 
