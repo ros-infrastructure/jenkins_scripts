@@ -6,11 +6,12 @@ import string
 import fnmatch
 import shutil
 import optparse
+import shutil
 from common import *
 from time import sleep
 
 
-def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on):
+def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False):
     print "Testing on distro %s"%ros_distro
     print "Testing repositories %s"%', '.join(repo_list)
     print "Testing versions %s"%', '.join(version_list)
@@ -23,7 +24,15 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     shutil.rmtree(os.path.join(workspace, 'tmp'), ignore_errors=True)
 
     # set directories
-    tmpdir = os.path.join('/tmp', 'test_repositories')
+    if build_in_workspace:
+        tmpdir = os.path.join(workspace, 'test_repositories')
+    else:
+        tmpdir = os.path.join('/tmp', 'test_repositories')
+
+    try:
+        shutil.rmtree(tmpdir)
+    except:
+        print "Temp folder did not exist yet"
     repo_sourcespace = os.path.join(tmpdir, 'src_repository')
     dependson_sourcespace = os.path.join(tmpdir, 'src_depends_on')
     repo_buildspace = os.path.join(tmpdir, 'build_repository')
@@ -31,10 +40,12 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
     # Add ros sources to apt
     print "Add ros sources to apt"
-    with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:
-        f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main"%os.environ['OS_PLATFORM'])
-    call("wget http://packages.ros.org/ros.key -O %s/ros.key"%workspace)
-    call("apt-key add %s/ros.key"%workspace)
+    ros_apt = '/etc/apt/sources.list.d/ros-latest.list'
+    if not os.path.exists(ros_apt):
+        with open(ros_apt, 'w') as f:
+            f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main"%os.environ['OS_PLATFORM'])
+        call("wget http://packages.ros.org/ros.key -O %s/ros.key"%workspace)
+        call("apt-key add %s/ros.key"%workspace)
     call("apt-get update")
 
     # install stuff we need

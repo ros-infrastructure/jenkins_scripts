@@ -34,7 +34,10 @@ class RosDepResolver:
 
         print "Ininitalize rosdep database"
         call("apt-get install --yes lsb-release python-rosdep")
-        call("rosdep init", self.env)
+        try:
+            call("rosdep init", self.env)
+        except:
+            print "Rosdep is already initialized"
         call("rosdep update", self.env)
 
         print "Building dictionaries from a rosdep's db"
