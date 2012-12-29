@@ -41,7 +41,8 @@ import shutil
 import subprocess
 import copy
 import time
-from common import call, call_with_list, append_pymodules_if_needed, RosDepResolver, \
+import rosdep
+from common import call, call_with_list, append_pymodules_if_needed,  \
                    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
                    copy_test_results
 from tags_db import TagsDb, build_tagfile
@@ -194,7 +195,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     tags_db.set_rosinstall_hashes(repo, repo_hashes)
 
     #Get any non local apt dependencies
-    ros_dep = RosDepResolver(ros_distro)
+    ros_dep = rosdep.RosDepResolver(ros_distro)
     import rosdistro
     if ros_distro == 'electric':
         apt = rosdistro.AptDistro(platform, arch, shadow=False)
