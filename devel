@@ -20,8 +20,8 @@ def main():
         options.workspace = os.environ['WORKSPACE']
 
     print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
-    test_repositories(ros_distro, repositories, versions, options.workspace, 
-                      test_depends_on=False, build_in_workspace=options.build_in_workspace, sudo=options.sudo)
+    test_repositories(ros_distro, repositories, versions, options.workspace, test_depends_on=False, 
+                      build_in_workspace=options.build_in_workspace, sudo=options.sudo)
 
 
 
