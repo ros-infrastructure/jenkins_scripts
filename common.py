@@ -282,7 +282,7 @@ def get_dependencies(source_folder, build_depends=True, test_depends=True):
     append_pymodules_if_needed()
     from catkin_pkg import packages
     pkgs = packages.find_packages(source_folder)
-    local_packages = [p.split('/')[-1] for p in pkgs.keys()]
+    local_packages = [p.name for p in pkgs.values()]
     if len(pkgs) > 0:
         print "In folder %s, found packages %s"%(source_folder, ', '.join(local_packages))
     else:
