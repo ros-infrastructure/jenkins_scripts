@@ -172,11 +172,8 @@ def call_with_list(command, envir=None, verbose=True):
         output = helper.stdout.readline()
         if output != '':
             res += output
-            print output[:-1]
-#    res, err = helper.communicate()
-#    if verbose:
-#        print str(res)
-#    print str(err)
+            if verbose:
+                print output[:-1]
     if helper.returncode != 0:
         msg = "Failed to execute command '%s'"%command
         print "/!\  %s"%msg
