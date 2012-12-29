@@ -16,9 +16,23 @@ def append_pymodules_if_needed():
 
 
 
-def apt_get_install(pkgs, rosdep):
+def apt_get_update(sudo=False):
+    if not sudo:
+        call("apt-get update")
+    else:
+        call("sudo apt-get update")        
+
+
+def apt_get_install(pkgs, rosdep=None, sudo=False):
+    cmd = "apt-get install --yes "
+    if sudo:
+        cmd = "sudo " + cmd
+
     if len(pkgs) > 0:
-        call("apt-get install --yes %s"%(' '.join(rosdep.to_aptlist(pkgs))))
+        if rosdep:
+            call(cmd + ' '.join(rosdep.to_aptlist(pkgs)))
+        else:
+            call(cmd + ' '.join(pkgs))
     else:
         print "Not installing anything from apt right now."
 
@@ -26,14 +40,14 @@ def apt_get_install(pkgs, rosdep):
 
 
 class RosDepResolver:
-    def __init__(self, ros_distro):
+    def __init__(self, ros_distro, sudo=False):
         self.r2a = {}
         self.a2r = {}
         self.env = os.environ
         self.env['ROS_DISTRO'] = ros_distro
 
         print "Ininitalize rosdep database"
-        call("apt-get install --yes lsb-release python-rosdep")
+        apt_get_install(['lsb-release', 'python-rosdep'], sudo=sudo)
         try:
             call("rosdep init", self.env)
         except:
