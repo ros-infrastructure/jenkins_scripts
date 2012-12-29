@@ -167,10 +167,16 @@ def get_ros_env(setup_file):
 def call_with_list(command, envir=None, verbose=True):
     print "Executing command '%s'"%' '.join(command)
     helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, env=envir)
-    res, err = helper.communicate()
-    if verbose:
-        print str(res)
-    print str(err)
+    res = ""
+    while helper.poll() is None:
+        output = helper.stdout.readline()
+        if output != '':
+            res += output
+            print output[:-1]
+#    res, err = helper.communicate()
+#    if verbose:
+#        print str(res)
+#    print str(err)
     if helper.returncode != 0:
         msg = "Failed to execute command '%s'"%command
         print "/!\  %s"%msg
