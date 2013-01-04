@@ -14,6 +14,7 @@ import roslib; roslib.load_manifest("job_generation")
 from roslib import stack_manifest
 import rosdistro
 from jobs_common import *
+import urllib2
 
 env= get_environment()
 env['INSTALL_DIR'] = os.getcwd()
@@ -33,6 +34,14 @@ def get_options(required, optional):
     if 'config' in ops:
         parser.add_option('--config', dest = 'config', default=None, action='store',
                           help='config file')
+	
+    if 'distro' in ops:
+        parser.add_option('--distro', dest = 'distro', default=None, action='store',
+                          help='distro name')    
+
+    if 'stack' in ops:
+        parser.add_option('--stack', dest = 'stack', default=None, action='store',
+                          help='stack name')  
                           
     (options, args) = parser.parse_args()
 
@@ -57,12 +66,16 @@ class Metric:
         self.uniqueids = {}
         self.histogram_labels = []
         self.histogram_counts = []
+	self.histogram_names = []
+	self.histogram_filenames = []
+	self.uri = []
                     
 class ExportYAML:
-    def __init__(self, config, path, doc, csv):
+    def __init__(self, config, path, doc, csv, distro, stack):
         self.config = config
         self.path = path
-        
+        self.distro = distro
+	self.stack = stack
         self.doc = doc
 	if os.path.exists(doc):
 	    shutil.rmtree(doc)
@@ -133,9 +146,13 @@ class ExportYAML:
         if not metric in self.metrics:
             return;
         data = []
+    	data_param_names = []
+	data_param_filenames = []
 	array = self.metrics[metric].data
 	for d in array:
             data.append(float(d[4]))
+	    data_param_names.append(str(d[2]))
+	    data_param_filenames.append(str(d[5]))
         bin_size = (float(maxval) - float(minval))/(int(numbins))
         histogram_bins = [float(minval)+bin_size*x for x in range(numbins+1)]
         histogram_labels = []
@@ -149,10 +166,31 @@ class ExportYAML:
         histogram_labels[-1] = '>' + histogram_labels[-1]
         
         (hist,bin_edges) = numpy.histogram(data, histogram_bins)
+
+	# Append data to histogram 
         m = self.metrics[metric]
         for i in range(len(hist)):
             m.histogram_counts.append(hist[i])
             m.histogram_labels.append(histogram_labels[i])
+
+	for i in range(len(data_param_names)):
+	    m.histogram_names.append(data_param_names[i])
+
+	for i in range(len(data_param_filenames)):
+	    m.histogram_filenames.append(data_param_filenames[i])
+
+	# Parse distro file
+        rosdistro_obj = rosdistro.Distro(get_rosdistro_file(self.distro))
+	
+	# Get uri
+	vcs = rosdistro_obj.stacks[self.stack].vcs_config
+	if vcs.type == 'svn':
+	    uri = vcs.anon_dev
+	elif vcs.type == 'hg' or vcs.type == 'git' or vcs.type == 'bzr':
+	    uri = vcs.anon_repo_uri
+	
+	# Append uri to histogram
+	m.uri.append(uri)
 
     def process_met_file(self, met_file):
         stack = self.get_stack(met_file)
@@ -191,7 +229,7 @@ class ExportYAML:
                 #metric.data.append([stack,package,name,cmd,val,filename])
                 uniqueid = filename+name
                 if not uniqueid in metric.uniqueids:                        
-                    metric.data.append([stack,package,name,cmd,val])
+                    metric.data.append([stack,package,name,cmd,val,filename])
                     metric.uniqueids[uniqueid] = True
         
         met.close()
@@ -206,7 +244,10 @@ class ExportYAML:
             metric = self.metrics[m]
             config = self.config['metrics'][m]
             config['histogram_bins'] = [b for b in metric.histogram_labels] 
-            config['histogram_counts'] = [int(b) for b in metric.histogram_counts] 
+            config['histogram_counts'] = [int(b) for b in metric.histogram_counts]
+	    config['histogram_names'] = [b for b in metric.histogram_names] 
+	    config['histogram_filenames'] = [b for b in metric.histogram_filenames] 
+	    config['uri'] = [b for b in metric.uri]  
 	    d[m] = config
             
         #print yaml.dump(d)
@@ -273,7 +314,7 @@ class ExportYAML:
         self.create_loc()
         
 if __name__ == '__main__':   
-    (options, args) = get_options(['path', 'config'], ['doc','csv'])
+    (options, args) = get_options(['path', 'config', 'distro', 'stack'], ['doc','csv'])
     if not options:
         exit(-1)
     
@@ -295,7 +336,7 @@ if __name__ == '__main__':
 	if os.path.isdir(csv_dir):
             shutil.rmtree(csv_dir)    
         os.makedirs(csv_dir)
-        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir)
+        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir, options.distro, options.stack)
         hh.export()
 	
 	        
@@ -314,7 +355,6 @@ if __name__ == '__main__':
 	if os.path.isdir(csv_dir):
             shutil.rmtree(csv_dir)    
         os.makedirs(csv_dir)
-        hh = ExportYAML(config, package_dir, doc_dir, csv_dir)
+        hh = ExportYAML(config, package_dir, doc_dir, csv_dir, options.distro, options.stack)
         hh.export()
 	    
-
