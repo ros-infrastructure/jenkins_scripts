@@ -88,8 +88,8 @@ def call_with_list(command, envir=None, verbose=True):
     while helper.poll() is None:
         output = helper.stdout.readline()
         res += output
-        if verbose:
-            print output[:-1]
+    if verbose:
+        print res
     if helper.returncode != 0:
         msg = "Failed to execute command '%s'"%command
         print "/!\  %s"%msg
