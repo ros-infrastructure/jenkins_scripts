@@ -62,7 +62,7 @@ def remove_export_tags(path):
     for export in root.findall('export'):
         to_remove = []
         for child in export: 
-            if child.tag not in ['metapackage', 'rosdoc']:
+            if child.tag not in ['metapackage', 'rosdoc', 'deprecated']:
                 to_remove.append(child)
         for child in to_remove:
             export.remove(child)
