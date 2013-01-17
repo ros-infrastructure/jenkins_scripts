@@ -68,6 +68,7 @@ class Metric:
         self.histogram_counts = []
 	self.histogram_names = []
 	self.histogram_filenames = []
+        self.metric_average = []
 	self.uri = []
                     
 class ExportYAML:
@@ -167,6 +168,17 @@ class ExportYAML:
         
         (hist,bin_edges) = numpy.histogram(data, histogram_bins)
 
+
+        # Calculate average of metric	
+    	metric_average = 0.0
+    	counts_sum = 0.0
+    	for i in range(len(data)):
+            metric_average += float(data[i])
+	    counts_sum += 1
+    	metric_average /= counts_sum
+    	metric_average = round(metric_average, 2)
+
+
 	# Append data to histogram 
         m = self.metrics[metric]
         for i in range(len(hist)):
@@ -178,6 +190,8 @@ class ExportYAML:
 
 	for i in range(len(data_param_filenames)):
 	    m.histogram_filenames.append(data_param_filenames[i])
+
+	m.metric_average.append(metric_average)
 
 	# Parse distro file
         rosdistro_obj = rosdistro.Distro(get_rosdistro_file(self.distro))
@@ -247,6 +261,7 @@ class ExportYAML:
             config['histogram_counts'] = [int(b) for b in metric.histogram_counts]
 	    config['histogram_names'] = [b for b in metric.histogram_names] 
 	    config['histogram_filenames'] = [b for b in metric.histogram_filenames] 
+	    config['metric_average'] = [b for b in metric.metric_average] 
 	    config['uri'] = [b for b in metric.uri]  
 	    d[m] = config
             
