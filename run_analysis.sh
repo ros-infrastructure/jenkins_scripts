@@ -15,40 +15,35 @@ if [ "$ROS_DISTRO" == 'electric' ] ; then
     sudo apt-get install apt-utils ia32-libs python-rosinstall python-rospkg python-tk openssh-server ros-electric-ros-release --yes
     source /opt/ros/$ROS_DISTRO/setup.sh
     sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/ros/rostoolchain.cmake
+    source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
     python $WORKSPACE/jenkins_scripts/analyze.py $ROS_DISTRO $STACK_NAME
 
 elif [ "$ROS_DISTRO" == 'fuerte' ] ; then
     echo "Using rosdistro fuerte"
-    # ia32-libs
-    sudo apt-get install apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-fuerte-ros --yes
+    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-fuerte-ros-comm --yes
     source /opt/ros/$ROS_DISTRO/setup.bash
-    svn co https://code.ros.org/svn/ros/stacks/ros_release/trunk $HOME/fuerte_workspace/ros_release
-    export ROS_PACKAGE_PATH=$HOME/fuerte_workspace:$ROS_PACKAGE_PATH
-    cd $HOME/fuerte_workspace/ros_release && rosmake
+    sudo rosdep init
+    rosdep update
+    sudo easy_install ros-job-generation
     sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake
+    source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
     python $WORKSPACE/jenkins_scripts/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
 
 elif [ "$ROS_DISTRO" == 'groovy' ] ; then
     echo "Using rosdistro groovy"
-    # ia32-libs
-    sudo apt-get install apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-ros-base --yes
+    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-ros-base --yes
     sudo rosdep init
     rosdep update
     source /opt/ros/$ROS_DISTRO/setup.bash
-    #svn co https://code.ros.org/svn/ros/stacks/ros_release/trunk $HOME/groovy_workspace/ros_release
-    svn co https://code.ros.org/svn/ros/stacks/ros_release/branches/groovy/ $HOME/groovy_workspace/ros_release
-    export ROS_PACKAGE_PATH=$HOME/groovy_workspace:$ROS_PACKAGE_PATH
-    cd $HOME/groovy_workspace/ros_release && rosmake
+    sudo easy_install ros-job-generation
     sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/core/rosbuild/rostoolchain.cmake
     cd $WORKSPACE
+    source $HOME/chroot_configs/set_qacpp_path.sh
+
     # call analysis
     python $WORKSPACE/jenkins_scripts/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
 fi
-
-
-
-source $HOME/chroot_configs/set_qacpp_path.sh
