@@ -34,7 +34,7 @@ metrics:
         histogram_minval: 0
         histogram_maxval: 10
         histogram_recommendedMin: 0
-        histogram_recommandedMax: 5
+        histogram_recommendedMax: 5
         histogram_title_xaxis: Number of function parameters (STPAR)
         histogram_title_yaxis: Number of functions
         data_type: int
