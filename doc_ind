@@ -17,7 +17,7 @@ echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.li
 wget http://packages.ros.org/ros.key -O $WORKSPACE/ros.key
 apt-key add $WORKSPACE/ros.key
 apt-get update
-apt-get install python-catkin-sphinx --yes
+apt-get install python-catkin-sphinx rsync --yes
 
 DOC_DIR="$WORKSPACE/documentation_gen"
 
