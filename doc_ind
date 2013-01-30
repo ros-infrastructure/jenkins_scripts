@@ -31,12 +31,18 @@ do
 done
 
 DIRS="`find . -maxdepth 1 -mindepth 1 -type d -exec basename '{}' \;`"
+export PYTHONPATH=""
+
+for d in $DIRS
+do
+  export PYTHONPATH=$DOC_DIR/$d/src:$PYTHONPATH
+done
+
 for d in $DIRS
 do
   echo "DOCUMENTING $d"
   cd $d/doc
   #make upload
-  export PYTHONPATH="$DOC_DIR/$d/src"
   make html
   chmod -R g+w _build/html/
   scp -pr _build/html/ rosbuild@ros.org:/var/www/www.ros.org/html/doc_ind/api/$d
