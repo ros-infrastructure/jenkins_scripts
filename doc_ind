@@ -50,7 +50,7 @@ do
   make html
   if [ -d "_build/html" ]; then
     chmod -R g+w _build/html/
-    rsync -e "ssh -o StrictHostKeyChecking=no" -qr _build/html/ rosbuild@wgs32:/var/www/www.ros.org/html/doc/independent/api/$d
+    rsync -e "ssh -o StrictHostKeyChecking=no" -qr _build/html/ rosbuild@wgs32:/var/www/www.ros.org/html/doc/independent/api/$d/html
   fi
   cd ../../
   echo "--------------------------------"
