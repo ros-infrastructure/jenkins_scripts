@@ -38,6 +38,8 @@ do
   export PYTHONPATH=$DOC_DIR/$d/src:$PYTHONPATH
 done
 
+echo "PTYHON PATH IS: $PYTHONPATH"
+
 for d in $DIRS
 do
   echo "DOCUMENTING $d"
