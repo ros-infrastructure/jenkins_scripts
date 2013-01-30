@@ -45,7 +45,7 @@ do
   #make upload
   make html
   chmod -R g+w _build/html/
-  scp -pr _build/html/ rosbuild@ros.org:/var/www/www.ros.org/html/doc_ind/api/$d
+  rsync -e "ssh -o StrictHostKeyChecking=no" -qr _build/html rosbuild@wgs32:/var/www/www.ros.org/html/doc_ind/api/$d
   cd ../../
   echo "--------------------------------"
 done
