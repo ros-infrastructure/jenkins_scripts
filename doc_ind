@@ -20,7 +20,6 @@ apt-get update
 apt-get install python-catkin-sphinx --yes
 
 DOC_DIR="$WORKSPACE/documentation_gen"
-PYTHONPATH=$DOC_DIR
 
 rm -rf $DOC_DIR
 mkdir $DOC_DIR
@@ -37,7 +36,7 @@ do
   echo "DOCUMENTING $d"
   cd $d/doc
   #make upload
-  make html
+  PYTHONPATH=$DOC_DIR make html
   chmod -R g+w _build/html/
   scp -pr _build/html/ rosbuild@ros.org:/var/www/www.ros.org/html/doc_ind/api/$d
   cd ../../
