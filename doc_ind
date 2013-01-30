@@ -20,6 +20,7 @@ apt-get update
 apt-get install python-catkin-sphinx --yes
 
 DOC_DIR="$WORKSPACE/documentation_gen"
+PYTHONPATH=$DOC_DIR
 
 rm -rf $DOC_DIR
 mkdir $DOC_DIR
