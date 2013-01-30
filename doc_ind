@@ -36,7 +36,7 @@ do
   echo "DOCUMENTING $d"
   cd $d/doc
   #make upload
-  PYTHONPATH=$DOC_DIR make html
+  PYTHONPATH=$DOC_DIR/$d/src make html
   chmod -R g+w _build/html/
   scp -pr _build/html/ rosbuild@ros.org:/var/www/www.ros.org/html/doc_ind/api/$d
   cd ../../
