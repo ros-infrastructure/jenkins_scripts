@@ -14,7 +14,7 @@ if [ "$ROS_DISTRO" == 'electric' ] ; then
     echo "Using rosdistro electric"
     sudo apt-get install apt-utils ia32-libs python-rosinstall python-rospkg python-tk openssh-server ros-electric-ros-release --yes
     source /opt/ros/$ROS_DISTRO/setup.sh
-    sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/ros/rostoolchain.cmake
+    sudo cp $HOME/chroot_configs/rostoolchain_lucid/rostoolchain.cmake /opt/ros/$ROS_DISTRO/ros/rostoolchain.cmake
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
@@ -27,7 +27,11 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] ; then
     sudo rosdep init
     rosdep update
     sudo easy_install ros-job-generation
-    sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake
+    if [ "$OS_PLATFORM" == 'precise' ] ; then
+        sudo cp $HOME/chroot_configs/rostoolchain_precise/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake
+    elif [ "$OS_PLATFORM" == 'lucid' ] ; then
+        sudo cp $HOME/chroot_configs/rostoolchain_lucid/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake
+    fi
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
@@ -35,12 +39,12 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] ; then
 
 elif [ "$ROS_DISTRO" == 'groovy' ] ; then
     echo "Using rosdistro groovy"
-    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-ros-base --yes
+    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-bfl --yes
     sudo rosdep init
     rosdep update
     source /opt/ros/$ROS_DISTRO/setup.bash
     sudo easy_install ros-job-generation
-    sudo cp $HOME/chroot_configs/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/core/rosbuild/rostoolchain.cmake
+    sudo cp $HOME/chroot_configs/rostoolchain_precise/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/core/rosbuild/rostoolchain.cmake
     cd $WORKSPACE
     source $HOME/chroot_configs/set_qacpp_path.sh
 
