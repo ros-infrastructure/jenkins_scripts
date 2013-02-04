@@ -8,17 +8,48 @@ import traceback
 import numpy
 import yaml
 import codecs
-import roslib; roslib.load_manifest("job_generation")
-from roslib import stack_manifest
-import rosdistro
-from jobs_common import *
+#import roslib; roslib.load_manifest("job_generation")
+#from roslib import stack_manifest
+#import rosdistro
+#from jobs_common import *
 
 
 # Global settings
-env = get_environment()
-env['INSTALL_DIR'] = os.getcwd()
+#env = get_environment()
+#env['INSTALL_DIR'] = os.getcwd()
+env= os.environ
 WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
 ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+
+def call(command, env=None, message='', ignore_fail=False):
+    res = ''
+    err = ''
+    try:
+        print message+'\nExecuting command "%s"'%command
+        helper = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, env=env)
+        res, err = helper.communicate()
+        print str(res)
+        print str(err)
+        if helper.returncode != 0:
+            raise Exception
+        return res
+    except Exception:
+        if not ignore_fail:
+            message += "\n=========================================\n"
+            message += "Failed to execute '%s'"%command
+            message += "\n=========================================\n"
+            message += str(res)
+            message += "\n=========================================\n"
+            message += str(err)
+            message += "\n=========================================\n"
+            if env:
+                message += "ROS_PACKAGE_PATH = %s\n"%env['ROS_PACKAGE_PATH']
+                message += "ROS_ROOT = %s\n"%env['ROS_ROOT']
+                message += "PYTHONPATH = %s\n"%env['PYTHONPATH']
+                message += "\n=========================================\n"
+                generate_email(message, env)
+            raise Exception
+
       
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -61,8 +92,7 @@ if __name__ == '__main__':
         print stack_dir
         stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
-	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
-		,env, 'Push stack-yaml-file to ros-wiki ')
+	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER),env, 'Push stack-yaml-file to ros-wiki ')
 	        
     # get packages
     print 'Exporting packages to yaml/csv'  
@@ -74,4 +104,5 @@ if __name__ == '__main__':
         doc_dir = options.doc + '/' + package
    	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
 		,env, 'Push package-yaml-file to ros-wiki ')        
+
 
