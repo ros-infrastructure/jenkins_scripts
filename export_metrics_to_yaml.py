@@ -10,14 +10,8 @@ import traceback
 import numpy
 import yaml
 import codecs
-import roslib; roslib.load_manifest("job_generation")
-from roslib import stack_manifest
-import rosdistro
-from jobs_common import *
 import urllib2
 
-env= get_environment()
-env['INSTALL_DIR'] = os.getcwd()
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -42,6 +36,18 @@ def get_options(required, optional):
     if 'stack' in ops:
         parser.add_option('--stack', dest = 'stack', default=None, action='store',
                           help='stack name')  
+
+    if 'uri_info' in ops:
+        parser.add_option('--uri_info', dest = 'uri_info', default=None, action='store',
+                          help='uri info')  
+                                                    
+    if 'uri' in ops:
+        parser.add_option('--uri', dest = 'uri', default=None, action='store',
+                          help='uri')  
+                                                    
+    if 'vcs_type' in ops:
+        parser.add_option('--vcs_type', dest = 'vcs_type', default=None, action='store',
+                          help='vcs_type')  
                           
     (options, args) = parser.parse_args()
 
@@ -70,14 +76,19 @@ class Metric:
 	self.histogram_filenames = []
         self.metric_average = []
 	self.uri = []
+	self.uri_info = []
+	self.vcs_type = []
                     
 class ExportYAML:
-    def __init__(self, config, path, doc, csv, distro, stack):
+    def __init__(self, config, path, doc, csv, distro, stack, uri, uri_info, vcs_type):
         self.config = config
         self.path = path
         self.distro = distro
 	self.stack = stack
         self.doc = doc
+        self.uri = uri
+        self.uri_info = uri_info
+        self.vcs_type = vcs_type
 	if os.path.exists(doc):
 	    shutil.rmtree(doc)
         os.makedirs(doc)
@@ -193,18 +204,11 @@ class ExportYAML:
 
 	m.metric_average.append(metric_average)
 
-	# Parse distro file
-        rosdistro_obj = rosdistro.Distro(get_rosdistro_file(self.distro))
-	
-	# Get uri
-	vcs = rosdistro_obj.stacks[self.stack].vcs_config
-	if vcs.type == 'svn':
-	    uri = vcs.anon_dev
-	elif vcs.type == 'hg' or vcs.type == 'git' or vcs.type == 'bzr':
-	    uri = vcs.anon_repo_uri
-	
-	# Append uri to histogram
-	m.uri.append(uri)
+
+	# Append uri data to histogram
+	m.uri.append(options.uri)
+	m.uri_info.append(options.uri_info)
+	m.vcs_type.append(options.vcs_type)
 
     def process_met_file(self, met_file):
         stack = self.get_stack(met_file)
@@ -263,6 +267,8 @@ class ExportYAML:
 	    config['histogram_filenames'] = [b for b in metric.histogram_filenames] 
 	    config['metric_average'] = [b for b in metric.metric_average] 
 	    config['uri'] = [b for b in metric.uri]  
+	    config['uri_info'] = [b for b in metric.uri_info]  
+	    config['vcs_type'] = [b for b in metric.vcs_type] 
 	    d[m] = config
             
         #print yaml.dump(d)
@@ -301,8 +307,8 @@ class ExportYAML:
                
     def create_loc(self):
         filename = self.doc + '/' + 'code_quantity.yaml'
-        print "os.environ['WORKSPACE']: %s"%(os.environ['WORKSPACE'])
-	helper = subprocess.Popen(('%s/jenkins_scripts/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path, filename)).split(' '),env=env)
+        #print "os.environ['WORKSPACE']: %s"%(os.environ['WORKSPACE'])
+	helper = subprocess.Popen(('%s/jenkins_scripts/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path, filename)).split(' '),env=os.environ)
         helper.communicate()
                       
     def export(self):
@@ -329,7 +335,7 @@ class ExportYAML:
         self.create_loc()
         
 if __name__ == '__main__':   
-    (options, args) = get_options(['path', 'config', 'distro', 'stack'], ['doc','csv'])
+    (options, args) = get_options(['path', 'config', 'distro', 'stack', 'uri', 'uri_info', 'vcs_type'], ['doc','csv'])
     if not options:
         exit(-1)
     
@@ -351,7 +357,7 @@ if __name__ == '__main__':
 	if os.path.isdir(csv_dir):
             shutil.rmtree(csv_dir)    
         os.makedirs(csv_dir)
-        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir, options.distro, options.stack)
+        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
 	
 	        
@@ -370,6 +376,7 @@ if __name__ == '__main__':
 	if os.path.isdir(csv_dir):
             shutil.rmtree(csv_dir)    
         os.makedirs(csv_dir)
-        hh = ExportYAML(config, package_dir, doc_dir, csv_dir, options.distro, options.stack)
+        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
 	    
+
