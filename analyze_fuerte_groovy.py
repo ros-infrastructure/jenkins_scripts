@@ -41,6 +41,8 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
                                                    env['INSTALL_DIR']+'/'+DEPENDS_ON_DIR,
                                                    env['ROS_PACKAGE_PATH']])
 
+	print "env[ROS_PACJAGE_PATH]: %s"% env['ROS_PACKAGE_PATH']
+	#return
         #env['ROS_ROOT'] = '/opt/ros/%s/share/ros'%ros_distro
         #env['PYTHONPATH'] = env['ROS_ROOT']+'/core/roslib/src'
 	#env['PATH'] = '%s:%s:%s'%(env['QACPPBIN'],env['HTMLVIEWBIN'], os.environ['PATH'])
@@ -133,6 +135,37 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
              'Install system dependencies of stack %s'%stack_name)
 
 
+	# Get uri data
+	vcs = distro_obj.stacks[stack_name].vcs_config
+	uri_data = {}
+	if vcs.type == 'svn':
+	    uri_data['vcs_type'] = 'svn'
+	    uri_data['uri'] = vcs.anon_dev	
+	    uri_data['uri_info'] = ''
+	elif vcs.type == 'git':
+	    uri_data['vcs_type'] = 'git'
+	    uri_data['uri'] = vcs.anon_repo_uri
+	    # Get branch
+	    p = subprocess.Popen(["git", "branch"],cwd=r'%s/%s/%s/'%(workspace,STACK_DIR,stack_name), env=env,stdout=subprocess.PIPE)
+	    out = p.communicate()[0]
+	    branch = out[2:]
+	    uri_data['uri_info'] = branch
+	    print "branch: %s"%branch	   
+	elif vcs.type == 'hg':
+	    uri_data['vcs_type'] = 'hg'
+	    uri_data['uri'] = vcs.anon_repo_uri
+	    # Get revision number
+	    p = subprocess.Popen(["hg", "log", "-l", "1", "--template", "{node}"],cwd=r'%s/%s/%s/'%(workspace,STACK_DIR,stack_name), env=env,stdout=subprocess.PIPE)
+	    out = p.communicate()[0]
+	    revision_number = out[:12] #first 12 numbers represents the revision number
+	    uri_data['uri_info'] = revision_number
+	    print "revision_number: %s"%revision_number	
+	
+	uri = uri_data['uri']
+	uri_info = uri_data['uri_info']
+	vcs_type = uri_data['vcs_type']
+
+	
         # Run hudson helper for stacks only
         call('echo -e "\033[33;34m Color Text"', env,
              'Set color from build-output to blue') 
@@ -166,7 +199,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
             # export metrics to yaml and csv files
 	    print 'stack_dir: %s '%str(stack_dir)
 	    print 'stack_name[0]: %s '%str(stack_name)
-            helper = subprocess.Popen(('%s/jenkins_scripts/export_metrics_to_yaml_fg.py --path %s --doc doc --csv csv --config %s/jenkins_scripts/export_config_roscon.yaml --distro %s --stack %s'%(workspace,stack_dir,workspace, ros_distro, stack_name)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/export_metrics_to_yaml.py --path %s --doc doc --csv csv --config %s/jenkins_scripts/export_config_roscon.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace,stack_dir,workspace, ros_distro, stack_name, uri,  uri_info, vcs_type)).split(' '), env=env)
             helper.communicate()
 	    call('echo -e "\033[33;0m Color Text"', env,
              'Set color to white')
@@ -175,16 +208,13 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
             # push results to server
 	    print 'stack_dir: %s '%str(stack_dir)
 	    print 'stack_name[0]: %s '%str(stack_name)
-            helper = subprocess.Popen(('%s/jenkins_scripts/push_results_to_server_fg.py --path %s --doc doc'%(workspace,stack_dir)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/push_results_to_server.py --path %s --doc doc'%(workspace,stack_dir)).split(' '), env=env)
             helper.communicate()
 	    call('echo -e "\033[33;0m Color Text"', env,
              'Set color to white')
             print 'Export metrics to yaml and csv files done --> %s'%str(stack_name)       
             print 'Analysis of stack %s done'%str(stack_name)
 	if res != 0:
-            return res
-
-        if res != 0:
             return res
 
 
