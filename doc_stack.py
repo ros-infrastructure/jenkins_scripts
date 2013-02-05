@@ -143,7 +143,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
 
 def document_repo(workspace, docspace, ros_distro, repo,
                   platform, arch, homepage,
-                  rosdoc_lite_version, jenkins_scripts_version):
+                  rosdoc_lite_version, jenkins_scripts_version, force_doc=False):
     append_pymodules_if_needed()
     doc_job = "doc-%s-%s" % (ros_distro, repo)
     print "Working on distro %s and repo %s" % (ros_distro, repo)
@@ -172,7 +172,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Check to see if we need to document this repo list by checking if any of
     #the repositories revision numbers/hashes have changed
-    changes = False
+    changes = False or force_doc
     for conf in [('%s' % repo, doc_conf), ('%s_depends' % repo, depends_conf)]:
         changes = rev_changes(conf[0], conf[1], docspace, tags_db) or changes
 
