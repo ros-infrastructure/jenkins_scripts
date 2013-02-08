@@ -348,7 +348,7 @@ class ExportYAML:
     def create_loc(self):
         filename = self.doc + '/' + 'code_quantity.yaml'
         #print "os.environ['WORKSPACE']: %s"%(os.environ['WORKSPACE'])
-	helper = subprocess.Popen(('%s/jenkins_scripts/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path, filename)).split(' '),env=os.environ)
+	helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path, filename)).split(' '),env=os.environ)
         helper.communicate()
                       
     def export(self):
