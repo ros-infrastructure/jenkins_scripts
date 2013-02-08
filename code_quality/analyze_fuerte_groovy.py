@@ -199,7 +199,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
             # export metrics to yaml and csv files
 	    print 'stack_dir: %s '%str(stack_dir)
 	    print 'stack_name[0]: %s '%str(stack_name)
-            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/export_metrics_to_yaml.py --path %s --doc doc --csv csv --config %s/jenkins_scripts/code_quality/export_config_roscon.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace,stack_dir,workspace, ros_distro, stack_name, uri,  uri_info, vcs_type)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/export_metrics_to_yaml.py --path %s --doc doc --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace,stack_dir,workspace, ros_distro, stack_name, uri,  uri_info, vcs_type)).split(' '), env=env)
             helper.communicate()
 	    call('echo -e "\033[33;0m Color Text"', env,
              'Set color to white')
