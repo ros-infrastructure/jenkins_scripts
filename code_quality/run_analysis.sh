@@ -18,7 +18,7 @@ if [ "$ROS_DISTRO" == 'electric' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/analyze.py $ROS_DISTRO $STACK_NAME
+    python $WORKSPACE/jenkins_scripts/code_quality/analyze.py $ROS_DISTRO $STACK_NAME
 
 elif [ "$ROS_DISTRO" == 'fuerte' ] ; then
     echo "Using rosdistro fuerte"
@@ -35,7 +35,7 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
+    python $WORKSPACE/jenkins_scripts/code_quality/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
 
 elif [ "$ROS_DISTRO" == 'groovy' ] ; then
     echo "Using rosdistro groovy"
@@ -49,5 +49,5 @@ elif [ "$ROS_DISTRO" == 'groovy' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
+    python $WORKSPACE/jenkins_scripts/code_quality/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
 fi
