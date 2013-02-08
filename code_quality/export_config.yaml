@@ -1,0 +1,159 @@
+metrics:
+    STCYC:
+        name: STCYC
+        metric_type: function
+        brief: Cyclomatic complexity
+        description: 'Cyclomatic complexity is calculated as the number of decisions plus 1. High cyclomatic complexity indicates inadequate modularization or too much logic in one function. Software metric research has indicated that functions with a cyclomatic complexity greater than 10 tend to have problems related to their complexity.'
+        histogram_num_bins: 10
+        histogram_minval: 1
+        histogram_maxval: 20
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 10
+        histogram_title_xaxis: Cyclomatic complexity (STCYC)
+        histogram_title_yaxis: Number of functions
+        data_type: int 
+    STLIN:    
+        name: STLIN
+        metric_type: function
+        brief: Number of maintainable lines of code
+        description: 'This is the total number of lines, including blank and comment lines, in a function definition between (but excluding) the opening and closing brace of the function body. It is computed on raw code. STLIN is undefined for functions which have #include’d code or macros which include braces in their definition.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 100
+        histogram_recommendedMin: 20
+        histogram_recommendedMax: 70
+        histogram_title_xaxis: Number of maintainable lines of code (STLIN)
+        histogram_title_yaxis: Number of functions
+        data_type: int
+    STPAR:    
+        name: STPAR
+        metric_type: function
+        brief: Number of function parameters
+        description: 'This metric is a count of the number of declared parameters for each function.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10
+        histogram_recommendedMin: 0
+        histogram_recommendedMax: 5
+        histogram_title_xaxis: Number of function parameters (STPAR)
+        histogram_title_yaxis: Number of functions
+        data_type: int
+    STPTH:    
+        name: STPTH
+        metric_type: function
+        brief: Estimated static path count
+        description: 'This gives an upper bound on the number of possible paths in the control flow of the function. It is the number of non-cyclic execution paths in a function.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 20
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 5
+        histogram_title_xaxis: Estimated static path count (STPTH)
+        histogram_title_yaxis: Number of functions
+        data_type: int
+    STSUB:    
+        name: STSUB
+        metric_type: function
+        brief: Number of Function Calls
+        description: 'The number of function calls within a function. Functions with a large number of function calls are more difficult to understand because their functionality is spread across several components. Note that the calculation of STSUB is based on the number of function calls and not the number of distinct functions that are called.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 20
+        histogram_recommendedMin: 0
+        histogram_recommendedMax: 7
+        histogram_title_xaxis: Number of function calls (STSUB)
+        histogram_title_yaxis: Number of functions
+        data_type: int      
+    STCDN:    
+        name: STCDN
+        metric_type: file   
+        brief: Comment to code ratio
+        description: 'This metric is defined to be the number of visible characters in comments divided by the number of visible characters outside comments. Comment delimiters are ignored. Whitespace characters in strings are treated as visible characters. A large metric value may indicate that there are too many comments - an attribute that can make a module difficult to read. A small value may indicate that there are not enough.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 2.0
+        histogram_recommendedMin: 0.2
+        histogram_recommendedMax: 0.8
+        histogram_title_xaxis: Comment to code ratio (STCDN)
+        histogram_title_yaxis: Number of files
+        data_type: float     
+    STCBO:    
+        name: STCBO
+        metric_type: class
+        brief: Coupling between objects
+        description: 'This is a count of the number of methods (member functions) or member objects of other classes accessed by a class. Only classes outside the inheritance hierarchy are considered, because you would expect interaction with base and derived classes. Coupling to classes outside the inheritance tree should be viewed with suspicion as it makes the class less 4 independent and less re-usable.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10
+        histogram_recommendedMin: 6
+        histogram_recommendedMax: 9
+        histogram_title_xaxis: Coupling between objects (STCBO)
+        histogram_title_yaxis: Number of classes 
+        data_type: int 
+    STDIT:    
+        name: STDIT
+        metric_type: class
+        brief: Deepest level of inheritance
+        description: 'This represents the number of derivations from the furthest base class down to this class. A high figure may indicate that the class depends on accumulated functionality, which makes understanding the class potentially difficult. This is one of the metrics defined by Chidamber & Kemerer.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10
+        histogram_recommendedMin: 2
+        histogram_recommendedMax: 8
+        histogram_title_xaxis: Deepest level of inheritance (STDIT)
+        histogram_title_yaxis: Number of classes 
+        data_type: int  
+    STLCM:    
+        name: STLCM
+        metric_type: class
+        brief: Lack of cohesion of methods within a class
+        description: 'Methods within a class are partitioned into sets that access independent sets of member objects. The STLCM metric is a count of sets of unrelated members for a type.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        histogram_recommendedMin: 0
+        histogram_recommendedMax: 4
+        histogram_title_xaxis: Lack of cohesion of methods within a class (STLCM)
+        histogram_title_yaxis: Number of classes
+        data_type: int 
+    STMTH:    
+        name: STMTH
+        metric_type: class
+        brief: Number of methods available in class
+        description: 'The number of methods declared within a class. This does not include methods declared in base classes. Classes with a large number of methods will be difficult to understand.'
+        histogram_num_bins: 20
+        histogram_minval: 0
+        histogram_maxval: 20
+        histogram_recommendedMin: 5
+        histogram_recommendedMax: 17
+        histogram_title_xaxis: Number of methods available in class (STMTH)
+        histogram_title_yaxis: Number of classes
+        data_type: int  
+    STNOC:    
+        name: STNOC
+        metric_type: class
+        brief: Number of immediate children
+        description: 'This is the number of classes for which this class is an immediate base class. A high figure for
+this metric indicates greater dependence on the functionality of this class, and more potential
+knock-on effects from changes to it.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        histogram_recommendedMin: 0.2
+        histogram_recommendedMax: 0.8
+        histogram_title_xaxis: Number of immediate children (STNOC)
+        histogram_title_yaxis: Number of classes
+        data_type: int 
+    STNOP:    
+        name: STNOP
+        metric_type: class
+        brief: Number of immediate parents
+        description: 'This metric indicates the number of inheritances for a class. Root base classes have a value of 0 while classes derived with a single inheritance have a value of 1. Classes that have multiple inheritance are prohibited by some programming standards.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 10 
+        histogram_recommendedMin: 3
+        histogram_recommendedMax: 9
+        histogram_title_xaxis: Number of immediate parents (STNOP)
+        histogram_title_yaxis: Number of classes
+        data_type: int 
