@@ -72,8 +72,9 @@ class Metric:
         self.uniqueids = {}
         self.histogram_labels = []
         self.histogram_counts = []
-	self.histogram_names = []
+	self.histogram_affected = []
 	self.histogram_filenames = []
+	self.histogram_file_values = []
         self.metric_average = []
 	self.uri = []
 	self.uri_info = []
@@ -162,6 +163,8 @@ class ExportYAML:
 	data_param_filenames = []
 	array = self.metrics[metric].data
 	for d in array:
+	    #filter
+	    if ('/cpp' in d[5]) or  ('/srv_gen' in d[5]) or ('/msg_gen' in d[5]): continue
             data.append(float(d[4]))
 	    data_param_names.append(str(d[2]))
 	    data_param_filenames.append(str(d[5]))
@@ -180,6 +183,36 @@ class ExportYAML:
         (hist,bin_edges) = numpy.histogram(data, histogram_bins)
 
 
+	# Sorting 'data_param_filenames' [min,...,max]
+	keys = data
+	values_fn = data_param_filenames
+	tuple_sorted_fn = sorted(zip(keys, values_fn))
+	tuple_values_fn = list()
+	tuple_names_fn = list()
+	for x in tuple_sorted_fn:
+	    #if not '/cpp/' in x[1]: 
+	    tuple_values_fn.append(x[0])
+	    tuple_names_fn.append(x[1])		
+
+	# Sorting 'data_param_names' [min,...,max]
+	keys = data
+	values_n = data_param_names
+	tuple_sorted_n = sorted(zip(keys, values_n)) 
+	tuple_names_n = list()
+	for x in tuple_sorted_n:
+	    tuple_names_n.append(x[1])		
+
+	#print "length keys %s"%len(keys)
+	#print "length values_fn %s"%len(values_fn)
+	#print "length data %s"%len(data)
+	#print "length tuple_names_n %s"%len(tuple_names_n)
+	#print "length tuple_values_n %s"%len(tuple_values_n)
+	#print "--------------------------\n\n\n"
+	
+	data_filenames = tuple_names_fn
+	data_affected = tuple_names_n
+	data_file_values = tuple_values_fn
+
         # Calculate average of metric	
     	metric_average = 0.0
     	counts_sum = 0.0
@@ -196,19 +229,22 @@ class ExportYAML:
             m.histogram_counts.append(hist[i])
             m.histogram_labels.append(histogram_labels[i])
 
-	for i in range(len(data_param_names)):
-	    m.histogram_names.append(data_param_names[i])
+	for i in range(len(data_file_values)):
+	    m.histogram_file_values.append(data_file_values[i])
 
-	for i in range(len(data_param_filenames)):
-	    m.histogram_filenames.append(data_param_filenames[i])
+	for i in range(len(data_affected)):
+	    m.histogram_affected.append(data_affected[i])
+
+	for i in range(len(data_filenames)):
+	    m.histogram_filenames.append(data_filenames[i])
 
 	m.metric_average.append(metric_average)
-
 
 	# Append uri data to histogram
 	m.uri.append(options.uri)
 	m.uri_info.append(options.uri_info)
 	m.vcs_type.append(options.vcs_type)
+
 
     def process_met_file(self, met_file):
         stack = self.get_stack(met_file)
@@ -218,7 +254,7 @@ class ExportYAML:
         filename = ''
         name = ''   
         met = open(met_file,'r')
-        while met:
+        while met: #cmd= metric_name | val= value
             l = met.readline()
             if not l:
                 break
@@ -230,6 +266,8 @@ class ExportYAML:
                 if len(cmd) < 5: continue
                 cmd = cmd[3:]
                 val = tokens[1]
+	        #print "cmd: %s"%cmd
+	        #print "val: %s"%val
                 if cmd == 'STFIL':
                     filename = val
                     continue
@@ -249,7 +287,8 @@ class ExportYAML:
                 if not uniqueid in metric.uniqueids:                        
                     metric.data.append([stack,package,name,cmd,val,filename])
                     metric.uniqueids[uniqueid] = True
-        
+
+        #print "metric.data: %s"%metric.data
         met.close()
         return ''
         
@@ -263,8 +302,9 @@ class ExportYAML:
             config = self.config['metrics'][m]
             config['histogram_bins'] = [b for b in metric.histogram_labels] 
             config['histogram_counts'] = [int(b) for b in metric.histogram_counts]
-	    config['histogram_names'] = [b for b in metric.histogram_names] 
+	    config['histogram_affected'] = [b for b in metric.histogram_affected] 
 	    config['histogram_filenames'] = [b for b in metric.histogram_filenames] 
+	    config['histogram_file_values'] = [b for b in metric.histogram_file_values] 
 	    config['metric_average'] = [b for b in metric.metric_average] 
 	    config['uri'] = [b for b in metric.uri]  
 	    config['uri_info'] = [b for b in metric.uri_info]  
