@@ -11,6 +11,7 @@ import numpy
 import yaml
 import codecs
 import urllib2
+import datetime
 
 
 def get_options(required, optional):
@@ -78,7 +79,8 @@ class Metric:
         self.metric_average = []
 	self.uri = []
 	self.uri_info = []
-	self.vcs_type = []
+	self.vcs_type = [] 
+	self.datetime = []
                     
 class ExportYAML:
     def __init__(self, config, path, doc, csv, distro, stack, uri, uri_info, vcs_type):
@@ -244,6 +246,7 @@ class ExportYAML:
 	m.uri.append(options.uri)
 	m.uri_info.append(options.uri_info)
 	m.vcs_type.append(options.vcs_type)
+	m.datetime.append(datetime.datetime.now())
 
 
     def process_met_file(self, met_file):
@@ -308,7 +311,8 @@ class ExportYAML:
 	    config['metric_average'] = [b for b in metric.metric_average] 
 	    config['uri'] = [b for b in metric.uri]  
 	    config['uri_info'] = [b for b in metric.uri_info]  
-	    config['vcs_type'] = [b for b in metric.vcs_type] 
+	    config['vcs_type'] = [b for b in metric.vcs_type]
+	    config['datetime'] = [b for b in metric.datetime] 
 	    d[m] = config
             
         #print yaml.dump(d)
