@@ -150,7 +150,7 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
 	if vcs.type == 'svn':
 	    uri_data['vcs_type'] = 'svn'
 	    uri_data['uri'] = vcs.anon_dev	
-	    uri_data['uri_info'] = ''
+	    uri_data['uri_info'] = 'empty'
 	elif vcs.type == 'git':
 	    uri_data['vcs_type'] = 'git'
 	    uri_data['uri'] = vcs.anon_repo_uri
