@@ -2,9 +2,7 @@
 import string
 import fnmatch
 import shutil
-#from common import *
 from time import sleep
-#
 import roslib; roslib.load_manifest("job_generation")
 from roslib import stack_manifest
 import rosdistro
@@ -15,7 +13,7 @@ import os
 import optparse 
 import subprocess
 import traceback
-#
+
 
 
 
@@ -58,7 +56,6 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
 		#print 'PATH %s'%( env['PATH'])
         	print "Environment set to %s"%str(env)
     
-    	#distro = rosdistro.Distro(get_rosdistro_file(ros_distro))
 
 	# Create_new/remove_old STACK_DIR,build,doc,cvs folder
 	stack_path = env['INSTALL_DIR']+'/'+STACK_DIR + '/'
