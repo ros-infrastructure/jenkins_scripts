@@ -2,7 +2,7 @@
 import string
 import fnmatch
 import shutil
-from common import *
+#from common import *
 from time import sleep
 #
 import roslib; roslib.load_manifest("job_generation")
