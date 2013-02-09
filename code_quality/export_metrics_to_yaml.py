@@ -11,7 +11,7 @@ import numpy
 import yaml
 import codecs
 import urllib2
-import datetime
+from time import gmtime, strftime
 
 
 def get_options(required, optional):
@@ -246,7 +246,7 @@ class ExportYAML:
 	m.uri.append(options.uri)
 	m.uri_info.append(options.uri_info)
 	m.vcs_type.append(options.vcs_type)
-	m.datetime.append(datetime.datetime.now())
+	m.datetime.append(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
 
 
     def process_met_file(self, met_file):
