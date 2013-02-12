@@ -77,6 +77,10 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
 	if os.path.exists(csv_path):
 	    shutil.rmtree(csv_path)
 	os.makedirs(csv_path)
+
+	snapshots_path = env['INSTALL_DIR'] + '/snapshots/'
+	if os.path.exists(snapshots_path):
+	    shutil.rmtree(snapshots_path)
 	
         # Parse distro file
         rosdistro_obj = rosdistro.Distro(get_rosdistro_file(ros_distro))
@@ -189,39 +193,49 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
                 print "helper_return_code is: %s"%(helper.returncode)
                 raise Exception("build_helper.py failed. Often an analysis mistake. Check out the console output above for details.")
 	   
-            # concatenate filelists
-            call('echo -e "\033[33;0m Color Text"', env,
-             'Set color to white')
+
+            # Concatenate filelists
+            call('echo -e "\033[33;0m Color Text"', env, 'Set color to white')
+	    print '-----------------  Concatenate filelists -----------------  '
 	    stack_dir = STACK_DIR + '/' + str(stack_name)
             filelist = stack_dir + '/filelist.lst'
             helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/concatenate_filelists.py --dir %s --filelist %s'%(workspace,stack_dir, filelist)).split(' '), env=env)
             helper.communicate()
-            print 'Concatenate filelists done --> %s'%str(stack_name) 
+            print '////////////////// concatenate filelists done ////////////////// \n\n'
              
-            # run cma
+
+            # Run CMA
+	    print '-----------------  Run CMA analysis -----------------  '
             cmaf = stack_dir + '/' + str(stack_name)
             helper = subprocess.Popen(('pal QACPP -cmaf %s -list %s'%(cmaf, filelist)).split(' '), env=env)
             helper.communicate()
-            print 'CMA analysis done --> %s'%str(stack_name)  
+            print '////////////////// cma analysis done ////////////////// \n\n'
 
-            # export metrics to yaml and csv files
+
+            # Export metrics to yaml and csv files
+	    print '-----------------  Export metrics to yaml and csv files ----------------- '
 	    print 'stack_dir: %s '%str(stack_dir)
-	    print 'stack_name[0]: %s '%str(stack_name)
+	    print 'stack_name: %s '%str(stack_name)
             helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/export_metrics_to_yaml.py --path %s --doc doc --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace,stack_dir,workspace, ros_distro, stack_name, uri,  uri_info, vcs_type)).split(' '), env=env)
             helper.communicate()
-	    call('echo -e "\033[33;0m Color Text"', env,
-             'Set color to white')
-            print 'Export metrics to yaml and csv files done --> %s'%str(stack_name)        
+            print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'     
               
-            # push results to server
-	    print 'stack_dir: %s '%str(stack_dir)
-	    print 'stack_name[0]: %s '%str(stack_name)
+
+            # Push results to server
+	    print '-----------------  Push results to server -----------------  '
             helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/push_results_to_server.py --path %s --doc doc'%(workspace,stack_dir)).split(' '), env=env)
             helper.communicate()
-	    call('echo -e "\033[33;0m Color Text"', env,
-             'Set color to white')
-            print 'Export metrics to yaml and csv files done --> %s'%str(stack_name)       
-            print 'Analysis of stack %s done'%str(stack_name)
+            print '////////////////// push results to server done ////////////////// \n\n'    
+
+
+	    # Upload results to QAVerify
+	    print ' -----------------  upload results to QAVerify -----------------  '
+            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/upload_to_QAVerify.py --path %s --snapshot %s'%(workspace, workspace, snapshots_path)).split(' '), env=env)
+            helper.communicate()
+            print '////////////////// upload results to QAVerify done ////////////////// \n\n'      
+            
+
+	    print 'ANALYSIS PROCESS OF STACK %s DONE\n\n'%str(stack_name)
 	if res != 0:
             return res
 
