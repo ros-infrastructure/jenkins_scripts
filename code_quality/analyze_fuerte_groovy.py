@@ -41,7 +41,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
                                                    env['INSTALL_DIR']+'/'+DEPENDS_ON_DIR,
                                                    env['ROS_PACKAGE_PATH']])
 
-	print "env[ROS_PACJAGE_PATH]: %s"% env['ROS_PACKAGE_PATH']
+	print "env[ROS_PACKAGE_PATH]: %s"% env['ROS_PACKAGE_PATH']
 	#return
         #env['ROS_ROOT'] = '/opt/ros/%s/share/ros'%ros_distro
         #env['PYTHONPATH'] = env['ROS_ROOT']+'/core/roslib/src'
