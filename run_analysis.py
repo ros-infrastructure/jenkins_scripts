@@ -4,7 +4,6 @@ import sys
 import subprocess
 import string
 import fnmatch
-#import shutil
 import optparse
 from common import *
 from time import sleep
@@ -33,7 +32,7 @@ def remove(list1, list2):
             list1.remove(l)
 
 
-def run_analysis(ros_distro, stack_name, workspace, test_depends_on):
+def run_analysis(ros_distro, stack_name, workspace, build_system, test_depends_on):
     print "Install basic stuff we need"
     print "(Testing on distro %s)"%ros_distro
     print "(Testing stack %s)"%stack_name
@@ -45,6 +44,7 @@ def run_analysis(ros_distro, stack_name, workspace, test_depends_on):
     env['ROS_DISTRO'] = '%s'%ros_distro
     env['STACK_NAME'] = '%s'%stack_name
     env['WORKSPACE'] = '%s'%workspace
+    env['BUILD_SYSTEM'] = '%s'%build_system
     env['TEST_DEPENDS_ON'] = '%s'%test_depends_on
    
     helper = subprocess.Popen(('bash %s/jenkins_scripts/code_quality/run_analysis.sh'%(os.environ['WORKSPACE'])).split(' '), env=env)
@@ -57,18 +57,20 @@ def main():
     parser.add_option("--depends_on", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
-    if len(args) <= 1 or len(args)>=3:
+    if len(args) <= 2 or len(args)%2 != 1:
         print "Usage: %s ros_distro  stack_name "%sys.argv[0]
     	print " - with ros_distro the name of the ros distribution (e.g. 'electric' or 'fuerte')"
         print " - with stack_name the name of the stack you want to analyze"
+        print " - build_system 'dry' or 'wet'."
         raise BuildException("Wrong arguments for run_analysis script")
 
     ros_distro = args[0]
     stack_name = args[1]
+    build_system = args[2]
     workspace = os.environ['WORKSPACE']
 
     print "Running code_quality_stack on distro %s and stack %s"%(ros_distro, stack_name)
-    run_analysis(ros_distro, stack_name, workspace, test_depends_on=options.depends_on)
+    run_analysis(ros_distro, stack_name, workspace, build_system, test_depends_on=options.depends_on)
 
 
 

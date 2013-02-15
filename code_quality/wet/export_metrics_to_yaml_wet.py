@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import os
-from apt_parser import parse_apt
 import sys
+sys.path.append('%s/jenkins_scripts/code_quality'%os.environ['WORKSPACE'])
+from apt_parser import parse_apt
 import os
 import shutil
 import optparse 
@@ -19,7 +20,10 @@ def get_options(required, optional):
     ops = required + optional
     if 'path' in ops:
         parser.add_option('--path', dest = 'path', default=None, action='store',
-                          help='path to scan')
+                          help='path to build')
+    if 'path_src' in ops:
+        parser.add_option('--path_src', dest = 'path_src', default=None, action='store',
+                          help='path_src to source')
     if 'doc' in ops:
         parser.add_option('--doc', dest = 'doc', default='doc', action='store',
                           help='doc folder')
@@ -83,9 +87,10 @@ class Metric:
 	self.datetime = []
                     
 class ExportYAML:
-    def __init__(self, config, path, doc, csv, distro, stack, uri, uri_info, vcs_type):
+    def __init__(self, config, path, path_src, doc, csv, distro, stack, uri, uri_info, vcs_type):
         self.config = config
         self.path = path
+        self.path_src = path_src
         self.distro = distro
 	self.stack = stack
         self.doc = doc
@@ -102,7 +107,7 @@ class ExportYAML:
         os.makedirs(csv)
           
         self.stack_files = [f for f in all_files(self.path)
-            if f.endswith('stack.xml')]
+            if f.endswith('CMakeCache.txt')]
 
         self.stack_dirs = [os.path.dirname(f) for f in self.stack_files]
             
@@ -111,8 +116,10 @@ class ExportYAML:
 
         self.package_dirs = [os.path.dirname(f) for f in self.package_files]
 
+	#print "path: %s"%(self.path)
         self.met_files = [f for f in all_files(self.path)
             if f.endswith('.met') and f.find('CompilerIdCXX')<0 and f.find('CompilerIdC')<0 and f.find('third_party')<0]
+	#print "met files: %s"%(self.met_files)
         
         self.metrics = {}
 
@@ -160,6 +167,10 @@ class ExportYAML:
     def histogram(self, metric, numbins, minval, maxval, data_type):
         if not metric in self.metrics:
             return;
+	#print "\n\nhistogram"
+	#print "metric: %s"%metric
+	#print "numbins: %s"%numbins
+	#print "minval: %s"%minval
         data = []
     	data_param_names = []
 	data_param_filenames = []
@@ -257,6 +268,9 @@ class ExportYAML:
         filename = ''
         name = ''   
         met = open(met_file,'r')
+	#print "met in process_met_file: %s"%met_file
+	#print "stack: %s"%stack
+	#print "stack_dir: %s"%stack_dir
         while met: #cmd= metric_name | val= value
             l = met.readline()
             if not l:
@@ -278,7 +292,7 @@ class ExportYAML:
                     name = val
                     continue
                 # filter out entries outside of the current stack
-                if filename.find(stack_dir) < 0: continue
+                if filename.find(options.path_src) < 0: continue
                 # add metric to list of not already there yet
                 metric_name = cmd
                 if not metric_name in self.metrics:
@@ -352,19 +366,21 @@ class ExportYAML:
     def create_loc(self):
         filename = self.doc + '/' + 'code_quantity.yaml'
         #print "os.environ['WORKSPACE']: %s"%(os.environ['WORKSPACE'])
-	helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path, filename)).split(' '),env=os.environ)
+	helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/cloc.pl %s --not-match-d=build --yaml --out %s'%(os.environ['WORKSPACE'],self.path_src, filename)).split(' '),env=os.environ)
         helper.communicate()
                       
     def export(self):
         # process all met files
         for met in self.met_files:
-            # print met
+            #print "met: %s"%met
             self.process_met_file(met)
             
         # create histograms
 	for m in self.config['metrics'].keys():
-            if not m in self.metrics: 
+	    #print "\n\nm: %s"%m
+            if not m in self.metrics:
                 continue
+	    #print "\nCALL HISTOGRAMM"
             config = self.config['metrics'][m]
 	    self.histogram(m, config['histogram_num_bins'], config['histogram_minval'], config['histogram_maxval'], config['data_type'])
 
@@ -379,48 +395,41 @@ class ExportYAML:
         self.create_loc()
         
 if __name__ == '__main__':   
-    (options, args) = get_options(['path', 'config', 'distro', 'stack', 'uri', 'uri_info', 'vcs_type'], ['doc','csv'])
+    (options, args) = get_options(['path', 'path_src', 'config', 'distro', 'stack', 'uri', 'uri_info', 'vcs_type'], ['doc','csv'])
     if not options:
         exit(-1)
     
     with open(options.config) as f:
         config = yaml.load(f)
     
-    # get stacks  
-    print 'Exporting stacks to yaml/csv'      
-    stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
+    # get meta-packages  
+    print 'Exporting meta-packages to yaml/csv'      
+    stack_files = [f for f in all_files(options.path) if f.endswith('CMakeCache.txt')] #TODO: adjust var name's -> meta-package
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
-        stack = os.path.basename(stack_dir)
-        print stack_dir
+	# build path
+        stack = (options.stack).strip('[]').strip("''") #os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
         csv_dir = options.csv + '/' + stack
-        if os.path.isdir(doc_dir):
-            shutil.rmtree(doc_dir)    
-        os.makedirs(doc_dir)
-	if os.path.isdir(csv_dir):
-            shutil.rmtree(csv_dir)    
-        os.makedirs(csv_dir)
-        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
+	#print "stack_dir: %s"%(stack_dir)
+	#print "stack: %s"%(stack)
+	#print "doc_dir: %s"%(doc_dir)
+	#print "csv_dir: %s"%(csv_dir)
+	# export
+        hh = ExportYAML(config, stack_dir, options.path_src, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
 	
-	        
-    # get packages
+    # get packages  
     print 'Exporting packages to yaml/csv'  
-    package_files = [f for f in all_files(options.path) if f.endswith('manifest.xml')]
-    package_dirs = [os.path.dirname(f) for f in package_files]
-    for package_dir in package_dirs:
-        package = os.path.basename(package_dir)
-        print package
-        doc_dir = options.doc + '/' + package
-        csv_dir = options.csv + '/' + package
-        if os.path.isdir(doc_dir):
-            shutil.rmtree(doc_dir)    
-        os.makedirs(doc_dir)
-	if os.path.isdir(csv_dir):
-            shutil.rmtree(csv_dir)    
-        os.makedirs(csv_dir)
-        hh = ExportYAML(config, stack_dir, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
+    stack_files = [f for f in all_files(options.path_src) if f.endswith('package.xml')]
+    stack_dirs = [os.path.dirname(f) for f in stack_files]
+    for stack_dir in stack_dirs:
+	# build path
+        stack = os.path.basename(stack_dir)
+        doc_dir = options.doc + '/' + stack
+        csv_dir = options.csv + '/' + stack
+	package_dir = options.path + '/' + stack
+	package_dir_src = options.path_src + '/' + stack
+	# export
+        hh = ExportYAML(config, package_dir, options.path_src, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
-	    
-
