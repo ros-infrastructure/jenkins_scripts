@@ -146,10 +146,10 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on)
     print '////////////////// push results to server done ////////////////// \n\n' 
 
     # Upload results to QAVerify
-    #print ' -----------------  upload results to QAVerify -----------------  '
-    #helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s'%(workspace, workspace, snapshots_path)).split(' '), env=os.environ)
-    #helper.communicate()
-    #print '////////////////// upload results to QAVerify done ////////////////// \n\n'      
+    print ' -----------------  upload results to QAVerify -----------------  '
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s'%(workspace, workspace, snapshots_path)).split(' '), env=os.environ)
+    helper.communicate()
+    print '////////////////// upload results to QAVerify done ////////////////// \n\n'      
 
 
     # copy #TODO: rm
