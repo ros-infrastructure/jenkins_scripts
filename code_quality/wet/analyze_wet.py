@@ -145,17 +145,22 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on)
     helper.communicate()
     print '////////////////// push results to server done ////////////////// \n\n' 
 
-    # Upload results to QAVerify
+
+   	# Upload results to QAVerify
     print ' -----------------  upload results to QAVerify -----------------  '
+    shutil.rmtree(os.path.join(workspace, 'snapshots_path'), ignore_errors=True)
+    os.makedirs(os.path.join(workspace, 'snapshots_path'))
+    snapshots_path = '%s/snapshots_path'%workspace
     helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s'%(workspace, workspace, snapshots_path)).split(' '), env=os.environ)
     helper.communicate()
-    print '////////////////// upload results to QAVerify done ////////////////// \n\n'      
+    print '////////////////// upload results to QAVerify done ////////////////// \n\n'
 
 
     # copy #TODO: rm
     shutil.rmtree(os.path.join(workspace, 'test_results'), ignore_errors=True)
     os.makedirs(os.path.join(workspace, 'test_results'))
     call("cp -r %s %s/test_results/build_repository"%(repo_buildspace, workspace))
+    call("cp -r %s %s/test_results/source_repository"%(repo_sourcespace, workspace))
     call("cp -r %s %s/test_results/source_repository"%(repo_sourcespace, workspace))
 
 
