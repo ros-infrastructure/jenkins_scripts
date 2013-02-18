@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+sys.path.append('%s/jenkins_scripts'%os.environ['WORKSPACE'])
 import subprocess
 import string
 import fnmatch
