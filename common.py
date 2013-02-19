@@ -52,9 +52,17 @@ def copy_test_results(workspace, buildspace, errors=None, prefix='dummy'):
     os.chdir(os.path.join(workspace, 'test_results'))
     print "Copy all test results"
     count = 0
-    for root, dirnames, filenames in os.walk(os.path.join(buildspace, 'test_results')):
+    base = os.path.join(buildspace, 'test_results')
+    for root, dirnames, filenames in os.walk(base):
         for filename in fnmatch.filter(filenames, '*.xml'):
-            call("cp %s %s/test_results/"%(os.path.join(root, filename), workspace))
+            absfile = os.path.join(root, filename)
+            subfolders = os.path.dirname(os.path.relpath(absfile, base))
+            dst = os.path.join(workspace, 'test_results')
+            if subfolders:
+                dst = os.path.join(dst, subfolders)
+            if not os.path.exists(dst):
+                os.makedirs(dst)
+            call("cp %s %s" % (absfile, dst))
             count += 1
     if count == 0:
         print "No test results, so I'll create a dummy test result xml file, with errors %s" % errors
