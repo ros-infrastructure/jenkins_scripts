@@ -5,7 +5,7 @@ import subprocess
 import urllib2
 import datetime
 import shutil
-from common import get_ros_env, call, BuildException
+from common import get_ros_env, call, check_output, BuildException
 from doc_stack import document_repo
 
 def install_catkin_basic(ros_distro):
@@ -32,7 +32,7 @@ def install_rosdoc_lite(workspace, ros_distro):
     old_dir = os.getcwd()
     os.chdir("rosdoc_lite")
     call("git checkout %s-devel" % ros_distro)
-    rev = call("git rev-parse HEAD").split('\n')[0]
+    rev = check_output("git rev-parse HEAD").split('\n')[0]
     os.makedirs("build")
     os.chdir("build")
     ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
@@ -62,7 +62,7 @@ def install_catkin_sphinx(workspace):
 def get_jenkins_scripts_version(workspace):
     old_dir = os.getcwd()
     os.chdir(os.path.join(workspace, 'jenkins_scripts'))
-    rev = call("git rev-parse HEAD").split('\n')[0]
+    rev = check_output("git rev-parse HEAD").split('\n')[0] #
     os.chdir(old_dir)
     return rev
 

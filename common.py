@@ -89,29 +89,37 @@ def get_ros_env(setup_file):
     return res
 
 
-def call_with_list(command, envir=None, verbose=True):
+def call_with_list(command, envir=None, verbose=True, return_output=False):
     print "Executing command '%s'"%' '.join(command)
-    helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, env=envir)
-    res = ""
+    helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True, env=envir)
+    if return_output:
+        res = ''
     while helper.poll() is None:
-        output = helper.stdout.readline()
-        res += output
-        time.sleep(0.1) # TODO What is a good value here? Without this delay it's busy looping
+        output = helper.stdout.readline().decode('utf8', 'replace')
+        if verbose:
+            sys.stdout.write(output)
+        if return_output:
+            res += output
 
     #make sure to capture the last line(s)
     output = helper.stdout.read()
-    res += output
-    
     if verbose:
-        print res
+        sys.stdout.write(output)
+    if return_output:
+        res += output
+
     if helper.returncode != 0:
-        msg = "Failed to execute command '%s'"%command
+        msg = "Failed to execute command '%s' with return code %d" % (command, helper.returncode)
         print "/!\  %s"%msg
         raise BuildException(msg)
-    return res
+    if return_output:
+        return res
 
 def call(command, envir=None, verbose=True):
     return call_with_list(command.split(' '), envir, verbose)
+
+def check_output(command, envir=None, verbose=True):
+    return call_with_list(command.split(' '), envir, verbose, True)
 
 def get_catkin_stack_deps(xml_path):
     import xml.etree.ElementTree as ET

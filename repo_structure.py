@@ -36,7 +36,7 @@ import yaml
 import urllib2
 import os
 import sys
-from common import append_pymodules_if_needed, BuildException, call
+from common import append_pymodules_if_needed, BuildException, call, check_output
 
 def get_repo_revision(repo_folder, vcs_type):
     #Make sure we're in the right directory
@@ -44,13 +44,13 @@ def get_repo_revision(repo_folder, vcs_type):
     os.chdir(repo_folder)
 
     if vcs_type == 'git':
-        rev = call("git rev-parse HEAD").split('\n')[0]
+        rev = check_output("git rev-parse HEAD").split('\n')[0] #
     elif vcs_type == 'hg':
-        rev = call("hg id -i").split('\n')[0]
+        rev = check_output("hg id -i").split('\n')[0] #
     elif vcs_type == 'bzr':
-        rev = call("bzr revno").split('\n')[0]
+        rev = check_output("bzr revno").split('\n')[0] #
     elif vcs_type == 'svn':
-        rev = call("svnversion").split('\n')[0]
+        rev = check_output("svnversion").split('\n')[0] #
     else:
         rev = ""
         print >> sys.stderr, "Don't know how to get the version for vcs_type %s, doc generation will always run" % vcs_type

@@ -18,7 +18,7 @@ class RosDepResolver:
         call("rosdep update", self.env)
 
         print "Building dictionaries from a rosdep's db"
-        raw_db = call("rosdep db", self.env, verbose=False).split('\n')
+        raw_db = check_output("rosdep db", self.env, verbose=False).split('\n')
 
         for entry in raw_db:
             split_entry = entry.split(' -> ')
@@ -71,10 +71,10 @@ class RosDep:
         if r in self.r2a:
             return self.r2a[r]
         else:
-            res = call("rosdep resolve %s"%r, self.env).split('\n')
+            res = check_output("rosdep resolve %s"%r, self.env).split('\n')
             if len(res) == 1:
                 raise Exception("Could not resolve rosdep")
-            a = call("rosdep resolve %s"%r, self.env).split('\n')[1]
+            a = check_output("rosdep resolve %s"%r, self.env).split('\n')[1]
             print "Rosdep %s resolved into %s"%(r, a)
             self.r2a[r] = a
             self.a2r[a] = r

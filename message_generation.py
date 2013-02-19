@@ -33,7 +33,7 @@
 #
 import os
 import shutil
-from common import call, get_ros_env, BuildException
+from common import call, check_output, get_ros_env, BuildException
 
 catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
 find_package(catkin_basic REQUIRED)
@@ -117,7 +117,7 @@ def replace_manifest_cmake_files(manifest_packages):
 
 def generate_messages_catkin(env):
     try:
-        targets = call("make help", env).split('\n')
+        targets = check_output("make help", env).split('\n')
     except BuildException as e:
         return
 
@@ -128,7 +128,7 @@ def generate_messages_catkin(env):
 
 def generate_messages_dry(env, name, messages, services):
     try:
-        targets = call("make help", env).split('\n')
+        targets = check_output("make help", env).split('\n') #
     except BuildException as e:
         return
 
