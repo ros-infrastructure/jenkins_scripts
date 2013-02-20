@@ -94,20 +94,16 @@ def call_with_list(command, envir=None, verbose=True, return_output=False):
     helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True, env=envir)
     if return_output:
         res = ''
-    while helper.poll() is None:
+    while True:
         output = helper.stdout.readline().decode('utf8', 'replace')
+        if helper.returncode is not None or not output:
+            break
         if verbose:
             sys.stdout.write(output)
         if return_output:
             res += output
 
-    #make sure to capture the last line(s)
-    output = helper.stdout.read()
-    if verbose:
-        sys.stdout.write(output)
-    if return_output:
-        res += output
-
+    helper.wait()
     if helper.returncode != 0:
         msg = "Failed to execute command '%s' with return code %d" % (command, helper.returncode)
         print "/!\  %s"%msg
