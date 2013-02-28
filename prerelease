@@ -20,7 +20,10 @@ def main():
     repo_list = [args[i] for i in range(1, len(args), 2)]
     version_list = [args[i+1] for i in range(1, len(args), 2)]
     if not options.workspace:
-        options.workspace = os.environ['WORKSPACE']
+        try:
+            options.workspace = os.environ['WORKSPACE']
+        except KeyError:
+            raise BuildException("Neither a workspace is specified on the command line nor in the environment")
 
     print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
     test_repositories(ros_distro, repo_list, version_list, options.workspace,  test_depends_on=True, 
@@ -37,6 +40,7 @@ if __name__ == '__main__':
     # global catch
     except BuildException as ex:
         print ex.msg
+        sys.exit(1)
 
     except Exception as ex:
         print "prerelease script failed. Check out the console output above for details."
