@@ -1,6 +1,13 @@
 #!/bin/bash -ex
 /bin/echo '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ run_analysis.sh ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
 
+# Error exit function
+function error_exit
+{
+    echo "$1" 1>&2
+	exit 1
+}
+
 # Add ros sources to apt
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu '$OS_PLATFORM' main" > /etc/apt/sources.list.d/ros-latest.list'
 wget http://packages.ros.org/ros.key -O $WORKSPACE/ros.key
@@ -18,7 +25,11 @@ if [ "$ROS_DISTRO" == 'electric' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/code_quality/analyze.py $ROS_DISTRO $STACK_NAME
+    if python $WORKSPACE/jenkins_scripts/code_quality/analyze.py $ROS_DISTRO $STACK_NAME; then
+    	echo 'analyze.py passed'
+    else
+		error_exit "analyze.py failed!  Aborting."
+	fi
 
 elif [ "$ROS_DISTRO" == 'fuerte' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
     echo "Using rosdistro fuerte"
@@ -35,7 +46,11 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/code_quality/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
+    if python $WORKSPACE/jenkins_scripts/code_quality/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME; then
+        echo 'analyze_fuerte_groovy.py passed'
+    else
+		error_exit "analyze_fuerte_groovy.py failed!  Aborting."
+	fi
 
 elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
     echo "Using rosdistro groovy"
@@ -49,8 +64,11 @@ elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/code_quality/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME
-
+    if python $WORKSPACE/jenkins_scripts/code_quality/analyze_fuerte_groovy.py $ROS_DISTRO $STACK_NAME; then
+        echo 'analyze_fuerte_groovy.py passed'
+    else
+    	error_exit "analyze_fuerte_groovy.py failed!  Aborting."
+	fi
 
 # WET: install stuff we need 
 elif [ "$ROS_DISTRO" == 'fuerte' ] && [ "$BUILD_SYSTEM" == 'wet' ] ; then
@@ -66,7 +84,11 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] && [ "$BUILD_SYSTEM" == 'wet' ] ; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/code_quality/wet/analyze_wet.py $ROS_DISTRO $STACK_NAME 'latest'
+    if python $WORKSPACE/jenkins_scripts/code_quality/wet/analyze_wet.py $ROS_DISTRO $STACK_NAME 'latest'; then
+        echo 'analyze_wet.py passed'
+    else
+        error_exit "analyze_wet.py failed!  Aborting."
+	fi
 
 elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'wet' ]; then
     echo "Using rosdistro groovy"
@@ -78,5 +100,9 @@ elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'wet' ]; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    python $WORKSPACE/jenkins_scripts/code_quality/wet/analyze_wet.py $ROS_DISTRO $STACK_NAME 'latest'
+    if python $WORKSPACE/jenkins_scripts/code_quality/wet/analyze_wet.py $ROS_DISTRO $STACK_NAME 'latest'; then
+        echo 'analyze_wet.py passed'
+    else
+        error_exit "analyze_wet.py failed!  Aborting."
+    fi
 fi
