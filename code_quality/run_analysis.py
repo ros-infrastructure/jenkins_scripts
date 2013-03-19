@@ -50,6 +50,11 @@ def run_analysis(ros_distro, stack_name, workspace, build_system, test_depends_o
    
     helper = subprocess.Popen(('bash %s/jenkins_scripts/code_quality/run_analysis.sh'%(os.environ['WORKSPACE'])).split(' '), env=env)
     helper.communicate()
+    if helper.returncode != 0:
+        res = helper.returncode
+        print "helper_return_code is: %s"%(helper.returncode)
+        assert 'run_analysis.sh failed'
+        raise Exception("run_analysis.sh failed. Check out the console output above for details.")
    
 
 
