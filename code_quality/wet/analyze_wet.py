@@ -174,12 +174,20 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
 
 
-    # copy #TODO: rm
-    shutil.rmtree(os.path.join(workspace, 'test_results'), ignore_errors=True)
-    os.makedirs(os.path.join(workspace, 'test_results'))
-    call("cp -r %s %s/test_results/build_repository"%(repo_buildspace, workspace))
-    call("cp -r %s %s/test_results/source_repository"%(repo_sourcespace, workspace))
-    call("cp -r %s %s/test_results/source_repository"%(repo_sourcespace, workspace))
+    # create dummy test results
+    env = dict()
+    env['INSTALL_DIR'] = os.getenv('INSTALL_DIR', '')
+    test_results_path = workspace + '/test_results'
+    if os.path.exists(test_results_path):
+        shutil.rmtree(test_results_path)
+    os.makedirs(test_results_path)
+    test_file= test_results_path + '/test_file.xml' 
+    f = open(test_file, 'w')
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write('<testsuite tests="1" failures="0" time="1" errors="0" name="dummy test">\n')
+    f.write('  <testcase name="dummy rapport" classname="Results" /> \n')
+    f.write('</testsuite> \n')
+    f.close()
 
 
 def main():
