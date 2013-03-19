@@ -118,9 +118,16 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     call("catkin_init_workspace %s"%repo_sourcespace, ros_env)
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
-    call("cmake %s -DCMAKE_TOOLCHAIN_FILE=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake"%repo_sourcespace, ros_env)
+    
+    helper = subprocess.Popen(('cmake %s -DCMAKE_TOOLCHAIN_FILE=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake'%(repo_sourcespace)).split(' '), env=ros_env)
+    helper.communicate()  
+    if helper.returncode != 0:
+        res = helper.returncode
+        print "helper_return_code is: %s"%(helper.returncode)
+        assert 'analysis_wet.py failed'
+        raise Exception("analysis_wet.py failed. Check out the console output above for details.")
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
-
+    
     # build repositories
     print "Build repo list"
     print "CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
