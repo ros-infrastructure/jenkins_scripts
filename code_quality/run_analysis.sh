@@ -54,12 +54,18 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
 
 elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'dry' ] ; then
     echo "Using rosdistro groovy"
-    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-bfl --yes 
+    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-ros-base --yes 
     sudo rosdep init
     rosdep update
-    source /opt/ros/$ROS_DISTRO/setup.bash
+    if ! source /opt/ros/$ROS_DISTRO/setup.bash; then
+        error_exit "Canot source setup.bash!  Aborting."
+    fi
     sudo easy_install ros-job-generation
-    sudo cp $HOME/chroot_configs/rostoolchain_precise/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake
+    if sudo cp $HOME/chroot_configs/rostoolchain_precise/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake; then
+        echo 'copied rostoolchain.cmake file successfully'
+    else
+        error_exit "Cannot copy rostoolchain.cmake!  Aborting."
+    fi
     cd $WORKSPACE
     source $HOME/chroot_configs/set_qacpp_path.sh
 
@@ -92,10 +98,16 @@ elif [ "$ROS_DISTRO" == 'fuerte' ] && [ "$BUILD_SYSTEM" == 'wet' ] ; then
 
 elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'wet' ]; then
     echo "Using rosdistro groovy"
-    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-bfl --yes 
-    source /opt/ros/$ROS_DISTRO/setup.bash
+    sudo apt-get install ia32-libs apt-utils python-rosinstall python-rosdep python-rospkg python-tk openssh-server ros-groovy-ros-base --yes 
+    if ! source /opt/ros/$ROS_DISTRO/setup.bash; then
+        error_exit "Canot source setup.bash!  Aborting."
+    fi
     sudo easy_install ros-job-generation
-    sudo cp $HOME/chroot_configs/rostoolchain_precise/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake 
+    if sudo cp $HOME/chroot_configs/rostoolchain_precise/rostoolchain.cmake /opt/ros/$ROS_DISTRO/share/ros/rostoolchain.cmake; then
+        echo 'copied rostoolchain.cmake file successfully'
+    else
+        error_exit "Cannot copy rostoolchain.cmake!  Aborting."
+    fi
     cd $WORKSPACE
     source $HOME/chroot_configs/set_qacpp_path.sh
 
