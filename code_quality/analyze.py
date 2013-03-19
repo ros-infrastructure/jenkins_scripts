@@ -81,13 +81,18 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
 	snapshots_path = env['INSTALL_DIR'] + '/snapshots/'
 	if os.path.exists(snapshots_path):
 	    shutil.rmtree(snapshots_path)
-	    
+	
+	# create dummy test results
         test_results_path = env['INSTALL_DIR'] + '/test_results'
 	if os.path.exists(test_results_path):
 	    shutil.rmtree(test_results_path)
 	os.makedirs(test_results_path)
 	test_file= test_results_path + '/test_file.xml' 
 	f = open(test_file, 'w')
+	f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+	f.write('<testsuite tests="1" failures="0" time="1" errors="0" name="dummy test">\n')
+	f.write('  <testcase name="dummy rapport" classname="Results" /> \n')
+	f.write('</testsuite> \n')
 	f.close()
 	
         # Parse distro file
