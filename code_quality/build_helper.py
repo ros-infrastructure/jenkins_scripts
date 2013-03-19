@@ -308,7 +308,7 @@ class HudsonHelper:
         except (CalledProcessError, OSError), e:
             failure = True
             print >> sys.stderr, '[%s] Error in build step:%s'%(NAME,e)
-            #assert False
+            assert False
             #assert false
             #if not self.keep_going:
             #    self.post_build(failure, test_failure, workspace)
