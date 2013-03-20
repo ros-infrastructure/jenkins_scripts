@@ -118,9 +118,16 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     call("catkin_init_workspace %s"%repo_sourcespace, ros_env)
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
-    call("cmake %s -DCMAKE_TOOLCHAIN_FILE=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake"%repo_sourcespace, ros_env)
+    
+    helper = subprocess.Popen(('cmake %s -DCMAKE_TOOLCHAIN_FILE=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake'%(repo_sourcespace)).split(' '), env=ros_env)
+    helper.communicate()  
+    if helper.returncode != 0:
+        res = helper.returncode
+        print "helper_return_code is: %s"%(helper.returncode)
+        assert 'analysis_wet.py failed'
+        raise Exception("analysis_wet.py failed. Check out the console output above for details.")
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
-
+    
     # build repositories
     print "Build repo list"
     print "CMAKE_PREFIX_PATH: %s"%ros_env['CMAKE_PREFIX_PATH']
@@ -162,17 +169,26 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     shutil.rmtree(os.path.join(workspace, 'snapshots_path'), ignore_errors=True)
     os.makedirs(os.path.join(workspace, 'snapshots_path'))
     snapshots_path = '%s/snapshots_path'%workspace
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s'%(workspace, workspace, snapshots_path)).split(' '), env=os.environ)
+    project_name = repo_list[0] + '-' + ros_distro
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s'%(workspace, workspace, snapshots_path, project_name)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
 
 
-    # copy #TODO: rm
-    shutil.rmtree(os.path.join(workspace, 'test_results'), ignore_errors=True)
-    os.makedirs(os.path.join(workspace, 'test_results'))
-    call("cp -r %s %s/test_results/build_repository"%(repo_buildspace, workspace))
-    call("cp -r %s %s/test_results/source_repository"%(repo_sourcespace, workspace))
-    call("cp -r %s %s/test_results/source_repository"%(repo_sourcespace, workspace))
+    # create dummy test results
+    env = dict()
+    env['INSTALL_DIR'] = os.getenv('INSTALL_DIR', '')
+    test_results_path = workspace + '/test_results'
+    if os.path.exists(test_results_path):
+        shutil.rmtree(test_results_path)
+    os.makedirs(test_results_path)
+    test_file= test_results_path + '/test_file.xml' 
+    f = open(test_file, 'w')
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write('<testsuite tests="1" failures="0" time="1" errors="0" name="dummy test">\n')
+    f.write('  <testcase name="dummy rapport" classname="Results" /> \n')
+    f.write('</testsuite> \n')
+    f.close()
 
 
 def main():
