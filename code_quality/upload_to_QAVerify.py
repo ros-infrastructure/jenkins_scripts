@@ -52,7 +52,9 @@ def get_options(required, optional):
     if 'snapshot' in ops:
         parser.add_option('--snapshot', dest = 'snapshot', default='snapshot', action='store',
                           help='snapshot folder')
-
+    if 'project' in ops:
+        parser.add_option('--project', dest = 'project', default='project', action='store',
+                          help='project name')
     (options, args) = parser.parse_args()
 
     # check if required arguments are there
@@ -71,13 +73,26 @@ def all_files(directory):
             
 
 if __name__ == '__main__':   
-    (options, args) = get_options(['path'], ['snapshot'])
+    (options, args) = get_options(['path', 'project'], ['snapshot'])
     if not options:
         exit(-1)
-    
+
+    #load user/passw for qaverify
+    lang = None
+    qaverify = dict()
+    filename = os.path.join(os.environ['HOME'], "chroot_configs", "qaverify.yaml")
+    #print 'filename: %s'%filename
+    if not os.path.exists(filename):
+        raise UtilException('Could not find %s "'%(filename))
+    with open(filename, 'r') as f:
+        data = yaml.load(f)
+    qaverify_user = data['user']
+    qaverify_pw = data['password']
+
 
     # Upload stacks to QAVerify 
-    print 'Upload stack results to QAVerify'      
+    print 'Upload stack results to QAVerify' 
+    print 'project name: %s'%options.project     
     stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
@@ -86,7 +101,7 @@ if __name__ == '__main__':
 	# Phase 1
 	call("qaimport QACPP -po qav::code=all -po qav::output=%s/snapshots/%s.qav qav::prqavcs=%s/qaverify-current/client/bin/prqavcs.xml -list %s/filelist.lst "%(options.path, stack, os.environ["HOME"], stack_dir),env, '\nPhase #1: Import to DB format')
 	# Phase 2	
-	call("upload -prqavcs %s/qaverify-current/client/bin/prqavcs.xml -host localhost -user admin -pass admin -db %s -prod QACPP %s/snapshots/%s.qav"%(os.environ["HOME"],stack,options.path,stack),env=env, message='\nPhase #2: Upload to Project DB')
+	call("upload -prqavcs %s/qaverify-current/client/bin/prqavcs.xml -host localhost -user %s -pass %s -db %s -prod QACPP %s/snapshots/%s.qav"%(os.environ["HOME"], qaverify_user, qaverify_pw, options.project,options.path,stack),env=env, message='\nPhase #2: Upload to Project DB')
 
 
 	        
@@ -100,5 +115,4 @@ if __name__ == '__main__':
     #    doc_dir = options.doc + '/' + package
     # 	 call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
     #		,env, 'Push package-yaml-file to ros-wiki ')        
-
 
