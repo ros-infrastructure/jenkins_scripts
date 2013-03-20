@@ -169,7 +169,8 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     shutil.rmtree(os.path.join(workspace, 'snapshots_path'), ignore_errors=True)
     os.makedirs(os.path.join(workspace, 'snapshots_path'))
     snapshots_path = '%s/snapshots_path'%workspace
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s'%(workspace, workspace, snapshots_path)).split(' '), env=os.environ)
+    project_name = repo_list + '-' + ros_distro
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s'%(workspace, workspace, snapshots_path, project_name)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
 
