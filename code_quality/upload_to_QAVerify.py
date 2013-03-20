@@ -76,7 +76,19 @@ if __name__ == '__main__':
     (options, args) = get_options(['path', 'project'], ['snapshot'])
     if not options:
         exit(-1)
-    
+
+    #load user/passw for qaverify
+    lang = None
+    qaverify = dict()
+    filename = os.path.join(os.environ['HOME'], "chroot_configs", "qaverify.yaml")
+    #print 'filename: %s'%filename
+    if not os.path.exists(filename):
+        raise UtilException('Could not find %s "'%(filename))
+    with open(filename, 'r') as f:
+        data = yaml.load(f)
+    qaverify_user = data['user']
+    qaverify_pw = data['password']
+
 
     # Upload stacks to QAVerify 
     print 'Upload stack results to QAVerify' 
@@ -89,7 +101,7 @@ if __name__ == '__main__':
 	# Phase 1
 	call("qaimport QACPP -po qav::code=all -po qav::output=%s/snapshots/%s.qav qav::prqavcs=%s/qaverify-current/client/bin/prqavcs.xml -list %s/filelist.lst "%(options.path, stack, os.environ["HOME"], stack_dir),env, '\nPhase #1: Import to DB format')
 	# Phase 2	
-	call("upload -prqavcs %s/qaverify-current/client/bin/prqavcs.xml -host localhost -user admin -pass admin -db %s -prod QACPP %s/snapshots/%s.qav"%(os.environ["HOME"],options.project,options.path,stack),env=env, message='\nPhase #2: Upload to Project DB')
+	call("upload -prqavcs %s/qaverify-current/client/bin/prqavcs.xml -host localhost -user %s -pass %s -db %s -prod QACPP %s/snapshots/%s.qav"%(os.environ["HOME"], qaverify_user, qaverify_pw, options.project,options.path,stack),env=env, message='\nPhase #2: Upload to Project DB')
 
 
 	        
