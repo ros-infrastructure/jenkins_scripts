@@ -14,6 +14,8 @@ import codecs
 import urllib2
 from time import gmtime, strftime
 
+WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
+ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -64,6 +66,36 @@ def get_options(required, optional):
 
     return (options, args)
     
+
+def call(command, env=None, message='', ignore_fail=False):
+    res = ''
+    err = ''
+    try:
+        print message+'\nExecuting command "%s"'%command
+        helper = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, env=env)
+        res, err = helper.communicate()
+        print str(res)
+        print str(err)
+        if helper.returncode != 0:
+            raise Exception
+        return res
+    except Exception:
+        if not ignore_fail:
+            message += "\n=========================================\n"
+            message += "Failed to execute '%s'"%command
+            message += "\n=========================================\n"
+            message += str(res)
+            message += "\n=========================================\n"
+            message += str(err)
+            message += "\n=========================================\n"
+            if env:
+                message += "ROS_PACKAGE_PATH = %s\n"%env['ROS_PACKAGE_PATH']
+                message += "ROS_ROOT = %s\n"%env['ROS_ROOT']
+                message += "PYTHONPATH = %s\n"%env['PYTHONPATH']
+                message += "\n=========================================\n"
+                generate_email(message, env)
+            raise Exception
+
 
 def all_files(directory):
     for path, dirs, files in os.walk(directory):
@@ -393,6 +425,62 @@ class ExportYAML:
         
         # export code lines of code
         self.create_loc()
+
+
+def _load_code_quality_file(filename, name, type_='package'):
+    """
+    Load code_quality.yaml properties into dictionary for package
+    @param filename: file to load code_quality data from
+    @param name: printable name (for debugging)
+    @return: code_quality properties dictionary
+    @raise UtilException: if unable to load. Text of error message is human-readable
+    """
+    print 'filename: %s'%filename
+    if not os.path.exists(filename):
+        raise UtilException('Newly proposed, mistyped, or obsolete %s. Could not find %s "'%(type_, type_) + name + '" in rosdoc')
+
+    try:
+        #filename = "/var/www/www.ros.org/html/doc/navigation/code_quality.yaml"
+        with open(filename) as f:
+            data = yaml.load(f)
+    except yaml.YAMLError, exc:
+        raise UtilException("Error loading code quality data: %s %s"%(filename,repr(exc)))
+
+    if not data:
+        raise UtilException("Unable to retrieve code quality data. Auto-generated documentation may need to regenerate")
+    return data
+
+def stack_code_quality_file(stack):
+    """
+    Generate filesystem path to code_quality.yaml for stack
+    """
+    return os.path.join(options.doc, stack, "code_quality.yaml")
+
+def load_stack_code_quality(stack_name, lang=None):
+    """
+    Load code_quality.yaml properties into dictionary for package
+    @param lang: optional language argument for localization, e.g. 'ja'
+    @return: stack code quality properties dictionary
+    @raise UtilException: if unable to load. Text of error message is human-readable
+    """
+    data = _load_code_quality_file(stack_code_quality_file(stack_name), stack_name, 'stack')
+    return data
+
+def update_distro_yaml(file_path, stack, new_average):
+    with open(file_path, 'r') as f:
+        distro_file = yaml.load(f)
+
+    #if stack in distro_file:
+     #   distro_file[stack] = new_average
+     #   print 'gotcha'
+    #else:
+    #    distro_file[stack] = new_average
+    distro_file[stack] = new_average
+    
+    with codecs.open(file_path, mode='w', encoding='utf-8') as f:
+        f.write(yaml.safe_dump(distro_file, default_style="'")) 
+
+
         
 if __name__ == '__main__':   
     (options, args) = get_options(['path', 'path_src', 'config', 'distro', 'stack', 'uri', 'uri_info', 'vcs_type'], ['doc','csv'])
@@ -433,3 +521,24 @@ if __name__ == '__main__':
 	# export
         hh = ExportYAML(config, package_dir, options.path_src, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
+        
+        
+        
+    # load distro yaml
+    lang = None
+    stack = (options.stack).strip('[]').strip("''")
+    collect_averages = dict()
+    data = load_stack_code_quality(stack, lang)
+    # collect all average values of metrics
+    for m in data.keys():
+        collect_averages[m] = data[m].get('metric_average', '')
+    # pull distro yaml
+    origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro 
+    destination= options.doc
+    call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, destination),os.environ, 'Pull rosdistro yaml')
+    # update distro yaml
+    file_path = destination + '/' + '%s.yaml'%options.distro 
+    update_distro_yaml(file_path, stack, collect_averages)
+    # push distro yaml
+    origin = options.doc + '/%s.yaml'%options.distro
+    call('sudo scp -oStrictHostKeyChecking=no -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')
