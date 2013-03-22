@@ -39,7 +39,7 @@ SVN_EXTERNALS_SUFFIX = 'all'
 SVN_STACKS_PATH = 'stacks'
 SVN_TRUNK_PATH = 'trunk'
 ROS_STACK_URI = 'https://code.ros.org/svn/ros/stacks/ros/tags'
-EMAIL_FROM_ADDR = 'ROS on-demand build <noreply@willowgarage.com>'
+EMAIL_FROM_ADDR = 'ROS on-demand build <noreply@osrfoundation.org>'
 
 # Where we wish to eventually install a .deb
 BUILDDEB_INSTALL_PATH = '/opt/ros/wg-all'
