@@ -194,8 +194,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
             print "helper_return_code is: %s"%(helper.returncode)
 	    if helper.returncode != 0:
 	        res = helper.returncode
-                print "helper_return_code is: %s"%(helper.returncode)
-                raise Exception("build_helper.py failed. Often an analysis mistake. Check out the console output above for details.")
+                
 	   
             # Concatenate filelists
             call('echo -e "\033[33;0m Color Text"', env, 'Set color to white')
@@ -241,6 +240,8 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
 
 	    print 'ANALYSIS PROCESS OF STACK %s DONE\n\n'%str(stack_name)
 	if res != 0:
+	    print "helper_return_code is: %s"%(helper.returncode)
+            raise Exception("build_helper.py failed. Often an analysis mistake. Check out the console output above for details.")
             return res
 
 
