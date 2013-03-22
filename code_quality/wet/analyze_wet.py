@@ -123,9 +123,6 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     helper.communicate()  
     if helper.returncode != 0:
         res = helper.returncode
-        print "helper_return_code is: %s"%(helper.returncode)
-        assert 'analysis_wet.py failed'
-        raise Exception("analysis_wet.py failed. Check out the console output above for details.")
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
     
     # build repositories
@@ -173,7 +170,11 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s'%(workspace, workspace, snapshots_path, project_name)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
-
+    
+    if res != 0:
+        print "helper_return_code is: %s"%(helper.returncode)
+        assert 'analysis_wet.py failed'
+        raise Exception("analysis_wet.py failed. Check out the console output above for details.")
 
     # create dummy test results
     env = dict()
