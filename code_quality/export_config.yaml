@@ -8,46 +8,20 @@ metrics:
         histogram_minval: 1
         histogram_maxval: 20
         histogram_recommendedMin: 1
-        histogram_recommendedMax: 10
+        histogram_recommendedMax: 15
         histogram_title_xaxis: Cyclomatic complexity (STCYC)
         histogram_title_yaxis: Number of functions
         data_type: int 
-    STLIN:    
-        name: STLIN
-        metric_type: function
-        brief: Number of maintainable lines of code
-        description: 'This is the total number of lines, including blank and comment lines, in a function definition between (but excluding) the opening and closing brace of the function body. It is computed on raw code. STLIN is undefined for functions which have #include’d code or macros which include braces in their definition.'
-        histogram_num_bins: 10
-        histogram_minval: 0
-        histogram_maxval: 100
-        histogram_recommendedMin: 20
-        histogram_recommendedMax: 70
-        histogram_title_xaxis: Number of maintainable lines of code (STLIN)
-        histogram_title_yaxis: Number of functions
-        data_type: int
-    STPAR:    
-        name: STPAR
-        metric_type: function
-        brief: Number of function parameters
-        description: 'This metric is a count of the number of declared parameters for each function.'
-        histogram_num_bins: 10
-        histogram_minval: 0
-        histogram_maxval: 10
-        histogram_recommendedMin: 0
-        histogram_recommendedMax: 5
-        histogram_title_xaxis: Number of function parameters (STPAR)
-        histogram_title_yaxis: Number of functions
-        data_type: int
     STPTH:    
         name: STPTH
         metric_type: function
         brief: Estimated static path count
         description: 'This gives an upper bound on the number of possible paths in the control flow of the function. It is the number of non-cyclic execution paths in a function.'
         histogram_num_bins: 10
-        histogram_minval: 0
-        histogram_maxval: 20
+        histogram_minval: 1
+        histogram_maxval: 300
         histogram_recommendedMin: 1
-        histogram_recommendedMax: 5
+        histogram_recommendedMax: 250
         histogram_title_xaxis: Estimated static path count (STPTH)
         histogram_title_yaxis: Number of functions
         data_type: int
@@ -59,8 +33,8 @@ metrics:
         histogram_num_bins: 10
         histogram_minval: 0
         histogram_maxval: 20
-        histogram_recommendedMin: 0
-        histogram_recommendedMax: 7
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 10
         histogram_title_xaxis: Number of function calls (STSUB)
         histogram_title_yaxis: Number of functions
         data_type: int      
@@ -73,7 +47,7 @@ metrics:
         histogram_minval: 0
         histogram_maxval: 2.0
         histogram_recommendedMin: 0.2
-        histogram_recommendedMax: 0.8
+        histogram_recommendedMax: 2.0
         histogram_title_xaxis: Comment to code ratio (STCDN)
         histogram_title_yaxis: Number of files
         data_type: float     
@@ -85,47 +59,21 @@ metrics:
         histogram_num_bins: 10
         histogram_minval: 0
         histogram_maxval: 10
-        histogram_recommendedMin: 6
-        histogram_recommendedMax: 9
+        histogram_recommendedMin: 0
+        histogram_recommendedMax: 5
         histogram_title_xaxis: Coupling between objects (STCBO)
         histogram_title_yaxis: Number of classes 
         data_type: int 
-    STDIT:    
-        name: STDIT
-        metric_type: class
-        brief: Deepest level of inheritance
-        description: 'This represents the number of derivations from the furthest base class down to this class. A high figure may indicate that the class depends on accumulated functionality, which makes understanding the class potentially difficult. This is one of the metrics defined by Chidamber & Kemerer.'
-        histogram_num_bins: 10
-        histogram_minval: 0
-        histogram_maxval: 10
-        histogram_recommendedMin: 2
-        histogram_recommendedMax: 8
-        histogram_title_xaxis: Deepest level of inheritance (STDIT)
-        histogram_title_yaxis: Number of classes 
-        data_type: int  
-    STLCM:    
-        name: STLCM
-        metric_type: class
-        brief: Lack of cohesion of methods within a class
-        description: 'Methods within a class are partitioned into sets that access independent sets of member objects. The STLCM metric is a count of sets of unrelated members for a type.'
-        histogram_num_bins: 10
-        histogram_minval: 0
-        histogram_maxval: 10 
-        histogram_recommendedMin: 0
-        histogram_recommendedMax: 4
-        histogram_title_xaxis: Lack of cohesion of methods within a class (STLCM)
-        histogram_title_yaxis: Number of classes
-        data_type: int 
-    STMTH:    
+   STMTH:    
         name: STMTH
         metric_type: class
         brief: Number of methods available in class
         description: 'The number of methods declared within a class. This does not include methods declared in base classes. Classes with a large number of methods will be difficult to understand.'
         histogram_num_bins: 20
         histogram_minval: 0
-        histogram_maxval: 20
-        histogram_recommendedMin: 5
-        histogram_recommendedMax: 17
+        histogram_maxval: 50
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 20
         histogram_title_xaxis: Number of methods available in class (STMTH)
         histogram_title_yaxis: Number of classes
         data_type: int  
@@ -138,22 +86,61 @@ this metric indicates greater dependence on the functionality of this class, and
 knock-on effects from changes to it.'
         histogram_num_bins: 10
         histogram_minval: 0
-        histogram_maxval: 10 
-        histogram_recommendedMin: 0.2
-        histogram_recommendedMax: 0.8
+        histogram_maxval: 20 
+        histogram_recommendedMin: 0
+        histogram_recommendedMax: 10
         histogram_title_xaxis: Number of immediate children (STNOC)
         histogram_title_yaxis: Number of classes
         data_type: int 
-    STNOP:    
-        name: STNOP
+    STXLN:    
+        name: STXLN
+        metric_type: function
+        brief: Number of executable lines
+        description: 'The count of lines of a function body (starting at the first non-comment token that follows the exception specification, through to the last brace) that contain tokens, where lines that only contain any of the following are not counted: {, }, comment and all tokens of declarations.'
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 100 
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 70
+        histogram_title_xaxis: Number of executable lines (STXLN)
+        histogram_title_yaxis: Number of functions
+        data_type: int 
+    STMIF:    
+        name: STMIF
+        metric_type: function
+        brief: Maximum nesting of control structures
+        description: 'This metric is a measure of the maximum control flow nesting in your source code. You can reduce the value of this metric by turning your nesting into separate functions. This will improve the readability of the code by reducing both the nesting and the average cyclomatic complexity per function.'
+        histogram_num_bins: 10
+        histogram_minval: 1
+        histogram_maxval: 10 
+        histogram_recommendedMin: 0
+        histogram_recommendedMax: 5
+        histogram_title_xaxis: Maximum nesting of control structures (STMIF)
+        histogram_title_yaxis: Number of functions
+        data_type: int 
+    STWMC:    
+        name: STWMC
         metric_type: class
-        brief: Number of immediate parents
-        description: 'This metric indicates the number of inheritances for a class. Root base classes have a value of 0 while classes derived with a single inheritance have a value of 1. Classes that have multiple inheritance are prohibited by some programming standards.'
+        brief: Weighted methods per class
+        description: ''
+        histogram_num_bins: 10
+        histogram_minval: 0
+        histogram_maxval: 200 
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 100
+        histogram_title_xaxis: Weighted methods per class (STWMC)
+        histogram_title_yaxis: Number of functions
+        data_type: int 
+    STDIT:    
+        name: STDIT
+        metric_type: class
+        brief: Deepest level of inheritance
+        description: 'This represents the number of derivations from the furthest base class down to this class. A high figure may indicate that the class depends on accumulated functionality, which makes understanding the class potentially difficult. This is one of the metrics defined by Chidamber & Kemerer.'
         histogram_num_bins: 10
         histogram_minval: 0
         histogram_maxval: 10 
-        histogram_recommendedMin: 3
-        histogram_recommendedMax: 9
-        histogram_title_xaxis: Number of immediate parents (STNOP)
-        histogram_title_yaxis: Number of classes
+        histogram_recommendedMin: 1
+        histogram_recommendedMax: 5
+        histogram_title_xaxis: Deepest level of inheritance (STDIT)
+        histogram_title_yaxis: Number of functions
         data_type: int 
