@@ -120,7 +120,8 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     os.chdir(repo_buildspace)
     
     helper = subprocess.Popen(('cmake %s -DCMAKE_TOOLCHAIN_FILE=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake'%(repo_sourcespace)).split(' '), env=ros_env)
-    helper.communicate()  
+    helper.communicate()
+    res = 0
     if helper.returncode != 0:
         res = helper.returncode
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
