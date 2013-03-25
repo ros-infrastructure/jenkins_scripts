@@ -120,7 +120,8 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     os.chdir(repo_buildspace)
     
     helper = subprocess.Popen(('cmake %s -DCMAKE_TOOLCHAIN_FILE=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake'%(repo_sourcespace)).split(' '), env=ros_env)
-    helper.communicate()  
+    helper.communicate()
+    res = 0
     if helper.returncode != 0:
         res = helper.returncode
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
@@ -170,7 +171,10 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s'%(workspace, workspace, snapshots_path, project_name)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
-    
+    if os.path.exists(snapshots_path):
+        shutil.rmtree(snapshots_path)
+
+
     if res != 0:
         print "helper_return_code is: %s"%(helper.returncode)
         assert 'analysis_wet.py failed'
