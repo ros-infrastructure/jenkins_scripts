@@ -64,7 +64,7 @@ metrics:
         histogram_title_xaxis: Coupling between objects (STCBO)
         histogram_title_yaxis: Number of classes 
         data_type: int 
-   STMTH:    
+    STMTH:    
         name: STMTH
         metric_type: class
         brief: Number of methods available in class
@@ -81,9 +81,7 @@ metrics:
         name: STNOC
         metric_type: class
         brief: Number of immediate children
-        description: 'This is the number of classes for which this class is an immediate base class. A high figure for
-this metric indicates greater dependence on the functionality of this class, and more potential
-knock-on effects from changes to it.'
+        description: 'This is the number of classes for which this class is an immediate base class. A high figure for this metric indicates greater dependence on the functionality of this class, and more potential knock-on effects from changes to it.'
         histogram_num_bins: 10
         histogram_minval: 0
         histogram_maxval: 20 
@@ -122,7 +120,7 @@ knock-on effects from changes to it.'
         name: STWMC
         metric_type: class
         brief: Weighted methods per class
-        description: ''
+        description: 'This is the sum of cyclomatic complexities for all the methods in the class. In the same way that cyclomatic complexity gives an indication of the amount of testing requierd for an individual function, this metric gives an indication of the amount of testing requiered for a whole class. This is one of the metrics defined by Chidamber & Kremer.'
         histogram_num_bins: 10
         histogram_minval: 0
         histogram_maxval: 200 
