@@ -164,7 +164,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
 	    # Get branch
 	    p = subprocess.Popen(["git", "branch"],cwd=r'%s/%s/%s/'%(workspace,STACK_DIR,stack_name), env=env,stdout=subprocess.PIPE)
 	    out = p.communicate()[0]
-	    branch = out[2:]
+	    branch = 'groovy-devel'#out[2:]
 	    uri_data['uri_info'] = branch
 	    print "branch: %s"%branch	   
 	elif vcs.type == 'hg':
