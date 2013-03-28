@@ -101,7 +101,7 @@ if __name__ == '__main__':
     # Upload stacks to QAVerify 
     print 'Upload stack results to QAVerify'    
     print 'project name: %s'%options.project   
-    stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
+    stack_files = [f for f in all_files(options.path) if f.endswith('CMakeCache.txt')]
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
         stack = options.stack_name #os.path.basename(stack_dir)
