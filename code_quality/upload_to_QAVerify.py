@@ -55,6 +55,11 @@ def get_options(required, optional):
     if 'project' in ops:
         parser.add_option('--project', dest = 'project', default='project', action='store',
                           help='project name')
+                          
+    if 'stack_name' in ops:
+        parser.add_option('--stack_name', dest = 'stack_name', default='stack_name', action='store',
+                          help='project name')
+                          
     (options, args) = parser.parse_args()
 
     # check if required arguments are there
@@ -73,7 +78,7 @@ def all_files(directory):
             
 
 if __name__ == '__main__':   
-    (options, args) = get_options(['path', 'project'], ['snapshot'])
+    (options, args) = get_options(['path', 'project', 'stack_name'], ['snapshot'])
     if not options:
         exit(-1)
 
@@ -96,7 +101,7 @@ if __name__ == '__main__':
     stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
-        stack = os.path.basename(stack_dir)
+        stack = options.stack_name #os.path.basename(stack_dir)
         snapshot_dir = options.snapshot + '/' + stack
 	# Phase 1
 	call("qaimport QACPP -po qav::code=all -po qav::output=%s/snapshots/%s.qav qav::prqavcs=%s/qaverify-current/client/bin/prqavcs.xml -list %s/filelist.lst "%(options.path, stack, os.environ["HOME"], stack_dir),env, '\nPhase #1: Import to DB format')
@@ -115,4 +120,3 @@ if __name__ == '__main__':
     #    doc_dir = options.doc + '/' + package
     # 	 call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
     #		,env, 'Push package-yaml-file to ros-wiki ')        
-

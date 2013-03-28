@@ -164,7 +164,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
 	    # Get branch
 	    p = subprocess.Popen(["git", "branch"],cwd=r'%s/%s/%s/'%(workspace,STACK_DIR,stack_name), env=env,stdout=subprocess.PIPE)
 	    out = p.communicate()[0]
-	    branch = out[2:]
+	    branch = 'groovy-devel'#out[2:]
 	    uri_data['uri_info'] = branch
 	    print "branch: %s"%branch	   
 	elif vcs.type == 'hg':
@@ -233,10 +233,25 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
 	    # Upload results to QAVerify
 	    print ' -----------------  upload results to QAVerify -----------------  '
 	    project_name = stack_name + '-' + ros_distro
-            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/upload_to_QAVerify.py --path %s --snapshot %s --project %s'%(workspace, workspace, snapshots_path, project_name)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/upload_to_QAVerify.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, workspace, snapshots_path, project_name, stack_name)).split(' '), env=env)
             helper.communicate()
             print '////////////////// upload results to QAVerify done ////////////////// \n\n'      
-            
+
+
+	    print ' -----------------  Remove directories -----------------  '
+            # Remove STACK_DIR, build, doc, cvs-folder's
+            if os.path.exists(stack_path):
+                shutil.rmtree(stack_path)
+            if os.path.exists(build_path):
+                shutil.rmtree(build_path)
+            if os.path.exists(doc_path):
+                shutil.rmtree(doc_path)
+            if os.path.exists(csv_path):
+                shutil.rmtree(csv_path)
+            if os.path.exists(snapshots_path):
+                shutil.rmtree(snapshots_path)
+            print '////////////////// Remove directories ////////////////// \n\n'
+
 
 	    print 'ANALYSIS PROCESS OF STACK %s DONE\n\n'%str(stack_name)
 	if res != 0:
