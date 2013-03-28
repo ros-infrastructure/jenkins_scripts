@@ -170,7 +170,7 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     os.makedirs(os.path.join(workspace, 'snapshots_path'))
     snapshots_path = '%s/snapshots_path'%workspace
     project_name = repo_list[0] + '-' + ros_distro
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, workspace, snapshots_path, project_name,  repo_list[0])).split(' '), env=os.environ)
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, repo_buildspace, snapshots_path, project_name,  repo_list[0])).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
     if os.path.exists(snapshots_path):

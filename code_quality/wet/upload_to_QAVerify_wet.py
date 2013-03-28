@@ -101,15 +101,15 @@ if __name__ == '__main__':
     # Upload stacks to QAVerify 
     print 'Upload stack results to QAVerify'    
     print 'project name: %s'%options.project   
-    stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
+    stack_files = [f for f in all_files(options.path) if f.endswith('CMakeCache.txt')]
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
         stack = options.stack_name #os.path.basename(stack_dir)
         snapshot_dir = options.snapshot + '/' + stack
-	# Phase 1
-	call("qaimport QACPP -po qav::code=all -po qav::output=%s/snapshots/%s.qav qav::prqavcs=%s/qaverify-current/client/bin/prqavcs.xml -list %s/filelist.lst "%(options.path, stack, os.environ["HOME"], stack_dir),env, '\nPhase #1: Import to DB format')
-	# Phase 2	
-	call("upload -prqavcs %s/qaverify-current/client/bin/prqavcs.xml -host localhost -user %s -pass %s -db %s -prod QACPP %s/snapshots/%s.qav"%(os.environ["HOME"], qaverify_user, qaverify_pw, options.project, options.path,stack),env=env, message='\nPhase #2: Upload to Project DB')
+        # Phase 1
+        call("qaimport QACPP -po qav::code=all -po qav::output=%s/snapshots/%s.qav qav::prqavcs=%s/qaverify-current/client/bin/prqavcs.xml -list %s/filelist.lst "%(options.path, stack, os.environ["HOME"], stack_dir),env, '\nPhase #1: Import to DB format')
+        # Phase 2	
+        call("upload -prqavcs %s/qaverify-current/client/bin/prqavcs.xml -host localhost -user %s -pass %s -db %s -prod QACPP %s/snapshots/%s.qav"%(os.environ["HOME"], qaverify_user, qaverify_pw, options.project, options.path,stack),env=env, message='\nPhase #2: Upload to Project DB')
 
 
 	        
