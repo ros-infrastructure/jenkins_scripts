@@ -233,7 +233,7 @@ def analyze_fuerte_groovy(ros_distro, stack_name, workspace, test_depends_on):
 	    # Upload results to QAVerify
 	    print ' -----------------  upload results to QAVerify -----------------  '
 	    project_name = stack_name + '-' + ros_distro
-            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/upload_to_QAVerify.py --path %s --snapshot %s --project %s'%(workspace, workspace, snapshots_path, project_name)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/upload_to_QAVerify.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, workspace, snapshots_path, project_name, stack_name)).split(' '), env=env)
             helper.communicate()
             print '////////////////// upload results to QAVerify done ////////////////// \n\n'      
 
