@@ -136,7 +136,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     except RuntimeError as ex:
         print "Exception %s: If you are not in the rosdistro and only in the devel", \
             " builds there will be no depends on"
-        return
+        depends_on = []
 
     print "Build depends_on list of repo list: %s"%(', '.join(depends_on))
     if len(depends_on) == 0:
