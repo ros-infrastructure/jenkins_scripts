@@ -100,9 +100,10 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     print "Create a new CMakeLists.txt file using catkin"
     ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
     call("catkin_init_workspace %s"%repo_sourcespace, ros_env)
+    test_results_dir = os.path.join(workspace, 'test_results')
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
-    call("cmake %s"%repo_sourcespace, ros_env)
+    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (repo_sourcespace, test_results_dir), ros_env)
     ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
 
     # build repositories and tests
@@ -123,7 +124,6 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # see if we need to do more work or not
     if not test_depends_on:
         print "We're not testing the depends-on repositories"
-        copy_test_results(workspace, repo_buildspace)
         return
 
     # get repo_list depends-on list
@@ -140,7 +140,6 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 
     print "Build depends_on list of repo list: %s"%(', '.join(depends_on))
     if len(depends_on) == 0:
-        copy_test_results(workspace, repo_buildspace)
         print "No wet groovy repositories depend on our repo list. Test finished here"
         return
 
@@ -187,7 +186,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s"%dependson_sourcespace, ros_env)
-    call("cmake %s"%dependson_sourcespace, ros_env)
+    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (dependson_sourcespace, test_results_dir), ros_env)
     ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
 
     # build repositories
@@ -201,7 +200,6 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # test repositories
     print "Test depends-on repositories"
     call("make run_tests", ros_env)
-    copy_test_results(workspace, dependson_buildspace)
 
 
 
