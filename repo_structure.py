@@ -38,19 +38,20 @@ import os
 import sys
 from common import append_pymodules_if_needed, BuildException, call, check_output
 
+
 def get_repo_revision(repo_folder, vcs_type):
     #Make sure we're in the right directory
     old_dir = os.getcwd()
     os.chdir(repo_folder)
 
     if vcs_type == 'git':
-        rev = check_output("git rev-parse HEAD").split('\n')[0] #
+        rev = check_output("git rev-parse HEAD").split('\n')[0]
     elif vcs_type == 'hg':
-        rev = check_output("hg id -i").split('\n')[0] #
+        rev = check_output("hg id -i").split('\n')[0]
     elif vcs_type == 'bzr':
-        rev = check_output("bzr revno").split('\n')[0] #
+        rev = check_output("bzr revno").split('\n')[0]
     elif vcs_type == 'svn':
-        rev = check_output("svnversion").split('\n')[0] #
+        rev = check_output("svnversion").split('\n')[0]
     else:
         rev = ""
         print >> sys.stderr, "Don't know how to get the version for vcs_type %s, doc generation will always run" % vcs_type
@@ -58,6 +59,7 @@ def get_repo_revision(repo_folder, vcs_type):
     #Make sure we go back to the original dir
     os.chdir(old_dir)
     return rev
+
 
 def get_revisions(rosinstall, base_dir):
     revisions = {}
@@ -69,6 +71,7 @@ def get_revisions(rosinstall, base_dir):
         if rev:
             revisions[local_name] = rev
     return revisions
+
 
 #Check the repos in a rosinstall file for any changes from the last run, update tags_db if necessary
 def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
@@ -111,6 +114,7 @@ def get_repo_manifests(repo_folder, manifest='package'):
 
     return location_cache
 
+
 def get_repo_packages(repo_folder):
     append_pymodules_if_needed()
     from catkin_pkg import packages as catkin_packages
@@ -131,6 +135,7 @@ def get_repo_packages(repo_folder):
 
     return packages
 
+
 def get_repositories_from_rosinstall(rosinstall):
     repos = []
     for item in rosinstall:
@@ -138,36 +143,39 @@ def get_repositories_from_rosinstall(rosinstall):
         repos.append(item[key]['local-name'])
     return repos
 
+
 def load_configuration(ros_distro, repo):
     try:
-        repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s.rosinstall'%(ros_distro, repo)
+        repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s.rosinstall' % (ros_distro, repo)
         f = urllib2.urlopen(repo_url)
         if f.code != 200:
             raise BuildException("Could not find a valid rosinstall file for %s at %s" % (repo, repo_url))
         doc_conf = yaml.load(f.read())
-    except (urllib2.URLError, urllib2.HTTPError) as e:
+    except (urllib2.URLError, urllib2.HTTPError):
         raise BuildException("Could not find a valid rosinstall file for %s at %s" % (repo, repo_url))
 
     depends_conf = []
     try:
-        depends_repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s_depends.rosinstall'%(ros_distro, repo)
+        depends_repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s_depends.rosinstall' % (ros_distro, repo)
         f = urllib2.urlopen(depends_repo_url)
         if f.code == 200:
             print "Found a depends rosinstall file for %s" % repo
             depends_conf = yaml.load(f.read())
-    except (urllib2.URLError, urllib2.HTTPError) as e:
+    except (urllib2.URLError, urllib2.HTTPError):
         print "Did not find a depends rosinstall file for %s" % repo
 
     return (doc_conf, depends_conf)
 
+
 def install_repo(docspace, workspace, repo, doc_conf, depends_conf):
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
-        print "Rosinstall for repo %s:\n%s"%(repo, doc_conf + depends_conf)
+        print "Rosinstall for repo %s:\n%s" % (repo, doc_conf + depends_conf)
         yaml.safe_dump(doc_conf + depends_conf, f, default_flow_style=False)
 
-    print "Created rosinstall file for repo %s, installing repo..."%repo
-    #TODO Figure out why rosinstall insists on having ROS available when called with nobuild, but not catkin
+    print "Created rosinstall file for repo %s, installing repo..." % repo
+    # TODO Figure out why rosinstall insists on having ROS available when called with nobuild, but not catkin
     call("rosinstall %s %s --nobuild --catkin" % (docspace, os.path.join(workspace, "repo.rosinstall")))
+
 
 #Find all the packages and stacks that have been installed
 #Also build a map to go from each package or stack name to a repo name
@@ -210,4 +218,3 @@ def build_repo_structure(repo_path, doc_conf, depends_conf):
         catkin_packages.update(local_catkin_packages)
 
     return (stacks, manifest_packages, catkin_packages, repo_map)
-

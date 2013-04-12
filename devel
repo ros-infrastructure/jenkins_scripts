@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from test_repositories import *
-import optparse
- 
+
+
 def main():
     parser = optparse.OptionParser()
     parser.add_option("--workspace", action="store", default=None)
@@ -10,19 +10,18 @@ def main():
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
-        print "Usage: %s ros_distro repository_name"%sys.argv[0]
+        print "Usage: %s ros_distro repository_name" % sys.argv[0]
         raise BuildException("Wrong number of parameters for devel script")
 
     ros_distro = args[0]
     repositories = args[1:]
-    versions = ['devel' for r in repositories]
+    versions = ['devel' for _ in repositories]
     if not options.workspace:
         options.workspace = os.environ['WORKSPACE']
 
-    print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(repositories))
-    test_repositories(ros_distro, repositories, versions, options.workspace, test_depends_on=False, 
+    print "Running prerelease test on distro %s and repositories %s" % (ros_distro, ', '.join(repositories))
+    test_repositories(ros_distro, repositories, versions, options.workspace, test_depends_on=False,
                       build_in_workspace=options.build_in_workspace, sudo=options.sudo)
-
 
 
 if __name__ == '__main__':

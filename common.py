@@ -1,13 +1,8 @@
-import urllib2
 import os
 import subprocess
 import sys
 import fnmatch
-import yaml
-import threading
-import time
-from Queue import Queue
-from threading import Thread
+
 
 def append_pymodules_if_needed():
     #TODO: This is a hack, in the chroot, the default python path does not
@@ -15,12 +10,11 @@ def append_pymodules_if_needed():
         sys.path.append("/usr/lib/pymodules/python2.7")
 
 
-
 def apt_get_update(sudo=False):
     if not sudo:
         call("apt-get update")
     else:
-        call("sudo apt-get update")        
+        call("sudo apt-get update")
 
 
 def apt_get_install(pkgs, rosdep=None, sudo=False):
@@ -37,23 +31,18 @@ def apt_get_install(pkgs, rosdep=None, sudo=False):
         print "Not installing anything from apt right now."
 
 
-
-
-
-
-
 def copy_test_results(workspace, buildspace, errors=None, prefix='dummy'):
     print "Preparing xml test results"
     try:
         os.makedirs(os.path.join(workspace, 'test_results'))
         print "Created test results directory"
-    except:
+    except Exception:
         pass
     os.chdir(os.path.join(workspace, 'test_results'))
     print "Copy all test results"
     count = 0
     base = os.path.join(buildspace, 'test_results')
-    for root, dirnames, filenames in os.walk(base):
+    for root, _, filenames in os.walk(base):
         for filename in fnmatch.filter(filenames, '*.xml'):
             absfile = os.path.join(root, filename)
             subfolders = os.path.dirname(os.path.relpath(absfile, base))
@@ -75,22 +64,22 @@ def copy_test_results(workspace, buildspace, errors=None, prefix='dummy'):
 
 def get_ros_env(setup_file):
     res = os.environ
-    print "Retrieve the ROS build environment by sourcing %s"%setup_file
-    command = ['bash', '-c', 'source %s && env'%setup_file]
-    proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+    print "Retrieve the ROS build environment by sourcing %s" % setup_file
+    command = ['bash', '-c', 'source %s && env' % setup_file]
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     for line in proc.stdout:
         (key, _, value) = line.partition("=")
         res[key] = value.split('\n')[0]
     proc.communicate()
     if proc.returncode != 0:
-        msg = "Failed to source %s"%setup_file
-        print "/!\  %s"%msg
+        msg = "Failed to source %s" % setup_file
+        print "/!\  %s" % msg
         raise BuildException(msg)
     return res
 
 
 def call_with_list(command, envir=None, verbose=True, return_output=False):
-    print "Executing command '%s'"%' '.join(command)
+    print "Executing command '%s'" % ' '.join(command)
     helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True, env=envir)
     if return_output:
         res = ''
@@ -106,16 +95,19 @@ def call_with_list(command, envir=None, verbose=True, return_output=False):
     helper.wait()
     if helper.returncode != 0:
         msg = "Failed to execute command '%s' with return code %d" % (command, helper.returncode)
-        print "/!\  %s"%msg
+        print "/!\  %s" % msg
         raise BuildException(msg)
     if return_output:
         return res
 
+
 def call(command, envir=None, verbose=True):
     return call_with_list(command.split(' '), envir, verbose)
 
+
 def check_output(command, envir=None, verbose=True):
     return call_with_list(command.split(' '), envir, verbose, True)
+
 
 def get_catkin_stack_deps(xml_path):
     import xml.etree.ElementTree as ET
@@ -125,6 +117,7 @@ def get_catkin_stack_deps(xml_path):
                  + [d.text for d in root.findall('build_depends')] \
                  + [d.text for d in root.findall('run_depends')]))
 
+
 def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     append_pymodules_if_needed()
     from catkin_pkg import packages
@@ -132,14 +125,14 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
 
     depends = []
     #First, we build the catkin deps
-    for name, path in catkin_packages.iteritems():
+    for path in catkin_packages.values():
         pkg_info = packages.parse_package(path)
         depends.extend([d.name \
                         for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends \
                         if not d.name in catkin_packages and not d.name in depends])
 
     #Next, we build the manifest deps for stacks
-    for name, path in stacks.iteritems():
+    for path in stacks.values():
         stack_manifest = rospkg.parse_manifest_file(path, rospkg.STACK_FILE)
         if stack_manifest.is_catkin:
             depends.extend(get_catkin_stack_deps(os.path.join(path, 'stack.xml')))
@@ -151,7 +144,7 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
                             and not d.name in depends])
 
     #Next, we build manifest deps for packages
-    for name, path in manifest_packages.iteritems():
+    for path in manifest_packages.values():
         pkg_manifest = rospkg.parse_manifest_file(path, rospkg.MANIFEST_FILE)
         depends.extend([d.name \
                         for d in pkg_manifest.depends + pkg_manifest.rosdeps \
@@ -160,8 +153,8 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
                         and not d.name in manifest_packages \
                         and not d.name in depends])
 
-
     return depends
+
 
 def build_local_dependency_graph(catkin_packages, manifest_packages):
     append_pymodules_if_needed()
@@ -187,6 +180,7 @@ def build_local_dependency_graph(catkin_packages, manifest_packages):
 
     return depends
 
+
 def reorder_paths(order, packages, paths):
     #we want to make sure that we can still associate packages with paths
     new_paths = []
@@ -195,6 +189,7 @@ def reorder_paths(order, packages, paths):
         new_paths.append(paths[old_index])
 
     return order, new_paths
+
 
 def get_dependency_build_order(depends):
     import networkx as nx
@@ -210,21 +205,20 @@ def get_dependency_build_order(depends):
     return order
 
 
-
 def get_dependencies(source_folder, build_depends=True, test_depends=True):
     # get the dependencies
-    print "Get the dependencies of source folder %s"%source_folder
+    print "Get the dependencies of source folder %s" % source_folder
     append_pymodules_if_needed()
     from catkin_pkg import packages
     pkgs = packages.find_packages(source_folder)
     local_packages = [p.name for p in pkgs.values()]
     if len(pkgs) > 0:
-        print "In folder %s, found packages %s"%(source_folder, ', '.join(local_packages))
+        print "In folder %s, found packages %s" % (source_folder, ', '.join(local_packages))
     else:
-        raise BuildException("Found no packages in folder %s. Are you sure your packages have a packages.xml file?"%source_folder)
+        raise BuildException("Found no packages in folder %s. Are you sure your packages have a packages.xml file?" % source_folder)
 
     depends = []
-    for name, pkg in pkgs.iteritems():
+    for pkg in pkgs.values():
         if build_depends:
             for d in pkg.build_depends + pkg.buildtool_depends:
                 if not d.name in depends and not d.name in local_packages:
@@ -237,7 +231,7 @@ def get_dependencies(source_folder, build_depends=True, test_depends=True):
     return depends
 
 
-
 class BuildException(Exception):
+
     def __init__(self, msg):
         self.msg = msg

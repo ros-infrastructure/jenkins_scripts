@@ -35,6 +35,7 @@
 import sys
 import rosdistro
 
+
 #Generates a rosinstall file for a package and it's dependences
 def generate_rosinstall(distro_name, packages):
     packages = packages if type(packages) == list else [packages]

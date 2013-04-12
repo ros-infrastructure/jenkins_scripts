@@ -35,9 +35,9 @@ import yaml
 import os
 import shutil
 from common import call, call_with_list, BuildException
-import subprocess
 import time
 import copy
+
 
 def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_deps, docspace, ros_distro, tags_location):
     #Get the relevant tags from the database
@@ -62,24 +62,25 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
 
         relative_tags_path = "doc/%s/tags/%s.tag" % (ros_distro, dep)
         if os.path.isfile(os.path.join(docspace, relative_tags_path)):
-            tags.append({'docs_url': '../../%s/html' % dep, 
+            tags.append({'docs_url': '../../%s/html' % dep,
                          'location': 'file://%s' % os.path.join(docspace, relative_tags_path),
                          'package': '%s' % dep})
 
     with open(rosdoc_tagfile, 'w+') as tags_file:
         yaml.dump(tags, tags_file)
 
+
 class TagsDb(object):
     def __init__(self, distro_name, workspace):
         self.workspace = workspace
         self.distro_name = distro_name
-        self.path  = os.path.abspath(os.path.join(self.workspace, 'rosdoc_tag_index'))
+        self.path = os.path.abspath(os.path.join(self.workspace, 'rosdoc_tag_index'))
         if os.path.exists(self.path):
             shutil.rmtree(self.path)
 
         command = ['bash', '-c', 'export GIT_SSH="%s/jenkins_scripts/git_ssh" \
                    && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s' \
-                   %(workspace, self.path) ]
+                   % (workspace, self.path)]
 
         call_with_list(command)
 
@@ -94,7 +95,7 @@ class TagsDb(object):
         self.rosinstall_hashes = self.read_folder('rosinstall_hashes')
 
     def has_rosinstall_hashes(self, rosinstall_name):
-        return self.rosinstall_hashes.has_key(rosinstall_name)
+        return rosinstall_name in self.rosinstall_hashes
 
     def get_rosinstall_hashes(self, rosinstall_name):
         return self.rosinstall_hashes[rosinstall_name]

@@ -4,6 +4,7 @@ import sys
 import yaml
 import copy
 
+
 #Replace vars with their actual values
 def generate_full_rules(stack_name, stack_version, release_name, orig_rules):
     rules = copy.deepcopy(orig_rules)
@@ -17,6 +18,7 @@ def generate_full_rules(stack_name, stack_version, release_name, orig_rules):
 
     return rules
 
+
 def generate_new_format(rules):
     new_rules = {}
     for name, conf in rules.iteritems():
@@ -26,11 +28,12 @@ def generate_new_format(rules):
         elif name == 'hg' or name == 'git' or name == 'bzr':
             new_rules['type'] = name
             if 'anon-uri' in conf:
-                new_rules['url']  = conf['anon-uri']
+                new_rules['url'] = conf['anon-uri']
             else:
                 new_rules['url'] = conf['uri']
             new_rules['version'] = conf['dev-branch']
     return new_rules
+
 
 def translate(filename, new_filename):
     with open(filename, 'r') as f:
@@ -62,6 +65,7 @@ def translate(filename, new_filename):
     with open(new_filename, 'w+') as f:
         print "Writing translated version to %s" % new_filename
         yaml.dump(new_yaml, f, default_flow_style=False)
+
 
 if __name__ == '__main__':
     translate(sys.argv[1], sys.argv[2])

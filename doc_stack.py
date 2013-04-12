@@ -33,25 +33,23 @@
 #
 # Revision $Id: rosdoc 11469 2010-10-12 00:56:25Z kwc $
 
-import urllib2
 import os
 import sys
 import yaml
 import shutil
 import subprocess
 import copy
-import time
 import rosdep
 from common import call, call_with_list, append_pymodules_if_needed,  \
                    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
                    copy_test_results
 from tags_db import TagsDb, build_tagfile
-from doc_manifest import write_stack_manifest, write_distro_specific_manifest, write_stack_manifests
-from repo_structure import get_repo_manifests, get_repo_packages, get_repositories_from_rosinstall, \
+from doc_manifest import write_distro_specific_manifest, write_stack_manifests
+from repo_structure import get_repositories_from_rosinstall, \
                            load_configuration, install_repo, build_repo_structure, rev_changes
-from message_generation import generate_messages_catkin, generate_messages_dry, \
-                               build_repo_messages_manifest, build_repo_messages, \
+from message_generation import build_repo_messages_manifest, build_repo_messages, \
                                build_repo_messages_catkin_stacks
+
 
 def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages):
     apt_deps = []
@@ -71,6 +69,7 @@ def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_pac
 
     return apt_deps
 
+
 def get_full_apt_deps(apt_deps, apt):
     full_apt_deps = copy.deepcopy(apt_deps)
     for dep in apt_deps:
@@ -79,6 +78,7 @@ def get_full_apt_deps(apt_deps, apt):
 
     #Make sure that we don't have any duplicates
     return list(set(full_apt_deps))
+
 
 def document_packages(manifest_packages, catkin_packages, build_order,
                       repos_to_doc, sources, tags_db, full_apt_deps,
@@ -109,7 +109,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         command = ['bash', '-c', '%s \
                    && export ROS_PACKAGE_PATH=%s:$ROS_PACKAGE_PATH \
                    && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml -q' \
-                   %(' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path) ]
+                   % (' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path)]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         #proc = subprocess.Popen(command)
         proc.communicate()
@@ -117,9 +117,9 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Some doc runs won't generate tag files, so we need to check if they
         #exist before adding them to the list
         if(os.path.exists(tags_path)):
-            package_tags = {'location':'%s' % (os.path.basename(relative_tags_path)),
-                                 'docs_url':'../../../api/%s/html'%(package),
-                                 'package':'%s'%package}
+            package_tags = {'location': '%s' % (os.path.basename(relative_tags_path)),
+                                 'docs_url': '../../../api/%s/html' % (package),
+                                 'package': '%s' % package}
 
             #If the package has a deb name, then we'll store the tags for it
             #alongside that name
@@ -134,7 +134,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #We also need to add information to each package manifest that we only
         #have availalbe in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
-                                       package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, package),
+                                       package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, package),
                                        tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'])
 
         print "Done"
@@ -259,7 +259,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #We want to pull all the tagfiles available once from the server
     tags_location = os.path.join(workspace, ros_distro)
-    command = ['bash', '-c', 
+    command = ['bash', '-c',
                'rsync -e "ssh -o StrictHostKeyChecking=no" -qrz rosbuild@ros.org:/var/www/www.ros.org/html/doc/%s/tags %s' % (ros_distro, tags_location)]
     call_with_list(command)
 
@@ -303,7 +303,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     try:
         os.makedirs(os.path.join(workspace, 'test_results'))
         print "Created test results directory"
-    except:
+    except Exception:
         pass
 
     if build_errors:
@@ -327,6 +327,7 @@ Depends rosinstall:\n%s""" % (build_errors,
                           "message_generation_failure")
     else:
         copy_test_results(workspace, docspace)
+
 
 def main():
     arguments = sys.argv[1:]

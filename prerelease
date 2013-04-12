@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from test_repositories import *
-import optparse
- 
+
+
 def main():
     parser = optparse.OptionParser()
     parser.add_option("--workspace", action="store", default=None)
@@ -9,8 +9,8 @@ def main():
     parser.add_option("--sudo", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
-    if len(args) <= 2 or len(args)%2 != 1:
-        print "Usage: %s ros_distro repo1 version1 repo2 version2 ..."%sys.argv[0]
+    if len(args) <= 2 or len(args) % 2 != 1:
+        print "Usage: %s ros_distro repo1 version1 repo2 version2 ..." % sys.argv[0]
         print " - with ros_distro the name of the ros distribution (e.g. 'fuerte' or 'groovy')"
         print " - with repo the name of the repository"
         print " - with version 'latest', 'devel', or the actual version number (e.g. 0.2.5)."
@@ -18,17 +18,16 @@ def main():
 
     ros_distro = args[0]
     repo_list = [args[i] for i in range(1, len(args), 2)]
-    version_list = [args[i+1] for i in range(1, len(args), 2)]
+    version_list = [args[i + 1] for i in range(1, len(args), 2)]
     if not options.workspace:
         try:
             options.workspace = os.environ['WORKSPACE']
         except KeyError:
             raise BuildException("Neither a workspace is specified on the command line nor in the environment")
 
-    print "Running prerelease test on distro %s and repositories %s"%(ros_distro, ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
-    test_repositories(ros_distro, repo_list, version_list, options.workspace,  test_depends_on=True, 
+    print "Running prerelease test on distro %s and repositories %s" % (ros_distro, ', '.join(["%s (%s)" % (r, v) for r, v in zip(repo_list, version_list)]))
+    test_repositories(ros_distro, repo_list, version_list, options.workspace, test_depends_on=True,
                       build_in_workspace=options.build_in_workspace, sudo=options.sudo)
-
 
 
 if __name__ == '__main__':

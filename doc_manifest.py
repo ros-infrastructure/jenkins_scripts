@@ -37,8 +37,9 @@ import time
 import yaml
 from repo_structure import get_repo_manifests
 
-def write_stack_manifest(output_dir, stack_name, manifest, 
-                         vcs_type, vcs_uri, api_homepage, 
+
+def write_stack_manifest(output_dir, stack_name, manifest,
+                         vcs_type, vcs_uri, api_homepage,
                          packages, tags_db, repo_name, doc_job,
                          version):
     if not os.path.exists(output_dir):
@@ -78,8 +79,9 @@ def write_stack_manifest(output_dir, stack_name, manifest,
     with open(os.path.join(output_dir, 'manifest.yaml'), 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
-def write_distro_specific_manifest(manifest_file, package, vcs_type, 
-                                   vcs_uri, api_homepage, tags_db, 
+
+def write_distro_specific_manifest(manifest_file, package, vcs_type,
+                                   vcs_uri, api_homepage, tags_db,
                                    repo_name, doc_job, version):
     m_yaml = {}
     if os.path.isfile(manifest_file):
@@ -118,6 +120,7 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
     with open(manifest_file, 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
+
 def write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_job, homepage):
     #Write stack manifest files for all stacks, we can just do this off the
     #stack.xml files
@@ -128,5 +131,4 @@ def write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_j
         stack_packages = get_repo_manifests(path, manifest='package').keys()
         stack_relative_doc_path = "%s/doc/%s/api/%s" % (docspace, ros_distro, stack)
         stack_doc_path = os.path.abspath(stack_relative_doc_path)
-        write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" %(homepage, ros_distro, stack), stack_packages, tags_db, repo_map[stack]['name'], doc_job, repo_map[stack]['version'])
-
+        write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, stack), stack_packages, tags_db, repo_map[stack]['name'], doc_job, repo_map[stack]['version'])

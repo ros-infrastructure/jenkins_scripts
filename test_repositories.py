@@ -1,21 +1,16 @@
 #!/usr/bin/env python
-import os
-import sys
-import subprocess
-import string
-import fnmatch
-import shutil
+
 import optparse
-import shutil
 import rosdep
+import shutil
+
 from common import *
-from time import sleep
 
 
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False):
-    print "Testing on distro %s"%ros_distro
-    print "Testing repositories %s"%', '.join(repo_list)
-    print "Testing versions %s"%', '.join(version_list)
+    print "Testing on distro %s" % ros_distro
+    print "Testing repositories %s" % ', '.join(repo_list)
+    print "Testing versions %s" % ', '.join(version_list)
     if test_depends_on:
         print "Testing depends-on"
     else:
@@ -31,7 +26,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         tmpdir = os.path.join('/tmp', 'test_repositories')
     try:
         shutil.rmtree(tmpdir)
-    except:
+    except Exception:
         print "Temp folder did not exist yet"
     repo_sourcespace = os.path.join(tmpdir, 'src_repository')
     dependson_sourcespace = os.path.join(tmpdir, 'src_depends_on')
@@ -43,20 +38,20 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     ros_apt = '/etc/apt/sources.list.d/ros-latest.list'
     if not os.path.exists(ros_apt):
         with open(ros_apt, 'w') as f:
-            f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main"%os.environ['OS_PLATFORM'])
-        call("wget http://packages.ros.org/ros.key -O %s/ros.key"%workspace)
-        call("apt-key add %s/ros.key"%workspace)
+            f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main" % os.environ['OS_PLATFORM'])
+        call("wget http://packages.ros.org/ros.key -O %s/ros.key" % workspace)
+        call("apt-key add %s/ros.key" % workspace)
     apt_get_update(sudo)
 
     # install stuff we need
     print "Installing Debian packages we need for running this script"
-    apt_get_install(['python-catkin-pkg', 'python-rosinstall' , 'python-rosdistro'], sudo=sudo)
+    apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro'], sudo=sudo)
     import rosdistro
 
     # parse the rosdistro file
-    print "Parsing rosdistro file for %s"%ros_distro
+    print "Parsing rosdistro file for %s" % ros_distro
     distro = rosdistro.RosDistro(ros_distro)
-    print "Parsing devel file for %s"%ros_distro
+    print "Parsing devel file for %s" % ros_distro
     devel = rosdistro.DevelDistro(ros_distro)
 
     # Create rosdep object
@@ -68,43 +63,43 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     rosinstall = ""
     for repo, version in zip(repo_list, version_list):
         if version == 'devel':
-            if not devel.repositories.has_key(repo):
-                raise BuildException("Repository %s does not exist in Devel Distro"%repo)
+            if repo not in devel.repositories:
+                raise BuildException("Repository %s does not exist in Devel Distro" % repo)
             print "Using devel distro file to download repositories"
             rosinstall += devel.repositories[repo].get_rosinstall()
         else:
-            if not distro.get_repositories().has_key(repo):
-                raise BuildException("Repository %s does not exist in Ros Distro"%repo)
+            if repo not in distro.get_repositories():
+                raise BuildException("Repository %s does not exist in Ros Distro" % repo)
             if version in ['latest', 'master']:
                 print "Using latest release distro file to download repositories"
                 rosinstall += distro.get_rosinstall(repo, version='master')
             else:
-                print "Using version %s of release distro file to download repositories"%version
+                print "Using version %s of release distro file to download repositories" % version
                 rosinstall += distro.get_rosinstall(repo, version)
-    print "rosinstall file for all repositories: \n %s"%rosinstall
+    print "rosinstall file for all repositories: \n %s" % rosinstall
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         f.write(rosinstall)
     print "Install repo list from source"
     os.makedirs(repo_sourcespace)
-    call("rosinstall %s %s/repo.rosinstall --catkin"%(repo_sourcespace, workspace))
+    call("rosinstall %s %s/repo.rosinstall --catkin" % (repo_sourcespace, workspace))
 
     # get the repositories build dependencies
     print "Get build dependencies of repo list"
     repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, test_depends=False)
-    print "Install build dependencies of repo list: %s"%(', '.join(repo_build_dependencies))
+    print "Install build dependencies of repo list: %s" % (', '.join(repo_build_dependencies))
     apt_get_install(repo_build_dependencies, rosdep_resolver, sudo)
 
     # replace the CMakeLists.txt file for repositories that use catkin
     print "Removing the CMakeLists.txt file generated by rosinstall"
     os.remove(os.path.join(repo_sourcespace, 'CMakeLists.txt'))
     print "Create a new CMakeLists.txt file using catkin"
-    ros_env = get_ros_env('/opt/ros/%s/setup.bash'%ros_distro)
-    call("catkin_init_workspace %s"%repo_sourcespace, ros_env)
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
+    call("catkin_init_workspace %s" % repo_sourcespace, ros_env)
     test_results_dir = os.path.join(workspace, 'test_results')
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
     call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (repo_sourcespace, test_results_dir), ros_env)
-    ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
+    #ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
 
     # build repositories and tests
     print "Build repo list"
@@ -114,7 +109,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # get the repositories test and run dependencies
     print "Get test and run dependencies of repo list"
     repo_test_dependencies = get_dependencies(repo_sourcespace, build_depends=False, test_depends=True)
-    print "Install test and run dependencies of repo list: %s"%(', '.join(repo_test_dependencies))
+    print "Install test and run dependencies of repo list: %s" % (', '.join(repo_test_dependencies))
     apt_get_install(repo_test_dependencies, rosdep_resolver, sudo)
 
     # run tests
@@ -127,38 +122,38 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         return
 
     # get repo_list depends-on list
-    print "Get list of wet repositories that build-depend on repo list %s"%', '.join(repo_list)
+    print "Get list of wet repositories that build-depend on repo list %s" % ', '.join(repo_list)
     depends_on = []
     try:
         for d in distro.get_depends_on(repo_list)['build'] + distro.get_depends_on(repo_list)['buildtool']:
             if not d in depends_on and not d in repo_list:
                 depends_on.append(d)
-    except RuntimeError as ex:
+    except RuntimeError:
         print "Exception %s: If you are not in the rosdistro and only in the devel", \
             " builds there will be no depends on"
         depends_on = []
 
-    print "Build depends_on list of repo list: %s"%(', '.join(depends_on))
+    print "Build depends_on list of repo list: %s" % (', '.join(depends_on))
     if len(depends_on) == 0:
         print "No wet groovy repositories depend on our repo list. Test finished here"
         return
 
     # install depends_on repositories from source
     rosinstall = distro.get_rosinstall(depends_on)
-    print "Rosinstall for depends_on:\n %s"%rosinstall
-    with open(workspace+"/depends_on.rosinstall", 'w') as f:
+    print "Rosinstall for depends_on:\n %s" % rosinstall
+    with open(workspace + "/depends_on.rosinstall", 'w') as f:
         f.write(rosinstall)
     print "Created rosinstall file for depends on"
 
     # install all repository and system dependencies of the depends_on list
-    print "Install all depends_on from source: %s"%(', '.join(depends_on))
+    print "Install all depends_on from source: %s" % (', '.join(depends_on))
     os.makedirs(dependson_sourcespace)
-    call("rosinstall --catkin %s %s/depends_on.rosinstall"%(dependson_sourcespace, workspace))
+    call("rosinstall --catkin %s %s/depends_on.rosinstall" % (dependson_sourcespace, workspace))
 
     # get build and test dependencies of depends_on list
     dependson_build_dependencies = []
     for d in get_dependencies(dependson_sourcespace, build_depends=True, test_depends=False):
-        print "  Checking dependency %s"%d
+        print "  Checking dependency %s" % d
         if d in dependson_build_dependencies:
             print "    Already in dependson_build_dependencies"
         if d in depends_on:
@@ -167,13 +162,12 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
             print "    Is on of the repositories tested"
         if not d in dependson_build_dependencies and not d in depends_on and not d in repo_list:
             dependson_build_dependencies.append(d)
-    print "Build dependencies of depends_on list are %s"%(', '.join(dependson_build_dependencies))
+    print "Build dependencies of depends_on list are %s" % (', '.join(dependson_build_dependencies))
     dependson_test_dependencies = []
     for d in get_dependencies(dependson_sourcespace, build_depends=False, test_depends=True):
         if not d in dependson_test_dependencies and not d in depends_on and not d in repo_list:
             dependson_test_dependencies.append(d)
-    print "Test dependencies of depends_on list are %s"%(', '.join(dependson_test_dependencies))
-
+    print "Test dependencies of depends_on list are %s" % (', '.join(dependson_test_dependencies))
 
     # install build dependencies
     print "Install all build dependencies of the depends_on list"
@@ -185,9 +179,9 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     os.makedirs(dependson_buildspace)
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
-    call("catkin_init_workspace %s"%dependson_sourcespace, ros_env)
+    call("catkin_init_workspace %s" % dependson_sourcespace, ros_env)
     call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (dependson_sourcespace, test_results_dir), ros_env)
-    ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
+    #ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
 
     # build repositories
     print "Build depends-on repositories"
@@ -202,15 +196,13 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     call("make run_tests", ros_env)
 
 
-
-
 def main():
     parser = optparse.OptionParser()
     parser.add_option("--depends_on", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
-    if len(args) <= 2 or len(args)%2 != 1:
-        print "Usage: %s ros_distro repo1 version1 repo2 version2 ..."%sys.argv[0]
+    if len(args) <= 2 or len(args) % 2 != 1:
+        print "Usage: %s ros_distro repo1 version1 repo2 version2 ..." % sys.argv[0]
         print " - with ros_distro the name of the ros distribution (e.g. 'fuerte' or 'groovy')"
         print " - with repo the name of the repository"
         print " - with version 'latest', 'devel', or the actual version number (e.g. 0.2.5)."
@@ -219,13 +211,12 @@ def main():
     ros_distro = args[0]
 
     repo_list = [args[i] for i in range(1, len(args), 2)]
-    version_list = [args[i+1] for i in range(1, len(args), 2)]
+    version_list = [args[i + 1] for i in range(1, len(args), 2)]
     workspace = os.environ['WORKSPACE']
 
-    print "Running test_repositories test on distro %s and repositories %s"%(ros_distro,
-                                                                      ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
+    print "Running test_repositories test on distro %s and repositories %s" % (ros_distro,
+                                                                      ', '.join(["%s (%s)" % (r, v) for r, v in zip(repo_list, version_list)]))
     test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
-
 
 
 if __name__ == '__main__':

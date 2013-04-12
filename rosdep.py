@@ -1,4 +1,3 @@
-import os
 from common import *
 
 
@@ -39,13 +38,13 @@ class RosDepResolver:
         return res
 
     def to_ros(self, apt_entry):
-        if not self.a2r.has_key(apt_entry):
-            print "Could not find %s in rosdep keys. Rosdep knows about these keys: %s"%(apt_entry, ', '.join(self.a2r.keys()))
+        if apt_entry not in self.a2r:
+            print "Could not find %s in rosdep keys. Rosdep knows about these keys: %s" % (apt_entry, ', '.join(self.a2r.keys()))
         return self.a2r[apt_entry]
 
     def to_apt(self, ros_entry):
-        if not self.r2a.has_key(ros_entry):
-            print "Could not find %s in keys. Have keys %s"%(ros_entry, ', '.join(self.r2a.keys()))
+        if ros_entry not in self.r2a:
+            print "Could not find %s in keys. Have keys %s" % (ros_entry, ', '.join(self.r2a.keys()))
         return self.r2a[ros_entry]
 
     def has_ros(self, ros_entry):
@@ -53,6 +52,7 @@ class RosDepResolver:
 
     def has_apt(self, apt_entry):
         return apt_entry in self.a2r
+
 
 class RosDep:
     def __init__(self, ros_distro):
@@ -71,17 +71,16 @@ class RosDep:
         if r in self.r2a:
             return self.r2a[r]
         else:
-            res = check_output("rosdep resolve %s"%r, self.env).split('\n')
+            res = check_output("rosdep resolve %s" % r, self.env).split('\n')
             if len(res) == 1:
                 raise Exception("Could not resolve rosdep")
-            a = check_output("rosdep resolve %s"%r, self.env).split('\n')[1]
-            print "Rosdep %s resolved into %s"%(r, a)
+            a = check_output("rosdep resolve %s" % r, self.env).split('\n')[1]
+            print "Rosdep %s resolved into %s" % (r, a)
             self.r2a[r] = a
             self.a2r[a] = r
             return a
 
     def to_stack(self, a):
         if not a in self.a2r:
-            print "%s not in apt-to-rosdep cache"%a
+            print "%s not in apt-to-rosdep cache" % a
         return self.a2r[a]
-
