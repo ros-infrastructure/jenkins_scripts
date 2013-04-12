@@ -129,9 +129,15 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     # get repo_list depends-on list
     print "Get list of wet repositories that build-depend on repo list %s"%', '.join(repo_list)
     depends_on = []
-    for d in distro.get_depends_on(repo_list)['build'] + distro.get_depends_on(repo_list)['buildtool']:
-        if not d in depends_on and not d in repo_list:
-            depends_on.append(d)
+    try:
+        for d in distro.get_depends_on(repo_list)['build'] + distro.get_depends_on(repo_list)['buildtool']:
+            if not d in depends_on and not d in repo_list:
+                depends_on.append(d)
+    except RuntimeError as ex:
+        print "Exception %s: If you are not in the rosdistro and only in the devel", \
+            " builds there will be no depends on"
+        depends_on = []
+
     print "Build depends_on list of repo list: %s"%(', '.join(depends_on))
     if len(depends_on) == 0:
         copy_test_results(workspace, repo_buildspace)

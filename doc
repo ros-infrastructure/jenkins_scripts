@@ -9,7 +9,7 @@ from common import get_ros_env, call, check_output, BuildException
 from doc_stack import document_repo
 
 def install_catkin_basic(ros_distro):
-    catkin_basic_url = 'https://raw.github.com/wmeeusse/catkin_basic/master/opt/ros/groovy/share/catkin_basic/cmake/catkin_basicConfig.cmake'
+    catkin_basic_url = 'https://raw.github.com/ros-infrastructure/catkin_basic/master/opt/ros/groovy/share/catkin_basic/cmake/catkin_basicConfig.cmake'
     try:
         web_file = urllib2.urlopen(catkin_basic_url)
         install_dir = "/opt/ros/%s/share/catkin_basic/cmake" % ros_distro
