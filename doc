@@ -5,7 +5,7 @@ import urllib2
 import datetime
 import shutil
 from common import get_ros_env, call, check_output, BuildException
-from doc_stack import document_repo
+from doc_stack import document_necessary, document_repo
 
 
 def install_catkin_basic(ros_distro):
@@ -106,6 +106,25 @@ def main():
     call("apt-key add %s/ros.key" % workspace)
     call("apt-get update")
 
+    call("apt-get install python-rosinstall --yes")
+
+    #TODO: Hack to install fuerte tools to document electric
+    install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
+    call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
+
+    rosdoc_lite_version = install_rosdoc_lite(workspace, install_distro)
+    print "Done installing rosdoc_lite"
+
+    jenkins_scripts_version = get_jenkins_scripts_version(workspace)
+
+    print "rosdoc_lite version: %s" % rosdoc_lite_version
+    print "jenkins_scripts version: %s" % jenkins_scripts_version
+
+    necessary = document_necessary(workspace, docspace, ros_distro, stack,
+                                   rosdoc_lite_version, jenkins_scripts_version)
+    if not necessary:
+        return
+
     print "Installing lsb-release and pkg-config"
     call("apt-get install pkg-config lsb-release --yes")
 
@@ -133,30 +152,20 @@ def main():
         call("pip install kitchen")
     else:
         call("apt-get install python-kitchen --yes")
-    call("apt-get install python-catkin-pkg python-rospkg python-networkx python-rosinstall python-rosdistro --yes")
-
-    #TODO: Hack to install fuerte tools to document electric
-    install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
-    call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
+    call("apt-get install python-catkin-pkg python-rospkg python-networkx python-rosdistro --yes")
 
     #TODO: Replace with commented line below
     call("apt-get install graphviz python-sphinx python-yaml doxygen python-epydoc --yes")
     #TODO: Put back in
     #call("apt-get install ros-%s-rosdoc-lite --yes" % ros_distro)
     install_catkin_basic(install_distro)
-    rosdoc_lite_version = install_rosdoc_lite(workspace, install_distro)
-    print "Done installing ros and rosdoc_lite"
-
-    jenkins_scripts_version = get_jenkins_scripts_version(workspace)
-
-    print "rosdoc_lite version: %s" % rosdoc_lite_version
-    print "jenkins_scripts version: %s" % jenkins_scripts_version
+    print "Done installing ros"
 
     #Run documentation generation on the stack
     homepage = 'http://ros.org/doc'
     document_repo(workspace, docspace, ros_distro, stack,
                   os.environ['OS_PLATFORM'], os.environ['ARCH'],
-                  homepage, rosdoc_lite_version, jenkins_scripts_version)
+                  homepage, **necessary)
 
 
 if __name__ == '__main__':

@@ -141,31 +141,16 @@ def document_packages(manifest_packages, catkin_packages, build_order,
     return repo_tags
 
 
-def document_repo(workspace, docspace, ros_distro, repo,
-                  platform, arch, homepage,
-                  rosdoc_lite_version, jenkins_scripts_version, force_doc=False):
+def document_necessary(workspace, docspace, ros_distro, repo,
+                       rosdoc_lite_version, jenkins_scripts_version, force_doc=False):
     append_pymodules_if_needed()
-    doc_job = "doc-%s-%s" % (ros_distro, repo)
     print "Working on distro %s and repo %s" % (ros_distro, repo)
 
     #Load the rosinstall configurations for the repository
     doc_conf, depends_conf = load_configuration(ros_distro, repo)
 
-    #Get the list of repositories that should have documentation run on them
-    #These are all of the repos that are not in the depends rosinsall file
-    repos_to_doc = get_repositories_from_rosinstall(doc_conf)
-
     #Install the repository
     install_repo(docspace, workspace, repo, doc_conf, depends_conf)
-    repo_path = os.path.realpath("%s" % (docspace))
-    print "Repo path %s" % repo_path
-
-    #Walk through the installed repositories and find old-style packages, new-stye packages, and stacks
-    stacks, manifest_packages, catkin_packages, repo_map = build_repo_structure(repo_path, doc_conf, depends_conf)
-    print "Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys())
-    #print "Catkin packages: %s" % catkin_packages
-    #print "Manifest packages: %s" % manifest_packages
-    #print "Stacks: %s" % stacks
 
     #Load information about existing tags
     tags_db = TagsDb(ros_distro, workspace)
@@ -184,15 +169,36 @@ def document_repo(workspace, docspace, ros_distro, repo,
     old_jenkins_scripts_hash = repo_hashes.get('jenkins_scripts-sys', None)
     print "REPO HASHES: %s" % repo_hashes
 
-    if not changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
+    if changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
         print "There were no changes to any of the repositories we document. Not running documentation."
         copy_test_results(workspace, docspace)
-        return
+        return False
 
     #Make sure to update the versions of jenkins_scripts and rosdoc_lite for this repo list
     repo_hashes['rosdoc_lite-sys'] = rosdoc_lite_version
     repo_hashes['jenkins_scripts-sys'] = jenkins_scripts_version
     tags_db.set_rosinstall_hashes(repo, repo_hashes)
+    return {'doc_conf': doc_conf, 'depends_conf': depends_conf, 'tags_db': tags_db}
+
+
+def document_repo(workspace, docspace, ros_distro, repo,
+                  platform, arch, homepage,
+                  doc_conf, depends_conf, tags_db):
+    doc_job = "doc-%s-%s" % (ros_distro, repo)
+
+    #Get the list of repositories that should have documentation run on them
+    #These are all of the repos that are not in the depends rosinsall file
+    repos_to_doc = get_repositories_from_rosinstall(doc_conf)
+
+    repo_path = os.path.realpath("%s" % (docspace))
+    print "Repo path %s" % repo_path
+
+    #Walk through the installed repositories and find old-style packages, new-stye packages, and stacks
+    stacks, manifest_packages, catkin_packages, repo_map = build_repo_structure(repo_path, doc_conf, depends_conf)
+    print "Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys())
+    #print "Catkin packages: %s" % catkin_packages
+    #print "Manifest packages: %s" % manifest_packages
+    #print "Stacks: %s" % stacks
 
     #Get any non local apt dependencies
     ros_dep = rosdep.RosDepResolver(ros_distro)
