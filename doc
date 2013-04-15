@@ -106,7 +106,7 @@ def main():
     call("apt-key add %s/ros.key" % workspace)
     call("apt-get update")
 
-    call("apt-get install python-rosinstall --yes")
+    call("apt-get install python-rosdistro python-rosinstall --yes")
 
     #TODO: Hack to install fuerte tools to document electric
     install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
@@ -152,7 +152,7 @@ def main():
         call("pip install kitchen")
     else:
         call("apt-get install python-kitchen --yes")
-    call("apt-get install python-catkin-pkg python-rospkg python-networkx python-rosdistro --yes")
+    call("apt-get install python-catkin-pkg python-rospkg python-networkx --yes")
 
     #TODO: Replace with commented line below
     call("apt-get install graphviz python-sphinx python-yaml doxygen python-epydoc --yes")

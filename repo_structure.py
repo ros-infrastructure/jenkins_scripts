@@ -144,7 +144,42 @@ def get_repositories_from_rosinstall(rosinstall):
     return repos
 
 
-def load_configuration(ros_distro, repo):
+def load_configuration(ros_distro, repo_name):
+    if ros_distro == 'fuerte':
+        return load_configuration_fuerte(ros_distro, repo_name)
+    from rosdistro import get_doc_file, get_index, get_index_url
+    index = get_index(get_index_url())
+    doc_file = get_doc_file(index, ros_distro)
+    repo_data = _get_repo_data(doc_file, repo_name)
+    doc_conf = [repo_data]
+
+    repo = doc_file.repositories[repo_name]
+    depends = getattr(repo, 'depends', [])
+    depends_conf = []
+    for dep_name in depends:
+        try:
+            repo_data = _get_repo_data(doc_file, dep_name)
+        except BuildException:
+            raise BuildException('Could not find a dependent repository "%s" of "%s" in doc file' % (dep_name, repo_name))
+        depends_conf.append(repo_data)
+
+    return (doc_conf, depends_conf)
+
+
+def _get_repo_data(doc_file, repo_name):
+    if repo_name not in doc_file.repositories:
+        raise BuildException('Could not find a repository "%s" in doc file' % repo_name)
+    repo = doc_file.repositories[repo_name]
+    repo_data = {
+        'local-name': repo.name,
+        'uri': repo.url,
+    }
+    if repo.version is not None:
+        repo_data['version'] = repo.version
+    return {repo.type: repo_data}
+
+
+def load_configuration_fuerte(ros_distro, repo):
     try:
         repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s.rosinstall' % (ros_distro, repo)
         f = urllib2.urlopen(repo_url)
