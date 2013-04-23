@@ -94,6 +94,8 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
             if repo_name not in release.repositories:
                 raise BuildException("Repository %s does not exist in Ros Distro" % repo_name)
             repo = release.repositories[repo_name]
+            assert repo.version is not None, 'Repository "%s" does not have a version set' % repo_name
+            assert 'release' in repo.tags, 'Repository "%s" does not have a "release" tag set' % repo_name
             for pkg_name in repo.package_names:
                 release_tag = get_release_tag(repo, pkg_name)
                 if version in ['latest', 'master']:
