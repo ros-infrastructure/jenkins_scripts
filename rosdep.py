@@ -2,19 +2,22 @@ from common import *
 
 
 class RosDepResolver:
-    def __init__(self, ros_distro, sudo=False):
+    def __init__(self, ros_distro, sudo=False, no_chroot=False):
         self.r2a = {}
         self.a2r = {}
         self.env = os.environ
         self.env['ROS_DISTRO'] = ros_distro
 
-        print "Ininitalize rosdep database"
-        apt_get_install(['lsb-release', 'python-rosdep'], sudo=sudo)
-        try:
-            call("rosdep init", self.env)
-        except:
-            print "Rosdep is already initialized"
-        call("rosdep update", self.env)
+        if no_chroot:
+            print "Skip initializing and updating rosdep database"
+        else:
+            print "Ininitalize rosdep database"
+            apt_get_install(['lsb-release', 'python-rosdep'], sudo=sudo)
+            try:
+                call("rosdep init", self.env)
+            except:
+                print "Rosdep is already initialized"
+            call("rosdep update", self.env)
 
         print "Building dictionaries from a rosdep's db"
         raw_db = check_output("rosdep db", self.env, verbose=False).split('\n')

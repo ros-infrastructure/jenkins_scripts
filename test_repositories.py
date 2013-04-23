@@ -8,7 +8,7 @@ import yaml
 from common import *
 
 
-def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False):
+def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False, no_chroot=False):
     print "Testing on distro %s" % ros_distro
     print "Testing repositories %s" % ', '.join(repo_list)
     print "Testing versions %s" % ', '.join(version_list)
@@ -34,33 +34,39 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     repo_buildspace = os.path.join(tmpdir, 'build_repository')
     dependson_buildspace = os.path.join(tmpdir, 'build_depend_on')
 
-    # Add ros sources to apt
-    print "Add ros sources to apt"
-    ros_apt = '/etc/apt/sources.list.d/ros-latest.list'
-    if not os.path.exists(ros_apt):
-        with open(ros_apt, 'w') as f:
-            f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main" % os.environ['OS_PLATFORM'])
-        call("wget http://packages.ros.org/ros.key -O %s/ros.key" % workspace)
-        call("apt-key add %s/ros.key" % workspace)
-    apt_get_update(sudo)
+    if no_chroot:
+        print "Skip adding ros sources to apt"
+    else:
+        # Add ros sources to apt
+        print "Add ros sources to apt"
+        ros_apt = '/etc/apt/sources.list.d/ros-latest.list'
+        if not os.path.exists(ros_apt):
+            with open(ros_apt, 'w') as f:
+                f.write("deb http://packages.ros.org/ros-shadow-fixed/ubuntu %s main" % os.environ['OS_PLATFORM'])
+            call("wget http://packages.ros.org/ros.key -O %s/ros.key" % workspace)
+            call("apt-key add %s/ros.key" % workspace)
+        apt_get_update(sudo)
 
-    # install stuff we need
-    print "Installing Debian packages we need for running this script"
-    apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro'], sudo=sudo)
+    if no_chroot:
+        print "Skip installing packages which are necessary to run this script"
+    else:
+        # install stuff we need
+        print "Installing Debian packages we need for running this script"
+        apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro'], sudo=sudo)
 
     if ros_distro != 'fuerte':
         return _test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on,
                        repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
-                       sudo)
+                       sudo, no_chroot)
     else:
         return _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, test_depends_on,
                        repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
-                       sudo)
+                       sudo, no_chroot)
 
 
 def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on,
                        repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
-                       sudo=False):
+                       sudo=False, no_chroot=False):
     from rosdistro import get_cached_release, get_index, get_index_url, get_source_file
     from rosdistro.dependency_walker import DependencyWalker
     from rosdistro.manifest_provider import get_release_tag
@@ -73,7 +79,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
     # Create rosdep object
     print "Create rosdep object"
-    rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo)
+    rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo, no_chroot)
 
     # download the repo_list from source
     print "Creating rosinstall file for repo list"
@@ -140,41 +146,34 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         return
 
     # get repo_list depends-on list
-    print "Get list of wet repositories that build-depend on repo list %s" % ', '.join(repo_list)
+    print "Get list of wet repositories that build-depend on repo list: %s" % ', '.join(repo_list)
     walker = DependencyWalker(release)
-    depends_on = []
-    print('repo_list', repo_list)
+    depends_on = set([])
     try:
-        deps_on_pkgs = set([])
         for repo_name in repo_list:
             print('repo_name', repo_name)
             repo = release.repositories[repo_name]
             for pkg_name in repo.package_names:
                 print('pkg_name', pkg_name)
-                deps_on_pkgs |= walker.get_recursive_depends_on(pkg_name, ['buildtool', 'build'], ignore_pkgs=deps_on_pkgs)
-                print('deps_on_pkgs', deps_on_pkgs)
-        print('--')
-        for deps_on_pkg in deps_on_pkgs:
-            print('deps_on_pkg', deps_on_pkg)
-            if release.packages[deps_on_pkg].repository_name not in depends_on:
-                print('if')
-                if release.packages[deps_on_pkg].repository_name not in repo_list:
-                    print('iff', release.packages[deps_on_pkg].repository_name)
-                    depends_on.append(release.packages[deps_on_pkg].repository_name)
+                depends_on |= walker.get_recursive_depends_on(pkg_name, ['buildtool', 'build'], ignore_pkgs=depends_on)
+                print('depends_on', depends_on)
     except RuntimeError:
         print "Exception %s: If you are not in the rosdistro and only in the devel", \
             " builds there will be no depends on"
-        depends_on = []
+        depends_on = set([])
 
-    print "Build depends_on list of repo list: %s" % (', '.join(depends_on))
+    print "Build depends_on list of pkg list: %s" % (', '.join(depends_on))
     if len(depends_on) == 0:
-        print "No wet repositories depend on our repo list. Test finished here"
+        print "No wet packages depend on our repo list. Test finished here"
         return
 
-    # install depends_on repositories from source
+    # install depends_on packages from source from release repositories
     rosinstall = ''
-    for d in depends_on:
-        rosinstall += _generate_rosinstall_for_repo(release.repositories[d])
+    for pkg_name in depends_on:
+        repo = release.repositories[release.packages[pkg_name].repository_name]
+        if repo.version is None:
+            continue
+        rosinstall += _generate_rosinstall_for_pkg(repo, pkg_name)
     print "Rosinstall for depends_on:\n %s" % rosinstall
     with open(workspace + "/depends_on.rosinstall", 'w') as f:
         f.write(rosinstall)
@@ -194,7 +193,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         if d in depends_on:
             print "    Is a direct dependency of the repo list, and is installed from source"
         if d in repo_list:
-            print "    Is on of the repositories tested"
+            print "    Is one of the repositories tested"
         if not d in dependson_build_dependencies and not d in depends_on and not d in repo_list:
             dependson_build_dependencies.append(d)
     print "Build dependencies of depends_on list are %s" % (', '.join(dependson_build_dependencies))
@@ -219,7 +218,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     #ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
 
     # build repositories
-    print "Build depends-on repositories"
+    print "Build depends-on packages"
     call("make", ros_env)
 
     # install test dependencies
@@ -227,13 +226,13 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     apt_get_install(dependson_test_dependencies, rosdep_resolver, sudo)
 
     # test repositories
-    print "Test depends-on repositories"
+    print "Test depends-on packages"
     call("make run_tests", ros_env)
 
 
 def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, test_depends_on,
                               repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
-                              sudo=False):
+                              sudo=False, no_chroot=False):
     import rosdistro
 
     # parse the rosdistro file
@@ -244,7 +243,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
 
     # Create rosdep object
     print "Create rosdep object"
-    rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo)
+    rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo, no_chroot)
 
     # download the repo_list from source
     print "Creating rosinstall file for repo list"
@@ -382,6 +381,16 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     # test repositories
     print "Test depends-on repositories"
     call("make run_tests", ros_env)
+
+
+def _generate_rosinstall_for_pkg(repo, pkg_name):
+    from rosdistro.manifest_provider import get_release_tag
+    repo_data = {
+        'local-name': pkg_name,
+        'uri': repo.url,
+        'version': get_release_tag(repo, pkg_name)
+    }
+    return yaml.safe_dump([{repo.type: repo_data}], default_style=False)
 
 
 def _generate_rosinstall_for_repo(repo, version=None):

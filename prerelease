@@ -7,6 +7,7 @@ def main():
     parser.add_option("--workspace", action="store", default=None)
     parser.add_option("--build_in_workspace", action="store_true", default=False)
     parser.add_option("--sudo", action="store_true", default=False)
+    parser.add_option("--no-chroot", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
     if len(args) <= 2 or len(args) % 2 != 1:
@@ -27,7 +28,7 @@ def main():
 
     print "Running prerelease test on distro %s and repositories %s" % (ros_distro, ', '.join(["%s (%s)" % (r, v) for r, v in zip(repo_list, version_list)]))
     test_repositories(ros_distro, repo_list, version_list, options.workspace, test_depends_on=True,
-                      build_in_workspace=options.build_in_workspace, sudo=options.sudo)
+                      build_in_workspace=options.build_in_workspace, sudo=options.sudo, no_chroot=options.no_chroot)
 
 
 if __name__ == '__main__':
@@ -43,4 +44,4 @@ if __name__ == '__main__':
 
     except Exception as ex:
         print "prerelease script failed. Check out the console output above for details."
-        raise ex
+        raise
