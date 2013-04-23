@@ -40,26 +40,36 @@ def copy_test_results(workspace, buildspace, errors=None, prefix='dummy'):
         pass
     os.chdir(os.path.join(workspace, 'test_results'))
     print "Copy all test results"
-    count = 0
     base = os.path.join(buildspace, 'test_results')
+    test_results_dir = os.path.join(workspace, 'test_results')
     for root, _, filenames in os.walk(base):
         for filename in fnmatch.filter(filenames, '*.xml'):
             absfile = os.path.join(root, filename)
             subfolders = os.path.dirname(os.path.relpath(absfile, base))
-            dst = os.path.join(workspace, 'test_results')
+            dst = test_results_dir
             if subfolders:
                 dst = os.path.join(dst, subfolders)
             if not os.path.exists(dst):
                 os.makedirs(dst)
             call("cp %s %s" % (absfile, dst))
-            count += 1
-    if count == 0:
-        print "No test results, so I'll create a dummy test result xml file, with errors %s" % errors
-        with open(os.path.join(workspace, 'test_results/dummy.xml'), 'w') as f:
+    ensure_test_results(test_results_dir, errors, prefix)
+
+
+def ensure_test_results(test_results_dir, errors=None, prefix='dummy'):
+    assert os.path.exists(test_results_dir)
+    any_results = False
+    for _, _, filenames in os.walk(test_results_dir):
+        if fnmatch.filter(filenames, '*.xml'):
+            any_results = True
+            break
+    if not any_results:
+        with open(os.path.join(test_results_dir, 'dummy.xml'), 'w') as f:
             if errors:
-                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="1" name="%s test"> <testcase name="%s rapport" classname="Results" /><testcase classname="%s_class" name="%sFailure"><error type="%sException">%s</error></testcase></testsuite>' % (prefix, prefix, prefix, prefix, prefix, errors))
+                print('No test results, creating a dummy test result xml file, with errors %s' % errors)
+                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="1" name="%s test"><testcase name="%s" classname="Results" /><testcase classname="%s_class" name="%sFailure"><error type="%sException">%s</error></testcase></testsuite>' % (prefix, prefix, prefix, prefix, prefix, errors))
             else:
-                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="0" name="dummy test"> <testcase name="dummy rapport" classname="Results" /></testsuite>')
+                print('No test results, creating a dummy test result xml file')
+                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="0" name="dummy test"><testcase name="dummy" classname="Results" /></testsuite>')
 
 
 def get_ros_env(setup_file):

@@ -120,9 +120,10 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
     call("catkin_init_workspace %s" % repo_sourcespace, ros_env)
     test_results_dir = os.path.join(workspace, 'test_results')
+    repos_test_results_dir = os.path.join(test_results_dir, 'repos')
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
-    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (repo_sourcespace, test_results_dir), ros_env)
+    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (repo_sourcespace, repos_test_results_dir), ros_env)
     #ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
 
     # build repositories and tests
@@ -143,6 +144,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     # see if we need to do more work or not
     if not test_depends_on:
         print "We're not testing the depends-on repositories"
+        ensure_test_results(test_results_dir)
         return
 
     # get repo_list depends-on list
@@ -165,6 +167,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     print "Build depends_on list of pkg list: %s" % (', '.join(depends_on))
     if len(depends_on) == 0:
         print "No wet packages depend on our repo list. Test finished here"
+        ensure_test_results(test_results_dir)
         return
 
     # install depends_on packages from source from release repositories
@@ -214,7 +217,8 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s" % dependson_sourcespace, ros_env)
-    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (dependson_sourcespace, test_results_dir), ros_env)
+    depends_on_test_results_dir = os.path.join(test_results_dir, 'depends_on')
+    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (dependson_sourcespace, depends_on_test_results_dir), ros_env)
     #ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
 
     # build repositories
@@ -228,6 +232,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     # test repositories
     print "Test depends-on packages"
     call("make run_tests", ros_env)
+    ensure_test_results(test_results_dir)
 
 
 def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, test_depends_on,
@@ -283,9 +288,10 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
     call("catkin_init_workspace %s" % repo_sourcespace, ros_env)
     test_results_dir = os.path.join(workspace, 'test_results')
+    repos_test_results_dir = os.path.join(test_results_dir, 'repos')
     os.makedirs(repo_buildspace)
     os.chdir(repo_buildspace)
-    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (repo_sourcespace, test_results_dir), ros_env)
+    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (repo_sourcespace, repos_test_results_dir), ros_env)
     #ros_env_repo = get_ros_env(os.path.join(repo_buildspace, 'devel/setup.bash'))
 
     # build repositories and tests
@@ -306,6 +312,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     # see if we need to do more work or not
     if not test_depends_on:
         print "We're not testing the depends-on repositories"
+        ensure_test_results(test_results_dir)
         return
 
     # get repo_list depends-on list
@@ -323,6 +330,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     print "Build depends_on list of repo list: %s" % (', '.join(depends_on))
     if len(depends_on) == 0:
         print "No wet repositories depend on our repo list. Test finished here"
+        ensure_test_results(test_results_dir)
         return
 
     # install depends_on repositories from source
@@ -367,7 +375,8 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     os.chdir(dependson_buildspace)
     print "Create a new CMakeLists.txt file using catkin"
     call("catkin_init_workspace %s" % dependson_sourcespace, ros_env)
-    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (dependson_sourcespace, test_results_dir), ros_env)
+    depends_on_test_results_dir = os.path.join(test_results_dir, 'depends_on')
+    call("cmake %s -DCATKIN_TEST_RESULTS_DIR=%s" % (dependson_sourcespace, depends_on_test_results_dir), ros_env)
     #ros_env_depends_on = get_ros_env(os.path.join(dependson_buildspace, 'devel/setup.bash'))
 
     # build repositories
@@ -381,6 +390,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     # test repositories
     print "Test depends-on repositories"
     call("make run_tests", ros_env)
+    ensure_test_results(test_results_dir)
 
 
 def _generate_rosinstall_for_pkg(repo, pkg_name):
