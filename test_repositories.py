@@ -165,6 +165,10 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
     else:
         print "Build workspace with non-catkin packages in isolation"
+        # install catkin if not yet done
+        if 'catkin' not in repo_build_dependencies:
+            print "Install catkin in order to run catkin_make_isolated"
+            apt_get_install(['catkin'], rosdep_resolver, sudo)
         # work around catkin_make_isolated issue (at least with version 0.5.65 of catkin)
         os.makedirs(os.path.join(repo_buildspace, 'devel_isolated'))
         call('catkin_make_isolated --source %s --install-space install_isolated --install' % repo_sourcespace, ros_env)
