@@ -113,6 +113,9 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     # get the repositories build dependencies
     print "Get build dependencies of repo list"
     repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, test_depends=False)
+    # ensure that catkin gets installed, for non-catkin packages so that catkin_make_isolated is available
+    if 'catkin' not in repo_build_dependencies:
+        repo_build_dependencies.append('catkin')
     print "Install build dependencies of repo list: %s" % (', '.join(repo_build_dependencies))
     apt_get_install(repo_build_dependencies, rosdep_resolver, sudo)
 
@@ -121,12 +124,8 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     os.remove(os.path.join(repo_sourcespace, 'CMakeLists.txt'))
     print "Create a new CMakeLists.txt file using catkin"
 
-    # get environment if it has been installed as part of the dependencies
-    setup_file = '/opt/ros/%s/setup.bash' % ros_distro
-    if os.path.exists(setup_file):
-        ros_env = get_ros_env(setup_file)
-    else:
-        ros_env = None
+    # get environment
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
 
     # check if source workspace contains only package built with catkin
     non_catkin_pkgs = _get_non_catkin_packages(repo_sourcespace)
@@ -165,10 +164,6 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
     else:
         print "Build workspace with non-catkin packages in isolation"
-        # install catkin if not yet done
-        if 'catkin' not in repo_build_dependencies:
-            print "Install catkin in order to run catkin_make_isolated"
-            apt_get_install(['catkin'], rosdep_resolver, sudo)
         # work around catkin_make_isolated issue (at least with version 0.5.65 of catkin)
         os.makedirs(os.path.join(repo_buildspace, 'devel_isolated'))
         call('catkin_make_isolated --source %s --install-space install_isolated --install' % repo_sourcespace, ros_env)
