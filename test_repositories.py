@@ -5,8 +5,8 @@ import rosdep
 import shutil
 import yaml
 
-from catkin_pkg.package import InvalidPackage, parse_package_string
-from catkin_pkg.packages import find_packages
+#from catkin_pkg.package import InvalidPackage, parse_package_string
+#from catkin_pkg.packages import find_packages
 
 from common import *
 
@@ -211,12 +211,12 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         pkg_xml = release.get_package_xml(pkg_name)
         if pkg_xml is None:
             raise BuildException('Could not retrieve package.xml for package "%s" from rosdistro cache' % pkg_name)
-        try:
-            pkg = parse_package_string(pkg_xml)
-        except InvalidPackage as e:
-            raise BuildException('package.xml for package "%s" from rosdistro cache is invalid: %s' % (pkg_name, e))
-        if _is_non_catkin_package(pkg):
-            non_catkin_pkgs.append(pkg.name)
+#        try:
+#            pkg = parse_package_string(pkg_xml)
+#        except InvalidPackage as e:
+#            raise BuildException('package.xml for package "%s" from rosdistro cache is invalid: %s' % (pkg_name, e))
+#        if _is_non_catkin_package(pkg):
+#            non_catkin_pkgs.append(pkg.name)
         rosinstall += _generate_rosinstall_for_pkg(repo, pkg_name)
 
     if non_catkin_pkgs:
@@ -291,10 +291,10 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
 def _get_non_catkin_packages(basepath):
     pkgs = []
-    packages = find_packages(basepath)
-    for pkg in packages.values():
-        if _is_non_catkin_package(pkg):
-            pkgs.append(pkg.name)
+#    packages = find_packages(basepath)
+#    for pkg in packages.values():
+#        if _is_non_catkin_package(pkg):
+#            pkgs.append(pkg.name)
     return pkgs
 
 
