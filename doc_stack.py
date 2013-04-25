@@ -319,7 +319,7 @@ Look in the console for cmake failures, search for "CMake Error"
 
 Also, are you sure that the rosinstall files are pulling from the right branch for %s? Check the repos below,
 you can update information the %s.rosinstall and %s-depends.rosinstall files by submitting a pull request at
-https://github.com/ros/rosdistro/tree/master/doc/%s
+https://github.com/ros/rosdistro/%s
 
 Documentation rosinstall:\n%s
 
