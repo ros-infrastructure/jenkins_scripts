@@ -63,13 +63,35 @@ def ensure_test_results(test_results_dir, errors=None, prefix='dummy'):
             any_results = True
             break
     if not any_results:
-        with open(os.path.join(test_results_dir, 'dummy.xml'), 'w') as f:
-            if errors:
-                print('No test results, creating a dummy test result xml file, with errors %s' % errors)
-                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="1" name="%s test"><testcase name="%s" classname="Results" /><testcase classname="%s_class" name="%sFailure"><error type="%sException">%s</error></testcase></testsuite>' % (prefix, prefix, prefix, prefix, prefix, errors))
-            else:
-                print('No test results, creating a dummy test result xml file')
-                f.write('<?xml version="1.0" encoding="UTF-8"?><testsuite tests="1" failures="0" time="1" errors="0" name="dummy test"><testcase name="dummy" classname="Results" /></testsuite>')
+        create_test_result(test_results_dir, error=errors, prefix=prefix)
+
+
+def create_test_result(test_results_dir, error=None, failure=None, prefix='dummy'):
+    msg = 'No test results, creating a dummy test result xml file'
+    if error:
+        msg += ', with errors'
+    if failure:
+        msg += ', with failures'
+    print(msg)
+
+    with open(os.path.join(test_results_dir, '%s.xml' % prefix), 'w') as f:
+        lines = []
+        lines.append('<?xml version="1.0" encoding="UTF-8"?>')
+        number_of_tests = 2 if error and failure else 1
+        errors = 1 if error else 0
+        failures = 1 if failure else 0
+        lines.append('<testsuite tests="%d" errors="%d" failures="%d" time="1" name="%s test">' % (number_of_tests, errors, failures, prefix))
+        if error or failure:
+            lines.append('<testcase classname="%s_class" name="%sErrorOrFailure">' % (prefix, prefix))
+            if error:
+                lines.append('<error type="%sException">%s</error>' % (prefix, error))
+            if failure:
+                lines.append('<failure type="%sException">%s</failure>' % (prefix, failure))
+            lines.append('</testcase>')
+        else:
+            lines.append('<testcase name="%s" classname="Results" />' % prefix)
+        lines.append('</testsuite>')
+        f.write('\n'.join(lines))
 
 
 def get_ros_env(setup_file):
