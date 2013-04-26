@@ -34,7 +34,7 @@
 import yaml
 import os
 import shutil
-from common import call, call_with_list, BuildException
+from common import call, call_with_list, check_output, BuildException
 import time
 import copy
 
@@ -182,33 +182,34 @@ class TagsDb(object):
         old_dir = os.getcwd()
         os.chdir(self.path)
         call("git add %s" % os.path.join(self.path, self.distro_name))
-        print "Commiting changes to tags and deps lists...."
-        command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
-        try:
+        diff = check_output('git diff')
+        if diff != '':
+            print "Commiting changes to tags and deps lists...."
+            command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
             call_with_list(command)
-        except BuildException:
-            pass
 
-        env = os.environ
-        env['GIT_SSH'] = "%s/jenkins_scripts/git_ssh" % self.workspace
+            env = os.environ
+            env['GIT_SSH'] = "%s/jenkins_scripts/git_ssh" % self.workspace
 
-        #Have some tolerance for things commiting to the db at the same time
-        num_retries = 3
-        i = 0
-        while True:
-            try:
-                call("git fetch origin", env)
-                call("git merge origin/master", env)
-                call("git push origin master", env)
-            except BuildException as e:
-                print "Failed to fetch and merge..."
-                if i >= num_retries:
-                    raise e
-                time.sleep(2)
-                i += 1
-                print "Trying again attempt %d of %d..." % (i, num_retries)
-                continue
+            #Have some tolerance for things commiting to the db at the same time
+            num_retries = 3
+            i = 0
+            while True:
+                try:
+                    call("git fetch origin", env)
+                    call("git merge origin/master", env)
+                    call("git push origin master", env)
+                except BuildException as e:
+                    print "Failed to fetch and merge..."
+                    if i >= num_retries:
+                        raise e
+                    time.sleep(2)
+                    i += 1
+                    print "Trying again attempt %d of %d..." % (i, num_retries)
+                    continue
 
-            break
+                break
+        else:
+            print 'No changes to tags and deps lists'
 
         os.chdir(old_dir)
