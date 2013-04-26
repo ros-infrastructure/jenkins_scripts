@@ -82,7 +82,7 @@ def write_stack_manifest(output_dir, stack_name, manifest,
 
 def write_distro_specific_manifest(manifest_file, package, vcs_type,
                                    vcs_uri, api_homepage, tags_db,
-                                   repo_name, doc_job, version):
+                                   repo_name, doc_job, version, has_changelog_rst=None):
     m_yaml = {}
     if os.path.isfile(manifest_file):
         with open(manifest_file, 'r') as f:
@@ -116,6 +116,9 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
     #Check to see if this package is part of any metapackages
     if tags_db.has_metapackages(package):
         m_yaml['metapackages'] = tags_db.get_metapackages(package)
+
+    if has_changelog_rst is not None:
+        m_yaml['has_changelog_rst'] = has_changelog_rst
 
     with open(manifest_file, 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)

@@ -83,7 +83,7 @@ def get_full_apt_deps(apt_deps, apt):
 def document_packages(manifest_packages, catkin_packages, build_order,
                       repos_to_doc, sources, tags_db, full_apt_deps,
                       ros_dep, repo_map, repo_path, docspace, ros_distro,
-                      homepage, doc_job, tags_location):
+                      homepage, doc_job, tags_location, doc_path):
     repo_tags = {}
     for package in build_order:
         #don't document packages that we're supposed to build but not supposed to document
@@ -94,8 +94,10 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Pull the package from the correct place
         if package in catkin_packages:
             package_path = catkin_packages[package]
+            has_changelog_rst = document_package_changelog(package, package_path, doc_path)
         else:
             package_path = manifest_packages[package]
+            has_changelog_rst = None
 
         #Build a tagfile list from dependencies for use by rosdoc
         build_tagfile(full_apt_deps, tags_db, 'rosdoc_tags.yaml', package, build_order, docspace, ros_distro, tags_location)
@@ -135,26 +137,27 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #have availalbe in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, package),
-                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'])
+                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst)
 
         print "Done"
     return repo_tags
 
 
-def document_package_changelogs(catkin_packages, doc_path):
+def document_package_changelog(pkg_name, pkg_path, doc_path):
     from docutils.core import publish_string
-    for pkg_name, pkg_path in catkin_packages.items():
-        assert os.path.exists(os.path.join(pkg_path, 'package.xml'))
-        changelog_file = os.path.join(pkg_path, 'CHANGELOG.rst')
-        if os.path.exists(changelog_file):
-            print 'Package "%s" contains a CHANGELOG.rst, generate html' % pkg_name
-            with open(changelog_file, 'r') as f:
-                rst_code = f.read()
-            html_code = publish_string(rst_code, writer_name='html')
-            pkg_changelog_doc_path = os.path.join(doc_path, 'changelogs', pkg_name)
-            os.makedirs(pkg_changelog_doc_path)
-            with open(os.path.join(pkg_changelog_doc_path, 'changelog.html'), 'w') as f:
-                f.write(html_code)
+    assert os.path.exists(os.path.join(pkg_path, 'package.xml'))
+    changelog_file = os.path.join(pkg_path, 'CHANGELOG.rst')
+    if os.path.exists(changelog_file):
+        print 'Package "%s" contains a CHANGELOG.rst, generate html' % pkg_name
+        with open(changelog_file, 'r') as f:
+            rst_code = f.read()
+        html_code = publish_string(rst_code, writer_name='html')
+        pkg_changelog_doc_path = os.path.join(doc_path, 'changelogs', pkg_name)
+        os.makedirs(pkg_changelog_doc_path)
+        with open(os.path.join(pkg_changelog_doc_path, 'changelog.html'), 'w') as f:
+            f.write(html_code)
+        return True
+    return False
 
 
 def document_necessary(workspace, docspace, ros_distro, repo,
@@ -285,17 +288,15 @@ def document_repo(workspace, docspace, ros_distro, repo,
                'rsync -e "ssh -o StrictHostKeyChecking=no" -qrz rosbuild@ros.org:/var/www/www.ros.org/html/doc/%s/tags %s' % (ros_distro, tags_location)]
     call_with_list(command)
 
+    doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
+
     repo_tags = document_packages(manifest_packages, catkin_packages, build_order,
                                   repos_to_doc, sources, tags_db, full_apt_deps,
                                   ros_dep, repo_map, repo_path, docspace, ros_distro,
-                                  homepage, doc_job, tags_location)
-
-    doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
-
-    document_package_changelogs(catkin_packages, doc_path)
+                                  homepage, doc_job, tags_location, doc_path)
 
     #Copy the files to the appropriate place
-    #call("rsync -e \"ssh -o StrictHostKeyChecking=no\" -qr %s rosbuild@wgs32:/var/www/www.ros.org/html/rosdoclite" % (doc_path))
+    #call("rsync -e \"ssh -o StrictHostKeyChecking=no\" -qr %s rosbuild@ros.org:/var/www/www.ros.org/html/rosdoclite" % (doc_path))
     command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr %s rosbuild@wgs32:/var/www/www.ros.org/html/rosdoclite' % doc_path]
     call_with_list(command)
 
