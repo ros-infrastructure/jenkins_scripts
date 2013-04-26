@@ -153,7 +153,7 @@ def main():
         call("pip install kitchen")
     else:
         call("apt-get install python-kitchen --yes")
-    call("apt-get install python-catkin-pkg python-rospkg python-networkx --yes")
+    call("apt-get install python-catkin-pkg python-docutils python-rospkg python-networkx --yes")
 
     #TODO: Replace with commented line below
     call("apt-get install graphviz python-sphinx python-yaml doxygen python-epydoc --yes")

@@ -141,6 +141,22 @@ def document_packages(manifest_packages, catkin_packages, build_order,
     return repo_tags
 
 
+def document_package_changelogs(catkin_packages, doc_path):
+    from docutils.core import publish_string
+    for pkg_name, pkg_path in catkin_packages.items():
+        assert os.path.exists(os.path.join(pkg_path, 'package.xml'))
+        changelog_file = os.path.join(pkg_path, 'CHANGELOG.rst')
+        if os.path.exists(changelog_file):
+            print 'Package "%s" contains a CHANGELOG.rst, generate html' % pkg_name
+            with open(changelog_file, 'r') as f:
+                rst_code = f.read()
+            html_code = publish_string(rst_code, writer_name='html')
+            pkg_changelog_doc_path = os.path.join(doc_path, 'changelogs', pkg_name)
+            os.makedirs(pkg_changelog_doc_path)
+            with open(os.path.join(pkg_changelog_doc_path, 'changelog.html'), 'w') as f:
+                f.write(html_code)
+
+
 def document_necessary(workspace, docspace, ros_distro, repo,
                        rosdoc_lite_version, jenkins_scripts_version, force_doc=False):
     append_pymodules_if_needed()
@@ -275,6 +291,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
                                   homepage, doc_job, tags_location)
 
     doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
+
+    document_package_changelogs(catkin_packages, doc_path)
 
     #Copy the files to the appropriate place
     #call("rsync -e \"ssh -o StrictHostKeyChecking=no\" -qr %s rosbuild@wgs32:/var/www/www.ros.org/html/rosdoclite" % (doc_path))
