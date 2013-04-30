@@ -191,6 +191,7 @@ def document_necessary(workspace, docspace, ros_distro, repo,
     if changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
         print "There were no changes to any of the repositories we document. Not running documentation."
         copy_test_results(workspace, docspace)
+        tags_db.delete_tag_index_repo()
         return False
 
     #Make sure to update the versions of jenkins_scripts and rosdoc_lite for this repo list
@@ -322,6 +323,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     #We don't want to write hashes on an unsuccessful build
     excludes = ['rosinstall_hashes'] if build_errors else []
     tags_db.commit_db(excludes)
+    tags_db.delete_tag_index_repo()
 
     #Tell jenkins that we've succeeded
     print "Preparing xml test results"

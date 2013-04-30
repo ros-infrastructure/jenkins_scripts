@@ -75,8 +75,7 @@ class TagsDb(object):
         self.workspace = workspace
         self.distro_name = distro_name
         self.path = os.path.abspath(os.path.join(self.workspace, 'rosdoc_tag_index'))
-        if os.path.exists(self.path):
-            shutil.rmtree(self.path)
+        self.delete_tag_index_repo()
 
         command = ['bash', '-c', 'export GIT_SSH="%s/jenkins_scripts/git_ssh" \
                    && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s' \
@@ -93,6 +92,10 @@ class TagsDb(object):
         self.build_metapackage_index()
 
         self.rosinstall_hashes = self.read_folder('rosinstall_hashes')
+
+    def delete_tag_index_repo(self):
+        if os.path.exists(self.path):
+            shutil.rmtree(self.path)
 
     def has_rosinstall_hashes(self, rosinstall_name):
         return rosinstall_name in self.rosinstall_hashes

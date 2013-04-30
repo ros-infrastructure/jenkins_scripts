@@ -95,6 +95,13 @@ def main():
     docspace = os.path.join(workspace, 'doc_stacks', str(datetime.datetime.now()).replace(' ', '_').replace(':', '-'))
     os.makedirs(docspace)
 
+    try:
+        doit(ros_distro, stack, workspace, docspace)
+    finally:
+        shutil.rmtree(docspace)
+
+
+def doit(ros_distro, stack, workspace, docspace):
     #Add ros to apt
     print "Add ROS to apt sources"
     with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:
