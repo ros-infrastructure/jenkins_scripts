@@ -14,7 +14,8 @@ import urllib2
 from time import gmtime, strftime
 
 WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
-ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+# ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+ROS_WIKI_SERVER = 'www.ros.org:/var/www/www.ros.org/html/metrics'
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -23,7 +24,7 @@ def get_options(required, optional):
         parser.add_option('--path', dest = 'path', default=None, action='store',
                           help='path to scan')
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'doc', default='doc', action='store',
+        parser.add_option('--doc', dest = 'doc', default='metrics', action='store',
                           help='doc folder')
     if 'csv' in ops:
         parser.add_option('--csv', dest = 'csv', default='csv', action='store',
