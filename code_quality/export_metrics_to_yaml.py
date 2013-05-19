@@ -13,8 +13,8 @@ import codecs
 import urllib2
 from time import gmtime, strftime
 
-WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
-ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+# ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+ROS_WIKI_SERVER = 'www.ros.org:/var/www/www.ros.org/html/metrics'
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -23,7 +23,7 @@ def get_options(required, optional):
         parser.add_option('--path', dest = 'path', default=None, action='store',
                           help='path to scan')
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'doc', default='doc', action='store',
+        parser.add_option('--doc', dest = 'doc', default='metrics', action='store',
                           help='doc folder')
     if 'csv' in ops:
         parser.add_option('--csv', dest = 'csv', default='csv', action='store',
@@ -522,10 +522,10 @@ if __name__ == '__main__':
     # pull distro yaml
     origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro 
     destination= options.doc
-    call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, destination),os.environ, 'Pull rosdistro yaml')
+    call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (origin, destination),os.environ, 'Pull rosdistro yaml')
     # update distro yaml
     file_path = destination + '/' + '%s.yaml'%options.distro 
     update_distro_yaml(file_path, options.stack, collect_averages)
     # push distro yaml
     origin = options.doc + '/%s.yaml'%options.distro
-    call('sudo scp -oStrictHostKeyChecking=no -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')
+    call('sudo scp -oStrictHostKeyChecking=no %s %s' % (origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')

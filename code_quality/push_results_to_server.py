@@ -14,12 +14,13 @@ import codecs
 #from jobs_common import *
 
 
+from . export_metrics_to_yaml import ROS_WIKI_SERVER
+
 # Global settings
 #env = get_environment()
 #env['INSTALL_DIR'] = os.getcwd()
 env= os.environ
-WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
-ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+#ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
 
 def call(command, env=None, message='', ignore_fail=False):
     res = ''
@@ -58,7 +59,7 @@ def get_options(required, optional):
         parser.add_option('--path', dest = 'path', default=None, action='store',
                           help='path to scan')
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'doc', default='doc', action='store',
+        parser.add_option('--doc', dest = 'metrics', default='doc', action='store',
                           help='doc folder')
 
     (options, args) = parser.parse_args()
@@ -92,7 +93,8 @@ if __name__ == '__main__':
         print stack_dir
         stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
-        call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER),env, 'Push stack-yaml-file to ros-wiki ')
+        new_destination = ROS_WIKI_SERVER + '/groovy/' + stack 
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination),env, 'Push stack-yaml-file to ros-wiki ')
 	
 	        
     # get packages
@@ -103,7 +105,8 @@ if __name__ == '__main__':
         package = os.path.basename(package_dir)
         print package
         doc_dir = options.doc + '/' + package
-        call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
+        new_destination = ROS_WIKI_SERVER + '/groovy/' + package
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination)
 		,env, 'Push package-yaml-file to ros-wiki ')        
 
 
