@@ -20,7 +20,6 @@ from . export_metrics_to_yaml import ROS_WIKI_SERVER
 #env = get_environment()
 #env['INSTALL_DIR'] = os.getcwd()
 env= os.environ
-WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
 #ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
 
 def call(command, env=None, message='', ignore_fail=False):
@@ -95,7 +94,7 @@ if __name__ == '__main__':
         stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
         new_destination = ROS_WIKI_SERVER + '/groovy/' + stack 
-        call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, new_destination),env, 'Push stack-yaml-file to ros-wiki ')
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination),env, 'Push stack-yaml-file to ros-wiki ')
 	
 	        
     # get packages
@@ -107,7 +106,7 @@ if __name__ == '__main__':
         print package
         doc_dir = options.doc + '/' + package
         new_destination = ROS_WIKI_SERVER + '/groovy/' + package
-        call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, new_destination)
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination)
 		,env, 'Push package-yaml-file to ros-wiki ')        
 
 
