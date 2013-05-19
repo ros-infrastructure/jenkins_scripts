@@ -15,7 +15,8 @@ import urllib2
 from time import gmtime, strftime
 
 WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
-ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+#ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+ROS_WIKI_SERVER = 'www.ros.org:/var/www/www.ros.org/html/metrics'
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -526,19 +527,18 @@ if __name__ == '__main__':
         
     # load distro yaml
     lang = None
-    stack = (options.stack).strip('[]').strip("''")
     collect_averages = dict()
-    data = load_stack_code_quality(stack, lang)
+    data = load_stack_code_quality(options.stack, lang)
     # collect all average values of metrics
     for m in data.keys():
         collect_averages[m] = data[m].get('metric_average', '')
     # pull distro yaml
     origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro 
     destination= options.doc
-    call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, destination),os.environ, 'Pull rosdistro yaml')
+    call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (origin, destination),os.environ, 'Pull rosdistro yaml')
     # update distro yaml
     file_path = destination + '/' + '%s.yaml'%options.distro 
-    update_distro_yaml(file_path, stack, collect_averages)
+    update_distro_yaml(file_path, options.stack, collect_averages)
     # push distro yaml
     origin = options.doc + '/%s.yaml'%options.distro
-    call('sudo scp -oStrictHostKeyChecking=no -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')
+    call('sudo scp -oStrictHostKeyChecking=no %s %s' % (origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')
