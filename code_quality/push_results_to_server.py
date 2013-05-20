@@ -14,7 +14,7 @@ import codecs
 #from jobs_common import *
 
 
-ROS_WIKI_SERVER = 'www.ros.org:/var/www/www.ros.org/html/metrics'
+ROS_WIKI_SERVER = 'rosbuild@www.ros.org:/var/www/www.ros.org/html/metrics'
 
 # Global settings
 #env = get_environment()

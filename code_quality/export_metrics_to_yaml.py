@@ -14,7 +14,7 @@ import urllib2
 from time import gmtime, strftime
 
 # ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
-ROS_WIKI_SERVER = 'www.ros.org:/var/www/www.ros.org/html/metrics'
+ROS_WIKI_SERVER = 'rosbuild@www.ros.org:/var/www/www.ros.org/html/metrics'
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
