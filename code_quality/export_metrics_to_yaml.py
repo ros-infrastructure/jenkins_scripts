@@ -431,7 +431,8 @@ def _load_code_quality_file(filename, name, type_='package'):
         raise UtilException("Error loading code quality data: %s %s"%(filename,repr(exc)))
 
     if not data:
-        raise UtilException("Unable to retrieve code quality data. Auto-generated documentation may need to regenerate")
+        raise UtilException("Unable to retrieve code quality data from (%s). Auto-generated documentation may need to regenerate" % 
+                            filename)
     return data
 
 def stack_code_quality_file(stack):
