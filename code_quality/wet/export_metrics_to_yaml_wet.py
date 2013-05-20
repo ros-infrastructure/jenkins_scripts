@@ -468,9 +468,11 @@ def load_stack_code_quality(stack_name, lang=None):
     return data
 
 def update_distro_yaml(file_path, stack, new_average):
-    with open(file_path, 'r') as f:
-        distro_file = yaml.load(f)
-
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            distro_file = yaml.load(f)
+    else:
+        distro_file = {}
     #if stack in distro_file:
      #   distro_file[stack] = new_average
      #   print 'gotcha'
@@ -535,7 +537,10 @@ if __name__ == '__main__':
     # pull distro yaml
     origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro 
     destination= options.doc
-    call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (origin, destination),os.environ, 'Pull rosdistro yaml')
+    try:
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (origin, destination),os.environ, 'Pull rosdistro yaml')
+    except:
+        print "failed to download distro stats yaml.  Assuming it's the first upload"
     # update distro yaml
     file_path = destination + '/' + '%s.yaml'%options.distro 
     update_distro_yaml(file_path, options.stack, collect_averages)
