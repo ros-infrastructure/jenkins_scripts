@@ -434,21 +434,21 @@ def _load_code_quality_file(filename, name, type_='package'):
     @param filename: file to load code_quality data from
     @param name: printable name (for debugging)
     @return: code_quality properties dictionary
-    @raise UtilException: if unable to load. Text of error message is human-readable
+    @raise Exception: if unable to load. Text of error message is human-readable
     """
     print 'filename: %s'%filename
     if not os.path.exists(filename):
-        raise UtilException('Newly proposed, mistyped, or obsolete %s. Could not find %s "'%(type_, type_) + name + '" in rosdoc')
+        raise Exception('Newly proposed, mistyped, or obsolete %s. Could not find %s "'%(type_, type_) + name + '" in rosdoc')
 
     try:
         #filename = "/var/www/www.ros.org/html/doc/navigation/code_quality.yaml"
         with open(filename) as f:
             data = yaml.load(f)
     except yaml.YAMLError, exc:
-        raise UtilException("Error loading code quality data: %s %s"%(filename,repr(exc)))
+        raise Exception("Error loading code quality data: %s %s"%(filename,repr(exc)))
 
     if not data:
-        raise UtilException("Unable to retrieve code quality data. Auto-generated documentation may need to regenerate")
+        raise Exception("Unable to retrieve code quality data. Auto-generated documentation may need to regenerate")
     return data
 
 def stack_code_quality_file(stack):
@@ -462,7 +462,7 @@ def load_stack_code_quality(stack_name, lang=None):
     Load code_quality.yaml properties into dictionary for package
     @param lang: optional language argument for localization, e.g. 'ja'
     @return: stack code quality properties dictionary
-    @raise UtilException: if unable to load. Text of error message is human-readable
+    @raise Exception: if unable to load. Text of error message is human-readable
     """
     data = _load_code_quality_file(stack_code_quality_file(stack_name), stack_name, 'stack')
     return data

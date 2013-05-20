@@ -91,7 +91,7 @@ if __name__ == '__main__':
     filename = os.path.join(os.environ['HOME'], "chroot_configs", "qaverify.yaml")
     #print 'filename: %s'%filename
     if not os.path.exists(filename):
-        raise UtilException('Could not find %s "'%(filename))
+        raise Exception('Could not find %s "'%(filename))
     with open(filename, 'r') as f:
         data = yaml.load(f)
     qaverify_user = data['user']
