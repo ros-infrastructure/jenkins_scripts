@@ -1,0 +1,8 @@
+   Please specify command argumetns as follows:
+
+
+   ./create_jobs_wet.py 'platform' 'arch' 'email' 'rosdistro'
+
+   e.g. ./create_jobs_wet.py precise amd64 BestEmail@Ever.com groovy
+
+

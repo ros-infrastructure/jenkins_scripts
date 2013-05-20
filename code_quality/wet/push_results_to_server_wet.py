@@ -9,6 +9,7 @@ import traceback
 import numpy
 import yaml
 import codecs
+from . export_metrics_to_yaml_wet import ROS_WIKI_SERVER
 #import roslib; roslib.load_manifest("job_generation")
 #from roslib import stack_manifest
 #import rosdistro
@@ -19,8 +20,8 @@ import codecs
 #env = get_environment()
 #env['INSTALL_DIR'] = os.getcwd()
 env= os.environ
-WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
-ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+#WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
+#ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
 
 def call(command, env=None, message='', ignore_fail=False):
     res = ''
@@ -92,25 +93,26 @@ if __name__ == '__main__':
         exit(-1)
     
 
-    # get meta-packages  
-    print 'Exporting meta-packages to yaml/csv'         
-    stack_files = [f for f in all_files(options.path) if f.endswith('CMakeCache.txt')]
+    # get stacks  
+    print 'Exporting stacks to yaml/csv'      
+    stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
-        stack = (options.meta_package).strip('[]').strip("''") #os.path.basename(stack_dir)
-        #print stack
+        print stack_dir
+        stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
-	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER),env, 'Push stack-yaml-file to ros-wiki ')
-	        
+        new_destination = ROS_WIKI_SERVER + '/groovy/' + stack 
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination),env, 'Push stack-yaml-file to ros-wiki ')
+
+
     # get packages
-    print 'Exporting packages to yaml/csv'   
-    package_files = [f for f in all_files(options.path_src) if f.endswith('package.xml')]
+    print 'Exporting packages to yaml/csv'  
+    package_files = [f for f in all_files(options.path) if f.endswith('manifest.xml')]
     package_dirs = [os.path.dirname(f) for f in package_files]
     for package_dir in package_dirs:
         package = os.path.basename(package_dir)
-        #print package
+        print package
         doc_dir = options.doc + '/' + package
-   	call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, doc_dir, ROS_WIKI_SERVER)
+        new_destination = ROS_WIKI_SERVER + '/groovy/' + package
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination)
 		,env, 'Push package-yaml-file to ros-wiki ')        
-
-
