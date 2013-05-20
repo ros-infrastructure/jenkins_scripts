@@ -9,7 +9,6 @@ import traceback
 import numpy
 import yaml
 import codecs
-from . export_metrics_to_yaml_wet import ROS_WIKI_SERVER
 #import roslib; roslib.load_manifest("job_generation")
 #from roslib import stack_manifest
 #import rosdistro
@@ -22,6 +21,7 @@ from . export_metrics_to_yaml_wet import ROS_WIKI_SERVER
 env= os.environ
 #WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
 #ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+ROS_WIKI_SERVER = 'www.ros.org:/var/www/www.ros.org/html/metrics'
 
 def call(command, env=None, message='', ignore_fail=False):
     res = ''
