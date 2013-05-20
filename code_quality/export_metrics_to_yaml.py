@@ -13,8 +13,8 @@ import codecs
 import urllib2
 from time import gmtime, strftime
 
-WIKI_SERVER_KEY_PATH = os.environ['HOME'] +'/chroot_configs/keypair.pem'
-ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+# ROS_WIKI_SERVER = 'ubuntu@ec2-184-169-231-58.us-west-1.compute.amazonaws.com:~/doc'
+ROS_WIKI_SERVER = 'rosbuild@www.ros.org:/var/www/www.ros.org/html/metrics'
 
 def get_options(required, optional):
     parser = optparse.OptionParser()
@@ -23,7 +23,7 @@ def get_options(required, optional):
         parser.add_option('--path', dest = 'path', default=None, action='store',
                           help='path to scan')
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'doc', default='doc', action='store',
+        parser.add_option('--doc', dest = 'doc', default='metrics', action='store',
                           help='doc folder')
     if 'csv' in ops:
         parser.add_option('--csv', dest = 'csv', default='csv', action='store',
@@ -418,20 +418,20 @@ def _load_code_quality_file(filename, name, type_='package'):
     @param filename: file to load code_quality data from
     @param name: printable name (for debugging)
     @return: code_quality properties dictionary
-    @raise UtilException: if unable to load. Text of error message is human-readable
+    @raise Exception: if unable to load. Text of error message is human-readable
     """
     if not os.path.exists(filename):
-        raise UtilException('Newly proposed, mistyped, or obsolete %s. Could not find %s "'%(type_, type_) + name + '" in rosdoc')
+        raise Exception('Newly proposed, mistyped, or obsolete %s. Could not find %s "'%(type_, type_) + name + '" in rosdoc')
 
     try:
         #filename = "/var/www/www.ros.org/html/doc/navigation/code_quality.yaml"
         with open(filename) as f:
             data = yaml.load(f)
     except yaml.YAMLError, exc:
-        raise UtilException("Error loading code quality data: %s %s"%(filename,repr(exc)))
+        raise Exception("Error loading code quality data: %s %s"%(filename,repr(exc)))
 
     if not data:
-        raise UtilException("Unable to retrieve code quality data. Auto-generated documentation may need to regenerate")
+        raise Exception("Unable to retrieve code quality data from (%s). Auto-generated documentation may need to regenerate" % filename)
     return data
 
 def stack_code_quality_file(stack):
@@ -445,15 +445,17 @@ def load_stack_code_quality(stack_name, lang=None):
     Load code_quality.yaml properties into dictionary for package
     @param lang: optional language argument for localization, e.g. 'ja'
     @return: stack code quality properties dictionary
-    @raise UtilException: if unable to load. Text of error message is human-readable
+    @raise Exception: if unable to load. Text of error message is human-readable
     """
     data = _load_code_quality_file(stack_code_quality_file(stack_name), stack_name, 'stack')
     return data
 
 def update_distro_yaml(file_path, stack, new_average):
-    with open(file_path, 'r') as f:
-        distro_file = yaml.load(f)
-
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            distro_file = yaml.load(f)
+    else:
+        distro_file = {}
     #if stack in distro_file:
      #   distro_file[stack] = new_average
      #   print 'gotcha'
@@ -522,10 +524,13 @@ if __name__ == '__main__':
     # pull distro yaml
     origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro 
     destination= options.doc
-    call('sudo scp -oStrictHostKeyChecking=no -r -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, destination),os.environ, 'Pull rosdistro yaml')
+    try:
+        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (origin, destination),os.environ, 'Pull rosdistro yaml')
+    except:
+        print "No rosdistro found on server, assuming this is the first upload"
     # update distro yaml
     file_path = destination + '/' + '%s.yaml'%options.distro 
     update_distro_yaml(file_path, options.stack, collect_averages)
     # push distro yaml
     origin = options.doc + '/%s.yaml'%options.distro
-    call('sudo scp -oStrictHostKeyChecking=no -i %s %s %s'%(WIKI_SERVER_KEY_PATH, origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')
+    call('sudo scp -oStrictHostKeyChecking=no %s %s' % (origin, ROS_WIKI_SERVER),os.environ, 'Push distro-yaml-file to ros-wiki ')
