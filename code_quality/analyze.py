@@ -227,14 +227,14 @@ def analyze(ros_distro, stack_name, workspace, test_depends_on):
 	    print '-----------------  Export metrics to yaml and csv files ----------------- '
 	    print 'stack_dir: %s '%str(stack_dir)
 	    print 'stack_name: %s '%str(stack_name)
-            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/export_metrics_to_yaml.py --path %s --doc doc --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace,stack_dir,workspace, ros_distro, stack_name, uri,  uri_info, vcs_type)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/export_metrics_to_yaml.py --path %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace,stack_dir,workspace, ros_distro, stack_name, uri,  uri_info, vcs_type)).split(' '), env=env)
             helper.communicate()
             print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'     
               
 
             # Push results to server
 	    print '-----------------  Push results to server -----------------  '
-            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/push_results_to_server.py --path %s --doc doc'%(workspace,stack_dir)).split(' '), env=env)
+            helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/push_results_to_server.py --path %s --doc metrics'%(workspace,stack_dir)).split(' '), env=env)
             helper.communicate()
             print '////////////////// push results to server done ////////////////// \n\n'    
 

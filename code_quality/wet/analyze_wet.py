@@ -153,13 +153,13 @@ def analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on,
     vcs_type= 'git'
     
     print '-----------------  Export metrics to yaml and csv files ----------------- '
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc doc --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_list, uri,  uri_info, vcs_type)).split(' '), env=os.environ)
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_list, uri,  uri_info, vcs_type)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'     
  
     # Push results to server
     print '-----------------  Push results to server -----------------  '
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/push_results_to_server_wet.py --path %s --doc doc --path_src %s --meta_package %s'%(workspace, repo_buildspace, repo_sourcespace, repo_list)).split(' '), env=os.environ)
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/push_results_to_server_wet.py --path %s --doc metrics --path_src %s --meta_package %s'%(workspace, repo_buildspace, repo_sourcespace, repo_list)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// push results to server done ////////////////// \n\n' 
 
