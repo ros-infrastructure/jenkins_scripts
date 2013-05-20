@@ -58,9 +58,11 @@ def get_options(required, optional):
     if 'path' in ops:
         parser.add_option('--path', dest = 'path', default=None, action='store',
                           help='path to scan')
+
+    # TODO change this option to not refer to doc
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'metrics', default='doc', action='store',
-                          help='doc folder')
+        parser.add_option('--doc', dest = 'doc', default='metrics', action='store',
+                          help='metrics folder')
 
     (options, args) = parser.parse_args()
 

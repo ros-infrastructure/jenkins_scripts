@@ -62,8 +62,9 @@ def get_options(required, optional):
     if 'path_src' in ops:
         parser.add_option('--path_src', dest = 'path_src', default=None, action='store',
                           help='path_src to source')
+    # TODO get rid of doc reference
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'doc', default='doc', action='store',
+        parser.add_option('--doc', dest = 'doc', default='metrics', action='store',
                           help='doc folder')
 
     if 'meta_package' in ops:
