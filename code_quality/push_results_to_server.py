@@ -95,7 +95,7 @@ if __name__ == '__main__':
         print stack_dir
         stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
-        new_destination = ROS_WIKI_SERVER + '/groovy/' + stack 
+        new_destination = ROS_WIKI_SERVER + '/groovy'
         call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination),env, 'Push stack-yaml-file to ros-wiki ')
 	
 	        
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         package = os.path.basename(package_dir)
         print package
         doc_dir = options.doc + '/' + package
-        new_destination = ROS_WIKI_SERVER + '/groovy/' + package
+        new_destination = ROS_WIKI_SERVER + '/groovy'
         call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination)
 		,env, 'Push package-yaml-file to ros-wiki ')        
 
