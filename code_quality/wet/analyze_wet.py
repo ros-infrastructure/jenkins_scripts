@@ -96,7 +96,6 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
     # download the repo_list from source
     print "Creating rosinstall file for repo list"
-    print "repo_list", repo_list, "version list", version_list
     rosinstall = ""
     for repo_name, version in zip(repo_list, version_list):
         if version == 'devel':

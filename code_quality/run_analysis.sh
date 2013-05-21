@@ -112,7 +112,7 @@ elif [ "$ROS_DISTRO" == 'groovy' ] && [ "$BUILD_SYSTEM" == 'wet' ]; then
     source $HOME/chroot_configs/set_qacpp_path.sh
 
     # call analysis
-    if python $WORKSPACE/jenkins_scripts/code_quality/wet/analyze_wet.py $ROS_DISTRO $STACK_NAME 'latest'; then
+    if python $WORKSPACE/jenkins_scripts/code_quality/wet/analyze_wet.py $ROS_DISTRO $STACK_NAME 'groovy'; then
         echo 'analyze_wet.py passed'
     else
         error_exit "analyze_wet.py failed!  Aborting."
