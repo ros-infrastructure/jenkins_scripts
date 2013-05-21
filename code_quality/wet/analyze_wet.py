@@ -434,7 +434,7 @@ def main():
 
     print "Running analyze_wet test on distro %s and repositories %s"%(ros_distro,
                                                                       ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
-    analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
+    test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
 
 
 
