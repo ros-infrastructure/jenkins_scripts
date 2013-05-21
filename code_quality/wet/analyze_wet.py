@@ -208,7 +208,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         helper.communicate()
         print '////////////////// upload results to QAVerify done ////////////////// \n\n'
         if os.path.exists(snapshots_path):
-        shutil.rmtree(snapshots_path)
+            shutil.rmtree(snapshots_path)
 
     else:
         print "Build workspace with non-catkin packages in isolation"
