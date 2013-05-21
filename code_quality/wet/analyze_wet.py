@@ -8,6 +8,7 @@ import fnmatch
 import shutil
 import rosdep
 import optparse
+import yaml
 from common import *
 from time import sleep
 
