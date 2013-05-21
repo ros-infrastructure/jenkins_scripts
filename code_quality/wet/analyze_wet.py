@@ -184,8 +184,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         # Export metrics to yaml and csv files
         # get uri infos
         #uri= distro.get_repositories()[repo_list[0]].url
-        repo = source_file.get_data()['repositories']
-        repo_data = repo.get_data()
+        repo_data = source_file.get_data()['repositories']
         uri = repo_data['url']
         uri_info= repo_data['version']
         vcs_type= repo_data['type']
