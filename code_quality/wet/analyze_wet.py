@@ -11,6 +11,7 @@ import optparse
 import yaml
 from common import *
 from time import sleep
+import traceback
 
 
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False, no_chroot=False):
@@ -187,6 +188,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         # get uri infos
         #uri= distro.get_repositories()[repo_list[0]].url
         repo_data = source_file.get_data()['repositories']
+        print "repo_data", repo_data 
         uri = repo_data['url']
         uri_info= repo_data['version']
         vcs_type= repo_data['type']
@@ -455,4 +457,5 @@ if __name__ == '__main__':
 
     except Exception as ex:
         print "analyze_wet script failed. Check out the console output above for details."
+        traceback.print_exc()
         raise ex
