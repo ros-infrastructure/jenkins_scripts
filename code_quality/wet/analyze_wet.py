@@ -59,6 +59,8 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         print "Installing Debian packages we need for running this script"
         apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro'], sudo=sudo)
 
+
+    print "ros_distro value is ", ros_distro
     if ros_distro != 'fuerte':
         return _test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on,
                        repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
