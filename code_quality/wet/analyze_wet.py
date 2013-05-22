@@ -186,14 +186,15 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         # Export metrics to yaml and csv files
         # get uri infos
         #uri= distro.get_repositories()[repo_list[0]].url
-        repo_data = release.get_data()['repositories'][repo_list[0]]
+        repo_name = repo_list[0]
+        repo_data = release.get_data()['repositories'][repo_name]
         print "repo_data", repo_data 
         uri = repo_data['url']
         uri_info = 'master' #repo_data['version']
         vcs_type = 'git' # repo_data['type']
 
         print '-----------------  Export metrics to yaml and csv files ----------------- '
-        helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_list, uri,  uri_info, vcs_type)).split(' '), env=os.environ)
+        helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_name, uri,  uri_info, vcs_type)).split(' '), env=os.environ)
         helper.communicate()
         print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'     
  
