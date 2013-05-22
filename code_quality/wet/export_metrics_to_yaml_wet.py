@@ -28,7 +28,7 @@ def get_options(required, optional):
         parser.add_option('--path_src', dest = 'path_src', default=None, action='store',
                           help='path_src to source')
     if 'doc' in ops:
-        parser.add_option('--doc', dest = 'metrics', default='doc', action='store',
+        parser.add_option('--doc', dest = 'doc', default='metrics', action='store',
                           help='doc folder')
     if 'csv' in ops:
         parser.add_option('--csv', dest = 'csv', default='csv', action='store',
