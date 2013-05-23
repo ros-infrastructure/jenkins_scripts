@@ -170,6 +170,14 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         setup_file = os.path.join(repo_buildspace, 'install_isolated', 'setup.sh')
         ros_env = get_ros_env(setup_file)
 
+    # don't do depends-on on things not in release
+    not_in_release = set(repo_list) - set(release.repositories.keys())
+    if not_in_release:
+        print "Removed [%s] repositories which are not in the ", \
+            "release file for depends-on testing" % \
+            ', '.join(sorted(not_in_release))
+        repo_list = list(set(repo_list) - not_in_release)
+
     # see if we need to do more work or not
     if not test_depends_on:
         print "We're not testing the depends-on repositories"
