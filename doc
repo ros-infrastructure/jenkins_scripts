@@ -128,6 +128,8 @@ def doit(ros_distro, stack, workspace, docspace):
     print "rosdoc_lite version: %s" % rosdoc_lite_version
     print "jenkins_scripts version: %s" % jenkins_scripts_version
 
+    shutil.rmtree(os.path.join(workspace, 'test_results'))
+
     necessary = document_necessary(workspace, docspace, ros_distro, stack,
                                    rosdoc_lite_version, jenkins_scripts_version)
     if not necessary:
