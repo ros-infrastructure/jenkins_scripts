@@ -99,7 +99,7 @@ if __name__ == '__main__':
     package_files = [f for f in all_files(options.path) if f.endswith('package.xml')]
     package_dirs = [os.path.dirname(f) for f in package_files]
     for package_dir in package_dirs:
-        if 'Package' in package_dir: continue
+        if 'Project' in package_dir: continue
         package = os.path.basename(package_dir)
         print package
         doc_dir = options.doc + '/' + package
