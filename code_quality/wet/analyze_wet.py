@@ -8,8 +8,10 @@ import fnmatch
 import shutil
 import rosdep
 import optparse
+import yaml
 from common import *
 from time import sleep
+import traceback
 
 
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False, no_chroot=False):
@@ -59,6 +61,8 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         print "Installing Debian packages we need for running this script"
         apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro'], sudo=sudo)
 
+
+    print "ros_distro value is ", ros_distro
     if ros_distro != 'fuerte':
         return _test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on,
                        repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
@@ -88,6 +92,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     # Create rosdep object
     print "Create rosdep object"
     rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo, no_chroot)
+
 
     # download the repo_list from source
     print "Creating rosinstall file for repo list"
@@ -165,14 +170,14 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         call("make", ros_env)
         
         # Concatenate filelists
-        print '-----------------  Concatenate filelists -----------------  '
+        print '----------------- Concatenate filelists ----------------- '
         filelist = '%s'%repo_buildspace + '/filelist.lst'
         helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/concatenate_filelists.py --dir %s --filelist %s'%(workspace,repo_buildspace, filelist)).split(' '), env=os.environ)
         helper.communicate()
         print '////////////////// cma analysis done ////////////////// \n\n'
 
         # Run CMA
-        print '-----------------  Run CMA analysis -----------------  '
+        print '----------------- Run CMA analysis ----------------- '
         cmaf = repo_sourcespace#repo_buildspace
         helper = subprocess.Popen(('pal QACPP -cmaf %s -list %s'%(cmaf, filelist)).split(' '), env=os.environ)
         helper.communicate()
@@ -180,33 +185,37 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
         # Export metrics to yaml and csv files
         # get uri infos
-        uri= distro.get_repositories()[repo_list[0]].url
-        uri_info= 'master' 
-        vcs_type= 'git'
-    
-        print '-----------------  Export metrics to yaml and csv files ----------------- '
-        helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_list, uri,  uri_info, vcs_type)).split(' '), env=os.environ)
+        #uri= distro.get_repositories()[repo_list[0]].url
+        repo_name = repo_list[0]
+        repo_data = release.get_data()['repositories'][repo_name]
+        print "repo_data", repo_data
+        uri = repo_data['url']
+        uri_info = 'master' #repo_data['version']
+        vcs_type = 'git' # repo_data['type']
+
+        print '----------------- Export metrics to yaml and csv files ----------------- '
+        helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_name, uri, uri_info, vcs_type)).split(' '), env=os.environ)
         helper.communicate()
-        print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'     
+        print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'
  
         # Push results to server
-        print '-----------------  Push results to server -----------------  '
+        print '----------------- Push results to server ----------------- '
         helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/push_results_to_server_wet.py --path %s --doc metrics --path_src %s --meta_package %s'%(workspace, repo_buildspace, repo_sourcespace, repo_list)).split(' '), env=os.environ)
         helper.communicate()
-        print '////////////////// push results to server done ////////////////// \n\n' 
+        print '////////////////// push results to server done ////////////////// \n\n'
 
 
         # Upload results to QAVerify
-        print ' -----------------  upload results to QAVerify -----------------  '
+        print ' ----------------- upload results to QAVerify ----------------- '
         shutil.rmtree(os.path.join(workspace, 'snapshots_path'), ignore_errors=True)
         os.makedirs(os.path.join(workspace, 'snapshots_path'))
         snapshots_path = '%s/snapshots_path'%workspace
         project_name = repo_list[0] + '-' + ros_distro
-        helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, repo_buildspace, snapshots_path, project_name,  repo_list[0])).split(' '), env=os.environ)
+        helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, repo_buildspace, snapshots_path, project_name, repo_list[0])).split(' '), env=os.environ)
         helper.communicate()
         print '////////////////// upload results to QAVerify done ////////////////// \n\n'
         if os.path.exists(snapshots_path):
-        shutil.rmtree(snapshots_path)
+            shutil.rmtree(snapshots_path)
 
     else:
         print "Build workspace with non-catkin packages in isolation"
@@ -228,11 +237,11 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     if os.path.exists(test_results_path):
         shutil.rmtree(test_results_path)
     os.makedirs(test_results_path)
-    test_file= test_results_path + '/test_file.xml' 
+    test_file= test_results_path + '/test_file.xml'
     f = open(test_file, 'w')
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write('<testsuite tests="1" failures="0" time="1" errors="0" name="dummy test">\n')
-    f.write('  <testcase name="dummy rapport" classname="Results" /> \n')
+    f.write(' <testcase name="dummy rapport" classname="Results" /> \n')
     f.write('</testsuite> \n')
     f.close()
 
@@ -324,14 +333,14 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     call("make", ros_env)
         
     # Concatenate filelists
-    print '-----------------  Concatenate filelists -----------------  '
+    print '----------------- Concatenate filelists ----------------- '
     filelist = '%s'%repo_buildspace + '/filelist.lst'
     helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/concatenate_filelists.py --dir %s --filelist %s'%(workspace,repo_buildspace, filelist)).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// cma analysis done ////////////////// \n\n'
 
     # Run CMA
-    print '-----------------  Run CMA analysis -----------------  '
+    print '----------------- Run CMA analysis ----------------- '
     cmaf = repo_sourcespace#repo_buildspace
     helper = subprocess.Popen(('pal QACPP -cmaf %s -list %s'%(cmaf, filelist)).split(' '), env=os.environ)
     helper.communicate()
@@ -340,28 +349,28 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     # Export metrics to yaml and csv files
     # get uri infos
     uri= distro.get_repositories()[repo_list[0]].url
-    uri_info= 'master' 
+    uri_info= 'master'
     vcs_type= 'git'
     
-    print '-----------------  Export metrics to yaml and csv files ----------------- '
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_list, uri,  uri_info, vcs_type)).split(' '), env=os.environ)
+    print '----------------- Export metrics to yaml and csv files ----------------- '
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/export_metrics_to_yaml_wet.py --path %s --path_src %s --doc metrics --csv csv --config %s/jenkins_scripts/code_quality/export_config.yaml --distro %s --stack %s --uri %s --uri_info %s --vcs_type %s'%(workspace, repo_buildspace, repo_sourcespace, workspace, ros_distro, repo_list, uri, uri_info, vcs_type)).split(' '), env=os.environ)
     helper.communicate()
-    print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'     
+    print '////////////////// export metrics to yaml and csv files done ////////////////// \n\n'
  
     # Push results to server
-    print '-----------------  Push results to server -----------------  '
+    print '----------------- Push results to server ----------------- '
     helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/push_results_to_server_wet.py --path %s --doc metrics --path_src %s --meta_package %s'%(workspace, repo_buildspace, repo_sourcespace, repo_list)).split(' '), env=os.environ)
     helper.communicate()
-    print '////////////////// push results to server done ////////////////// \n\n' 
+    print '////////////////// push results to server done ////////////////// \n\n'
 
 
     # Upload results to QAVerify
-    print ' -----------------  upload results to QAVerify -----------------  '
+    print ' ----------------- upload results to QAVerify ----------------- '
     shutil.rmtree(os.path.join(workspace, 'snapshots_path'), ignore_errors=True)
     os.makedirs(os.path.join(workspace, 'snapshots_path'))
     snapshots_path = '%s/snapshots_path'%workspace
     project_name = repo_list[0] + '-' + ros_distro
-    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, repo_buildspace, snapshots_path, project_name,  repo_list[0])).split(' '), env=os.environ)
+    helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/wet/upload_to_QAVerify_wet.py --path %s --snapshot %s --project %s --stack_name %s'%(workspace, repo_buildspace, snapshots_path, project_name, repo_list[0])).split(' '), env=os.environ)
     helper.communicate()
     print '////////////////// upload results to QAVerify done ////////////////// \n\n'
     if os.path.exists(snapshots_path):
@@ -380,11 +389,11 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     if os.path.exists(test_results_path):
         shutil.rmtree(test_results_path)
     os.makedirs(test_results_path)
-    test_file= test_results_path + '/test_file.xml' 
+    test_file= test_results_path + '/test_file.xml'
     f = open(test_file, 'w')
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write('<testsuite tests="1" failures="0" time="1" errors="0" name="dummy test">\n')
-    f.write('  <testcase name="dummy rapport" classname="Results" /> \n')
+    f.write(' <testcase name="dummy rapport" classname="Results" /> \n')
     f.write('</testsuite> \n')
     f.close()
 
@@ -432,7 +441,7 @@ def main():
 
     print "Running analyze_wet test on distro %s and repositories %s"%(ros_distro,
                                                                       ', '.join(["%s (%s)"%(r,v) for r, v in zip(repo_list, version_list)]))
-    analyze_wet(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
+    test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on=options.depends_on)
 
 
 
@@ -448,4 +457,5 @@ if __name__ == '__main__':
 
     except Exception as ex:
         print "analyze_wet script failed. Check out the console output above for details."
+        traceback.print_exc()
         raise ex
