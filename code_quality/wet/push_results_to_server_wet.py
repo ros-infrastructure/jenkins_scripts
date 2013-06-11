@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append('%s/jenkins_scripts/code_quality'%os.environ['WORKSPACE'])
 from apt_parser import parse_apt
-import optparse 
+import optparse
 import subprocess
 import traceback
 import numpy
@@ -88,21 +88,20 @@ def all_files(directory):
             yield os.path.abspath(os.path.join(path, f))
             
 
-if __name__ == '__main__':   
+if __name__ == '__main__':
     (options, args) = get_options(['path', 'path_src', 'meta_package'], ['doc'])
     if not options:
         exit(-1)
-    
 
     # get packages
-    print 'Exporting packages to yaml/csv'  
+    print 'Exporting packages to yaml/csv'
     package_files = [f for f in all_files(options.path) if f.endswith('package.xml')]
     package_dirs = [os.path.dirname(f) for f in package_files]
     for package_dir in package_dirs:
-    	if '/Project' in package_dir: continue
+    	if 'Package' in package_dirs: continue
         package = os.path.basename(package_dir)
         print package
         doc_dir = options.doc + '/' + package
-        new_destination = ROS_WIKI_SERVER + '/groovy/' + package
+        new_destination = ROS_WIKI_SERVER + '/groovy'
         call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination)
-		,env, 'Push package-yaml-file to ros-wiki ')        
+,env, 'Push package-yaml-file to ros-wiki ') 
