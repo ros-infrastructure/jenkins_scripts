@@ -5,7 +5,7 @@ sys.path.append('%s/jenkins_scripts/code_quality'%os.environ['WORKSPACE'])
 from apt_parser import parse_apt
 import os
 import shutil
-import optparse
+import optparse 
 import subprocess
 import traceback
 import numpy
@@ -36,26 +36,26 @@ def get_options(required, optional):
     if 'config' in ops:
         parser.add_option('--config', dest = 'config', default=None, action='store',
                           help='config file')
-
+	
     if 'distro' in ops:
         parser.add_option('--distro', dest = 'distro', default=None, action='store',
-                          help='distro name')
+                          help='distro name')    
 
     if 'stack' in ops:
         parser.add_option('--stack', dest = 'stack', default=None, action='store',
-                          help='stack name')
+                          help='stack name')  
 
     if 'uri_info' in ops:
         parser.add_option('--uri_info', dest = 'uri_info', default=None, action='store',
-                          help='uri info')
+                          help='uri info')  
                                                     
     if 'uri' in ops:
         parser.add_option('--uri', dest = 'uri', default=None, action='store',
-                          help='uri')
+                          help='uri')  
                                                     
     if 'vcs_type' in ops:
         parser.add_option('--vcs_type', dest = 'vcs_type', default=None, action='store',
-                          help='vcs_type')
+                          help='vcs_type')  
                           
     (options, args) = parser.parse_args()
 
@@ -110,14 +110,14 @@ class Metric:
         self.uniqueids = {}
         self.histogram_labels = []
         self.histogram_counts = []
-self.histogram_affected = []
-self.histogram_filenames = []
-self.histogram_file_values = []
+	self.histogram_affected = []
+	self.histogram_filenames = []
+	self.histogram_file_values = []
         self.metric_average = []
-self.uri = []
-self.uri_info = []
-self.vcs_type = []
-self.datetime = []
+	self.uri = []
+	self.uri_info = []
+	self.vcs_type = [] 
+	self.datetime = []
                     
 class ExportYAML:
     def __init__(self, config, path, path_src, doc, csv, distro, stack, uri, uri_info, vcs_type):
@@ -125,18 +125,18 @@ class ExportYAML:
         self.path = path
         self.path_src = path_src
         self.distro = distro
-self.stack = stack
+	self.stack = stack
         self.doc = doc
         self.uri = uri
         self.uri_info = uri_info
         self.vcs_type = vcs_type
-if os.path.exists(doc):
-shutil.rmtree(doc)
+	if os.path.exists(doc):
+	    shutil.rmtree(doc)
         os.makedirs(doc)
           
         self.csv = csv
-if os.path.exists(csv):
-shutil.rmtree(csv)
+	if os.path.exists(csv):
+	    shutil.rmtree(csv)
         os.makedirs(csv)
           
         self.stack_files = [f for f in all_files(self.path)
@@ -149,10 +149,10 @@ shutil.rmtree(csv)
 
         self.package_dirs = [os.path.dirname(f) for f in self.package_files]
 
-#print "path: %s"%(self.path)
+	#print "path: %s"%(self.path)
         self.met_files = [f for f in all_files(self.path)
             if f.endswith('.met') and f.find('CompilerIdCXX')<0 and f.find('CompilerIdC')<0 and f.find('third_party')<0]
-#print "met files: %s"%(self.met_files)
+	#print "met files: %s"%(self.met_files)
         
         self.metrics = {}
 
@@ -200,20 +200,20 @@ shutil.rmtree(csv)
     def histogram(self, metric, numbins, minval, maxval, data_type):
         if not metric in self.metrics:
             return;
-#print "\n\nhistogram"
-#print "metric: %s"%metric
-#print "numbins: %s"%numbins
-#print "minval: %s"%minval
+	#print "\n\nhistogram"
+	#print "metric: %s"%metric
+	#print "numbins: %s"%numbins
+	#print "minval: %s"%minval
         data = []
-     data_param_names = []
-data_param_filenames = []
-array = self.metrics[metric].data
-for d in array:
-#filter
-if ('/cpp' in d[5]) or ('/srv_gen' in d[5]) or ('/msg_gen' in d[5]): continue
+    	data_param_names = []
+	data_param_filenames = []
+	array = self.metrics[metric].data
+	for d in array:
+	    #filter
+	    if ('/cpp' in d[5]) or  ('/srv_gen' in d[5]) or ('/msg_gen' in d[5]): continue
             data.append(float(d[4]))
-data_param_names.append(str(d[2]))
-data_param_filenames.append(str(d[5]))
+	    data_param_names.append(str(d[2]))
+	    data_param_filenames.append(str(d[5]))
         bin_size = (float(maxval) - float(minval))/(int(numbins))
         histogram_bins = [float(minval)+bin_size*x for x in range(numbins+1)]
         histogram_labels = []
@@ -229,68 +229,68 @@ data_param_filenames.append(str(d[5]))
         (hist,bin_edges) = numpy.histogram(data, histogram_bins)
 
 
-# Sorting 'data_param_filenames' [min,...,max]
-keys = data
-values_fn = data_param_filenames
-tuple_sorted_fn = sorted(zip(keys, values_fn))
-tuple_values_fn = list()
-tuple_names_fn = list()
-for x in tuple_sorted_fn:
-#if not '/cpp/' in x[1]:
-tuple_values_fn.append(x[0])
-tuple_names_fn.append(x[1])	
+	# Sorting 'data_param_filenames' [min,...,max]
+	keys = data
+	values_fn = data_param_filenames
+	tuple_sorted_fn = sorted(zip(keys, values_fn))
+	tuple_values_fn = list()
+	tuple_names_fn = list()
+	for x in tuple_sorted_fn:
+	    #if not '/cpp/' in x[1]: 
+	    tuple_values_fn.append(x[0])
+	    tuple_names_fn.append(x[1])		
 
-# Sorting 'data_param_names' [min,...,max]
-keys = data
-values_n = data_param_names
-tuple_sorted_n = sorted(zip(keys, values_n))
-tuple_names_n = list()
-for x in tuple_sorted_n:
-tuple_names_n.append(x[1])	
+	# Sorting 'data_param_names' [min,...,max]
+	keys = data
+	values_n = data_param_names
+	tuple_sorted_n = sorted(zip(keys, values_n)) 
+	tuple_names_n = list()
+	for x in tuple_sorted_n:
+	    tuple_names_n.append(x[1])		
 
-#print "length keys %s"%len(keys)
-#print "length values_fn %s"%len(values_fn)
-#print "length data %s"%len(data)
-#print "length tuple_names_n %s"%len(tuple_names_n)
-#print "length tuple_values_n %s"%len(tuple_values_n)
-#print "--------------------------\n\n\n"
+	#print "length keys %s"%len(keys)
+	#print "length values_fn %s"%len(values_fn)
+	#print "length data %s"%len(data)
+	#print "length tuple_names_n %s"%len(tuple_names_n)
+	#print "length tuple_values_n %s"%len(tuple_values_n)
+	#print "--------------------------\n\n\n"
+	
+	data_filenames = tuple_names_fn
+	data_affected = tuple_names_n
+	data_file_values = tuple_values_fn
 
-data_filenames = tuple_names_fn
-data_affected = tuple_names_n
-data_file_values = tuple_values_fn
-
-        # Calculate average of metric
-     metric_average = 0.0
-     counts_sum = 0.0
-     for i in range(len(data)):
+        # Calculate average of metric	
+    	metric_average = 0.0
+    	counts_sum = 0.0
+    	for i in range(len(data)):
             metric_average += float(data[i])
-counts_sum += 1
-     metric_average /= counts_sum
-     metric_average = round(metric_average, 2)
+	    counts_sum += 1
+    	metric_average /= counts_sum
+    	metric_average = round(metric_average, 2)
 
 
-# Append data to histogram
+	# Append data to histogram 
         m = self.metrics[metric]
         for i in range(len(hist)):
             m.histogram_counts.append(hist[i])
             m.histogram_labels.append(histogram_labels[i])
 
-for i in range(len(data_file_values)):
-m.histogram_file_values.append(data_file_values[i])
+	for i in range(len(data_file_values)):
+	    m.histogram_file_values.append(data_file_values[i])
 
-for i in range(len(data_affected)):
-m.histogram_affected.append(data_affected[i])
+	for i in range(len(data_affected)):
+	    m.histogram_affected.append(data_affected[i])
 
-for i in range(len(data_filenames)):
-m.histogram_filenames.append(data_filenames[i])
+	for i in range(len(data_filenames)):
+	    m.histogram_filenames.append(data_filenames[i])
 
-m.metric_average.append(metric_average)
+	m.metric_average.append(metric_average)
 
-# Append uri data to histogram
-m.uri.append(options.uri)
-m.uri_info.append(options.uri_info)
-m.vcs_type.append(options.vcs_type)
-m.datetime.append(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+	# Append uri data to histogram
+	m.uri.append(options.uri)
+	m.uri_info.append(options.uri_info)
+	m.vcs_type.append(options.vcs_type)
+	m.datetime.append(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
 
 
     def process_met_file(self, met_file):
@@ -299,25 +299,25 @@ m.datetime.append(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
         package_dir = self.get_package_dir(met_file)
         stack_dir = self.get_stack_dir(met_file)
         filename = ''
-        name = ''
+        name = ''   
         met = open(met_file,'r')
-#print "met in process_met_file: %s"%met_file
-#print "stack: %s"%stack
-#print "stack_dir: %s"%stack_dir
+	#print "met in process_met_file: %s"%met_file
+	#print "stack: %s"%stack
+	#print "stack_dir: %s"%stack_dir
         while met: #cmd= metric_name | val= value
             l = met.readline()
             if not l:
                 break
             l = l.replace('\n','')
-            if l.startswith('<S>'):
+            if l.startswith('<S>'): 
                 tokens = l.split(' ')
                 if len(tokens)<2: continue
                 cmd = tokens[0]
                 if len(cmd) < 5: continue
                 cmd = cmd[3:]
                 val = tokens[1]
-#print "cmd: %s"%cmd
-#print "val: %s"%val
+	        #print "cmd: %s"%cmd
+	        #print "val: %s"%val
                 if cmd == 'STFIL':
                     filename = val
                     continue
@@ -334,7 +334,7 @@ m.datetime.append(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
                 metric = self.metrics[metric_name]
                 #metric.data.append([stack,package,name,cmd,val,filename])
                 uniqueid = filename+name
-                if not uniqueid in metric.uniqueids:
+                if not uniqueid in metric.uniqueids:                        
                     metric.data.append([stack,package,name,cmd,val,filename])
                     metric.uniqueids[uniqueid] = True
 
@@ -346,21 +346,21 @@ m.datetime.append(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
         filename = self.doc + '/' + 'code_quality.yaml'
         d = {}
         for m in self.config['metrics'].keys():
-            if not m in self.metrics:
+            if not m in self.metrics: 
                 continue
             metric = self.metrics[m]
             config = self.config['metrics'][m]
-            config['histogram_bins'] = [b for b in metric.histogram_labels]
+            config['histogram_bins'] = [b for b in metric.histogram_labels] 
             config['histogram_counts'] = [int(b) for b in metric.histogram_counts]
-config['histogram_affected'] = [b for b in metric.histogram_affected]
-config['histogram_filenames'] = [b for b in metric.histogram_filenames]
-config['histogram_file_values'] = [b for b in metric.histogram_file_values]
-config['metric_average'] = [b for b in metric.metric_average]
-config['uri'] = [b for b in metric.uri]
-config['uri_info'] = [b for b in metric.uri_info]
-config['vcs_type'] = [b for b in metric.vcs_type]
-config['datetime'] = [b for b in metric.datetime]
-d[m] = config
+	    config['histogram_affected'] = [b for b in metric.histogram_affected] 
+	    config['histogram_filenames'] = [b for b in metric.histogram_filenames] 
+	    config['histogram_file_values'] = [b for b in metric.histogram_file_values] 
+	    config['metric_average'] = [b for b in metric.metric_average] 
+	    config['uri'] = [b for b in metric.uri]  
+	    config['uri_info'] = [b for b in metric.uri_info]  
+	    config['vcs_type'] = [b for b in metric.vcs_type]
+	    config['datetime'] = [b for b in metric.datetime] 
+	    d[m] = config
             
         #print yaml.dump(d)
         
@@ -368,38 +368,38 @@ d[m] = config
         d = self.safe_encode(d)
         
         with codecs.open(filename, mode='w', encoding='utf-8') as f:
-            f.write(yaml.safe_dump(d, default_style="'"))
+            f.write(yaml.safe_dump(d, default_style="'")) 
              
     def create_csv(self):
         for m in self.config['metrics'].keys():
-            if not m in self.metrics:
+            if not m in self.metrics: 
                 continue
-            filename = self.csv + '/' + m + '.csv'
+            filename = self.csv + '/' + m + '.csv' 
             data = self.metrics[m].data
             f = open(filename,"w")
             for d in data:
                 string = ';'.join(d)
-                f.write(string + '\n')
+                f.write(string + '\n') 
             f.close()
             
     def create_csv_hist(self):
         for m in self.config['metrics'].keys():
-            if not m in self.metrics:
+            if not m in self.metrics: 
                 continue
-            metric = self.metrics[m]
-            filename = self.csv + '/' + m + '_hist.csv'
+            metric = self.metrics[m]    
+            filename = self.csv + '/' + m + '_hist.csv' 
             labels = metric.histogram_labels
             counts = metric.histogram_counts
             f = open(filename,"w")
             for i in range(len(counts)):
                 string = ';'.join([labels[i],repr(counts[i])])
                 f.write(string + '\n')
-            f.close()
+            f.close()  
                
     def create_loc(self):
         filename = self.doc + '/' + 'code_quantity.yaml'
         #print "os.environ['WORKSPACE']: %s"%(os.environ['WORKSPACE'])
-helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/cloc.pl %s --not-match-d=%s/build --yaml --out %s'%(os.environ['WORKSPACE'],self.path_src, self.path_src, filename)).split(' '),env=os.environ)
+	helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/cloc.pl %s --not-match-d=%s/build --yaml --out %s'%(os.environ['WORKSPACE'],self.path_src, self.path_src, filename)).split(' '),env=os.environ)
         helper.communicate()
                       
     def export(self):
@@ -409,13 +409,13 @@ helper = subprocess.Popen(('%s/jenkins_scripts/code_quality/cloc.pl %s --not-mat
             self.process_met_file(met)
             
         # create histograms
-for m in self.config['metrics'].keys():
-#print "\n\nm: %s"%m
+	for m in self.config['metrics'].keys():
+	    #print "\n\nm: %s"%m
             if not m in self.metrics:
                 continue
-#print "\nCALL HISTOGRAMM"
+	    #print "\nCALL HISTOGRAMM"
             config = self.config['metrics'][m]
-self.histogram(m, config['histogram_num_bins'], config['histogram_minval'], config['histogram_maxval'], config['data_type'])
+	    self.histogram(m, config['histogram_num_bins'], config['histogram_minval'], config['histogram_maxval'], config['data_type'])
 
         # create yaml
         self.create_code_quality_yaml()
@@ -430,12 +430,12 @@ self.histogram(m, config['histogram_num_bins'], config['histogram_minval'], conf
 
 def _load_code_quality_file(filename, name, type_='package'):
     """
-Load code_quality.yaml properties into dictionary for package
-@param filename: file to load code_quality data from
-@param name: printable name (for debugging)
-@return: code_quality properties dictionary
-@raise Exception: if unable to load. Text of error message is human-readable
-"""
+    Load code_quality.yaml properties into dictionary for package
+    @param filename: file to load code_quality data from
+    @param name: printable name (for debugging)
+    @return: code_quality properties dictionary
+    @raise Exception: if unable to load. Text of error message is human-readable
+    """
     print 'filename: %s'%filename
     if not os.path.exists(filename):
         raise Exception('Newly proposed, mistyped, or obsolete %s. Could not find %s "'%(type_, type_) + name + '" in rosdoc')
@@ -453,17 +453,17 @@ Load code_quality.yaml properties into dictionary for package
 
 def stack_code_quality_file(stack):
     """
-Generate filesystem path to code_quality.yaml for stack
-"""
+    Generate filesystem path to code_quality.yaml for stack
+    """
     return os.path.join(options.doc, stack, "code_quality.yaml")
 
 def load_stack_code_quality(stack_name, lang=None):
     """
-Load code_quality.yaml properties into dictionary for package
-@param lang: optional language argument for localization, e.g. 'ja'
-@return: stack code quality properties dictionary
-@raise Exception: if unable to load. Text of error message is human-readable
-"""
+    Load code_quality.yaml properties into dictionary for package
+    @param lang: optional language argument for localization, e.g. 'ja'
+    @return: stack code quality properties dictionary
+    @raise Exception: if unable to load. Text of error message is human-readable
+    """
     data = _load_code_quality_file(stack_code_quality_file(stack_name), stack_name, 'stack')
     return data
 
@@ -474,18 +474,18 @@ def update_distro_yaml(file_path, stack, new_average):
     else:
         distro_file = {}
     #if stack in distro_file:
-     # distro_file[stack] = new_average
-     # print 'gotcha'
+     #   distro_file[stack] = new_average
+     #   print 'gotcha'
     #else:
-    # distro_file[stack] = new_average
+    #    distro_file[stack] = new_average
     distro_file[stack] = new_average
     
     with codecs.open(file_path, mode='w', encoding='utf-8') as f:
-        f.write(yaml.safe_dump(distro_file, default_style="'"))
+        f.write(yaml.safe_dump(distro_file, default_style="'")) 
 
 
         
-if __name__ == '__main__':
+if __name__ == '__main__':   
     (options, args) = get_options(['path', 'path_src', 'config', 'distro', 'stack', 'uri', 'uri_info', 'vcs_type'], ['doc','csv'])
     if not options:
         exit(-1)
@@ -493,35 +493,35 @@ if __name__ == '__main__':
     with open(options.config) as f:
         config = yaml.load(f)
     
-    # get meta-packages
-    print 'Exporting meta-packages to yaml/csv'
+    # get meta-packages  
+    print 'Exporting meta-packages to yaml/csv'      
     stack_files = [f for f in all_files(options.path) if f.endswith('CMakeCache.txt')] #TODO: adjust var name's -> meta-package
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
-# build path
+	# build path
         stack = (options.stack).strip('[]').strip("''") #os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
         csv_dir = options.csv + '/' + stack
-#print "stack_dir: %s"%(stack_dir)
-#print "stack: %s"%(stack)
-#print "doc_dir: %s"%(doc_dir)
-#print "csv_dir: %s"%(csv_dir)
-# export
+	#print "stack_dir: %s"%(stack_dir)
+	#print "stack: %s"%(stack)
+	#print "doc_dir: %s"%(doc_dir)
+	#print "csv_dir: %s"%(csv_dir)
+	# export
         hh = ExportYAML(config, stack_dir, options.path_src, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
-
-    # get packages
-    print 'Exporting packages to yaml/csv'
+	
+    # get packages  
+    print 'Exporting packages to yaml/csv'  
     stack_files = [f for f in all_files(options.path_src) if f.endswith('package.xml')]
     stack_dirs = [os.path.dirname(f) for f in stack_files]
     for stack_dir in stack_dirs:
-# build path
+	# build path
         stack = os.path.basename(stack_dir)
         doc_dir = options.doc + '/' + stack
         csv_dir = options.csv + '/' + stack
-package_dir = options.path + '/' + stack
-package_dir_src = options.path_src + '/' + stack
-# export
+	package_dir = options.path + '/' + stack
+	package_dir_src = options.path_src + '/' + stack
+	# export
         hh = ExportYAML(config, package_dir, options.path_src, doc_dir, csv_dir, options.distro, options.stack, options.uri, options.uri_info, options.vcs_type)
         hh.export()
         
@@ -535,14 +535,14 @@ package_dir_src = options.path_src + '/' + stack
     for m in data.keys():
         collect_averages[m] = data[m].get('metric_average', '')
     # pull distro yaml
-    origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro
+    origin = ROS_WIKI_SERVER + '/' + '%s.yaml'%options.distro 
     destination= options.doc
     try:
         call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (origin, destination),os.environ, 'Pull rosdistro yaml')
     except:
-        print "failed to download distro stats yaml. Assuming it's the first upload"
+        print "failed to download distro stats yaml.  Assuming it's the first upload"
     # update distro yaml
-    file_path = destination + '/' + '%s.yaml'%options.distro
+    file_path = destination + '/' + '%s.yaml'%options.distro 
     update_distro_yaml(file_path, options.stack, collect_averages)
     # push distro yaml
     origin = options.doc + '/%s.yaml'%options.distro
