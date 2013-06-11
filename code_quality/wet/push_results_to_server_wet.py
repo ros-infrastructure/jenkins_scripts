@@ -94,23 +94,12 @@ if __name__ == '__main__':
         exit(-1)
     
 
-    # get stacks  
-    print 'Exporting stacks to yaml/csv'      
-    stack_files = [f for f in all_files(options.path) if f.endswith('stack.xml')]
-    stack_dirs = [os.path.dirname(f) for f in stack_files]
-    for stack_dir in stack_dirs:
-        print stack_dir
-        stack = os.path.basename(stack_dir)
-        doc_dir = options.doc + '/' + stack
-        new_destination = ROS_WIKI_SERVER + '/groovy/' + stack 
-        call('sudo scp -oStrictHostKeyChecking=no -r %s %s' % (doc_dir, new_destination),env, 'Push stack-yaml-file to ros-wiki ')
-
-
     # get packages
     print 'Exporting packages to yaml/csv'  
-    package_files = [f for f in all_files(options.path) if f.endswith('manifest.xml')]
+    package_files = [f for f in all_files(options.path) if f.endswith('package.xml')]
     package_dirs = [os.path.dirname(f) for f in package_files]
     for package_dir in package_dirs:
+    	if '/Project' in package_dir: continue
         package = os.path.basename(package_dir)
         print package
         doc_dir = options.doc + '/' + package
