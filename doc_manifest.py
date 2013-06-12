@@ -82,7 +82,8 @@ def write_stack_manifest(output_dir, stack_name, manifest,
 
 def write_distro_specific_manifest(manifest_file, package, vcs_type,
                                    vcs_uri, api_homepage, tags_db,
-                                   repo_name, doc_job, version, has_changelog_rst=None):
+                                   repo_name, doc_job, version,
+                                   has_changelog_rst=None, pkg_status=None, pkg_status_description=None):
     m_yaml = {}
     if os.path.isfile(manifest_file):
         with open(manifest_file, 'r') as f:
@@ -119,6 +120,11 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
 
     if has_changelog_rst is not None:
         m_yaml['has_changelog_rst'] = has_changelog_rst
+
+    if pkg_status is not None:
+        m_yaml['status'] = pkg_status
+    if pkg_status_description is not None:
+        m_yaml['status_description'] = pkg_status_description
 
     with open(manifest_file, 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)

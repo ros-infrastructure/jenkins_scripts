@@ -83,7 +83,7 @@ def get_full_apt_deps(apt_deps, apt):
 def document_packages(manifest_packages, catkin_packages, build_order,
                       repos_to_doc, sources, tags_db, full_apt_deps,
                       ros_dep, repo_map, repo_path, docspace, ros_distro,
-                      homepage, doc_job, tags_location, doc_path):
+                      homepage, doc_job, tags_location, doc_path, rosdistro_release_file):
     repo_tags = {}
     for package in build_order:
         #don't document packages that we're supposed to build but not supposed to document
@@ -92,9 +92,22 @@ def document_packages(manifest_packages, catkin_packages, build_order,
             continue
 
         #Pull the package from the correct place
+        pkg_status = None
+        pkg_status_description = None
         if package in catkin_packages:
             package_path = catkin_packages[package]
             has_changelog_rst = document_package_changelog(package, package_path, doc_path)
+            if rosdistro_release_file and package in rosdistro_release_file.packages:
+                pkg_data = rosdistro_release_file.packages[package]
+                repo_data = rosdistro_release_file.repositories[pkg_data.repository_name]
+                if pkg_data.status is not None:
+                    pkg_status = pkg_data.status
+                elif repo_data.status is not None:
+                    pkg_status = repo_data.status
+                if pkg_data.status_description is not None:
+                    pkg_status_description = pkg_data.status_description
+                elif repo_data.status_description is not None:
+                    pkg_status_description = repo_data.status_description
         else:
             package_path = manifest_packages[package]
             has_changelog_rst = None
@@ -137,7 +150,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #have availalbe in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, package),
-                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst)
+                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description)
 
         print "Done"
     return repo_tags
@@ -230,6 +243,13 @@ def document_repo(workspace, docspace, ros_distro, repo,
     apt_deps = get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages)
     print "Apt dependencies: %s" % apt_deps
 
+    #Get rosdistro release file if there are catkin packages to get status
+    if catkin_packages and ros_distro not in ['electric', 'fuerte']:
+        index = rosdistro.get_index(rosdistro.get_index_url())
+        rosdistro_release_file = rosdistro.get_release_file(index, ros_distro)
+    else:
+        rosdistro_release_file = None
+
     #Build a local dependency graph to be used for build order
     local_dep_graph = build_local_dependency_graph(catkin_packages, manifest_packages)
 
@@ -294,7 +314,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     repo_tags = document_packages(manifest_packages, catkin_packages, build_order,
                                   repos_to_doc, sources, tags_db, full_apt_deps,
                                   ros_dep, repo_map, repo_path, docspace, ros_distro,
-                                  homepage, doc_job, tags_location, doc_path)
+                                  homepage, doc_job, tags_location, doc_path, rosdistro_release_file)
 
     #Copy the files to the appropriate place
     #call("rsync -e \"ssh -o StrictHostKeyChecking=no\" -qr %s rosbuild@ros.org:/var/www/www.ros.org/html/rosdoclite" % (doc_path))
