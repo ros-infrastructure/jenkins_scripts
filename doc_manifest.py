@@ -122,9 +122,9 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
         m_yaml['has_changelog_rst'] = has_changelog_rst
 
     if pkg_status is not None:
-        m_yaml['status'] = pkg_status
+        m_yaml['maintainer_status'] = pkg_status
     if pkg_status_description is not None:
-        m_yaml['status_description'] = pkg_status_description
+        m_yaml['maintainer_status_description'] = pkg_status_description
 
     with open(manifest_file, 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)

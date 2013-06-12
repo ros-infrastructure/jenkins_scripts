@@ -245,6 +245,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Get rosdistro release file if there are catkin packages to get status
     if catkin_packages and ros_distro not in ['electric', 'fuerte']:
+        print "Fetch rosdistro release file for: %s" % ros_distro
         index = rosdistro.get_index(rosdistro.get_index_url())
         rosdistro_release_file = rosdistro.get_release_file(index, ros_distro)
     else:
