@@ -34,6 +34,7 @@
 # Revision $Id: rosdoc 11469 2010-10-12 00:56:25Z kwc $
 
 import os
+import re
 import sys
 import yaml
 import shutil
@@ -165,6 +166,13 @@ def document_package_changelog(pkg_name, pkg_path, doc_path):
         with open(changelog_file, 'r') as f:
             rst_code = f.read()
         html_code = publish_string(rst_code, writer_name='html')
+
+        # strip system message from html output
+        open_tag = re.escape('<div class="first system-message">')
+        close_tag = re.escape('</div>')
+        pattern = '(' + open_tag + '.+?' + close_tag + ')'
+        html_code = re.sub(pattern, '', html_code, flags=re.DOTALL)
+
         pkg_changelog_doc_path = os.path.join(doc_path, 'changelogs', pkg_name)
         os.makedirs(pkg_changelog_doc_path)
         with open(os.path.join(pkg_changelog_doc_path, 'changelog.html'), 'w') as f:
