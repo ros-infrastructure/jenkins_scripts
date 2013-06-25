@@ -131,6 +131,10 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
 
 
 def write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_job, homepage):
+    # ensure folder exists to not fail the subsequent commands in doc_stack
+    distro_path = os.path.join(docspace, 'doc', ros_distro)
+    if not os.path.exists(distro_path):
+        os.makedirs(distro_path)
     #Write stack manifest files for all stacks, we can just do this off the
     #stack.xml files
     for stack, path in stacks.iteritems():
@@ -138,6 +142,6 @@ def write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_j
         #Get the dependencies of a dry stack from the stack.xml
         stack_manifest = rospkg.parse_manifest_file(path, rospkg.STACK_FILE)
         stack_packages = get_repo_manifests(path, manifest='package').keys()
-        stack_relative_doc_path = "%s/doc/%s/api/%s" % (docspace, ros_distro, stack)
+        stack_relative_doc_path = "%s/api/%s" % (distro_path, stack)
         stack_doc_path = os.path.abspath(stack_relative_doc_path)
         write_stack_manifest(stack_doc_path, stack, stack_manifest, repo_map[stack]['type'], repo_map[stack]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, stack), stack_packages, tags_db, repo_map[stack]['name'], doc_job, repo_map[stack]['version'])
