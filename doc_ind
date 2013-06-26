@@ -7,8 +7,8 @@
 
 REPOS="https://github.com/vcstools/vcstools.git
 https://github.com/vcstools/rosinstall.git
-https://github.com/ros/rospkg.git
-https://github.com/ros/rosdep.git
+https://github.com/ros-infrastructure/rospkg.git
+https://github.com/ros-infrastructure/rosdep.git
 https://github.com/ros-infrastructure/rosdistro.git
 https://github.com/ros-infrastructure/jenkins_tools.git
 https://github.com/ros-infrastructure/catkin_pkg.git
