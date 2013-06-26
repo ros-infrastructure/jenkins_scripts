@@ -54,7 +54,7 @@ def install_catkin_sphinx(workspace):
     if not os.path.exists(sphinx_path):
         os.makedirs(sphinx_path)
 
-    call("git clone git://github.com/ros/catkin-sphinx.git %s" % checkout_path)
+    call("git clone git://github.com/ros-infrastructure/catkin-sphinx.git %s" % checkout_path)
     old_dir = os.getcwd()
     os.chdir("%s" % checkout_path)
     call("./setup.py install")
