@@ -71,15 +71,15 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
 
 
 class TagsDb(object):
-    def __init__(self, distro_name, workspace):
-        self.workspace = workspace
+    def __init__(self, distro_name, jenkins_scripts_path, rosdoc_tag_index_path):
         self.distro_name = distro_name
-        self.path = os.path.abspath(os.path.join(self.workspace, 'rosdoc_tag_index'))
+        self.jenkins_scripts_path = jenkins_scripts_path
+        self.path = os.path.abspath(rosdoc_tag_index_path)
         self.delete_tag_index_repo()
 
-        command = ['bash', '-c', 'export GIT_SSH="%s/jenkins_scripts/git_ssh" \
+        command = ['bash', '-c', 'export GIT_SSH="%s/git_ssh" \
                    && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s' \
-                   % (workspace, self.path)]
+                   % (self.jenkins_scripts_path, self.path)]
 
         call_with_list(command)
 
@@ -192,7 +192,7 @@ class TagsDb(object):
             call_with_list(command)
 
             env = os.environ
-            env['GIT_SSH'] = "%s/jenkins_scripts/git_ssh" % self.workspace
+            env['GIT_SSH'] = "%s/git_ssh" % self.jenkins_scripts_path
 
             #Have some tolerance for things commiting to the db at the same time
             num_retries = 3

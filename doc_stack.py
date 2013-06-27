@@ -193,7 +193,13 @@ def document_necessary(workspace, docspace, ros_distro, repo,
     install_repo(docspace, workspace, repo, doc_conf, depends_conf)
 
     #Load information about existing tags
-    tags_db = TagsDb(ros_distro, workspace)
+    jenkins_scripts_path = os.path.join(workspace, 'jenkins_scripts')
+    if not os.path.exists(jenkins_scripts_path):
+        # if jenkins_scripts has not been checked out in the workspace
+        # expect that the user call doc from within a jenkins_scripts checkout
+        jenkins_scripts_path = os.getcwd()
+    rosdoc_tag_index_path = os.path.join(workspace, 'rosdoc_tag_index')
+    tags_db = TagsDb(ros_distro, jenkins_scripts_path, rosdoc_tag_index_path)
 
     #Check to see if we need to document this repo list by checking if any of
     #the repositories revision numbers/hashes have changed
@@ -223,7 +229,7 @@ def document_necessary(workspace, docspace, ros_distro, repo,
 
 
 def document_repo(workspace, docspace, ros_distro, repo,
-                  platform, arch, homepage,
+                  platform, arch, homepage, no_chroot,
                   doc_conf, depends_conf, tags_db):
     doc_job = "doc-%s-%s" % (ros_distro, repo)
 
@@ -242,7 +248,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     #print "Stacks: %s" % stacks
 
     #Get any non local apt dependencies
-    ros_dep = rosdep.RosDepResolver(ros_distro)
+    ros_dep = rosdep.RosDepResolver(ros_distro, no_chroot=no_chroot)
     import rosdistro
     if ros_distro == 'electric':
         apt = rosdistro.AptDistro(platform, arch, shadow=False)
@@ -273,10 +279,11 @@ def document_repo(workspace, docspace, ros_distro, repo,
     #We'll need the full list of apt_deps to get tag files
     full_apt_deps = get_full_apt_deps(apt_deps, apt)
 
-    print "Installing all dependencies for %s" % repo
-    if apt_deps:
-        call("apt-get install %s --yes" % (' '.join(apt_deps)))
-    print "Done installing dependencies"
+    if not no_chroot:
+        print "Installing all dependencies for %s" % repo
+        if apt_deps:
+            call("apt-get install %s --yes" % (' '.join(apt_deps)))
+        print "Done installing dependencies"
 
     #Set up the list of things that need to be sourced to run rosdoc_lite
     #TODO: Hack for electric
