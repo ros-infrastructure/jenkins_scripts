@@ -41,6 +41,11 @@ import shutil
 import subprocess
 import copy
 import rosdep
+
+from catkin_pkg.package import parse_package
+from rospkg import MANIFEST_FILE, STACK_FILE
+from rospkg.manifest import parse_manifest_file
+
 from common import call, call_with_list, append_pymodules_if_needed,  \
                    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
                    copy_test_results
@@ -86,6 +91,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                       ros_dep, repo_map, repo_path, docspace, ros_distro,
                       homepage, doc_job, tags_location, doc_path, rosdistro_release_file):
     repo_tags = {}
+    email_pattern = re.compile('([a-zA-Z0-9._%\+-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6})')
     for package in build_order:
         #don't document packages that we're supposed to build but not supposed to document
         if not repo_map[package]['name'] in repos_to_doc:
@@ -93,10 +99,17 @@ def document_packages(manifest_packages, catkin_packages, build_order,
             continue
 
         #Pull the package from the correct place
-        pkg_status = None
-        pkg_status_description = None
         if package in catkin_packages:
             package_path = catkin_packages[package]
+        else:
+            package_path = manifest_packages[package]
+
+        print "Documenting %s [%s]..." % (package, package_path)
+
+        pkg_status = None
+        pkg_status_description = None
+        notification_recipients = set([])
+        if package in catkin_packages:
             has_changelog_rst = document_package_changelog(package, package_path, doc_path)
             if rosdistro_release_file and package in rosdistro_release_file.packages:
                 pkg_data = rosdistro_release_file.packages[package]
@@ -109,9 +122,24 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                     pkg_status_description = pkg_data.status_description
                 elif repo_data.status_description is not None:
                     pkg_status_description = repo_data.status_description
+
+            pkg = parse_package(package_path)
+            for m in pkg.maintainers:
+                notification_recipients.add(m.email)
         else:
-            package_path = manifest_packages[package]
             has_changelog_rst = None
+
+            if os.path.exists(os.path.join(package_path, MANIFEST_FILE)):
+                pkg = parse_manifest_file(package_path, MANIFEST_FILE)
+            elif os.path.exists(os.path.join(package_path, STACK_FILE)):
+                pkg = parse_manifest_file(package_path, STACK_FILE)
+            else:
+                assert False, "Path '%s' does not neither contain a manifest.xml nor a stack.xml file" % package_path
+            for email in email_pattern.finditer(pkg.author):
+                notification_recipients.add(email.group(1))
+
+        if notification_recipients:
+            print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
 
         #Build a tagfile list from dependencies for use by rosdoc
         build_tagfile(full_apt_deps, tags_db, 'rosdoc_tags.yaml', package, build_order, docspace, ros_distro, tags_location)
@@ -120,7 +148,6 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         pkg_doc_path = os.path.realpath(relative_doc_path)
         relative_tags_path = "%s/tags/%s.tag" % (ros_distro, package)
         tags_path = os.path.realpath("%s/doc/%s" % (docspace, relative_tags_path))
-        print "Documenting %s [%s]..." % (package, package_path)
         #Generate the command we'll use to document the stack
         command = ['bash', '-c', '%s \
                    && export ROS_PACKAGE_PATH=%s:$ROS_PACKAGE_PATH \
