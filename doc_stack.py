@@ -42,10 +42,6 @@ import subprocess
 import copy
 import rosdep
 
-from catkin_pkg.package import parse_package
-from rospkg import MANIFEST_FILE, STACK_FILE
-from rospkg.manifest import parse_manifest_file
-
 from common import call, call_with_list, append_pymodules_if_needed,  \
                    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
                    copy_test_results
@@ -123,12 +119,15 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                 elif repo_data.status_description is not None:
                     pkg_status_description = repo_data.status_description
 
+            from catkin_pkg.package import parse_package
             pkg = parse_package(package_path)
             for m in pkg.maintainers:
                 notification_recipients.add(m.email)
         else:
             has_changelog_rst = None
 
+            from rospkg import MANIFEST_FILE, STACK_FILE
+            from rospkg.manifest import parse_manifest_file
             if os.path.exists(os.path.join(package_path, MANIFEST_FILE)):
                 pkg = parse_manifest_file(package_path, MANIFEST_FILE)
             elif os.path.exists(os.path.join(package_path, STACK_FILE)):
