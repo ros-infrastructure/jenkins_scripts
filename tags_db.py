@@ -184,10 +184,10 @@ class TagsDb(object):
 
         old_dir = os.getcwd()
         os.chdir(self.path)
-        call("git add %s" % os.path.join(self.path, self.distro_name))
-        diff = check_output('git diff')
+        diff = check_output('git diff %s' % self.distro_name)
         if diff != '':
             print "Commiting changes to tags and deps lists...."
+            call("git add %s" % os.path.join(self.path, self.distro_name))
             command = ['git', 'commit', '-a', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
             call_with_list(command)
 
