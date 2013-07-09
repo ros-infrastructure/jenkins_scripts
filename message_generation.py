@@ -58,36 +58,42 @@ rosbuild_init()
 #that are not rosdoc or metpackage related
 def remove_export_tags(path):
     is_metapackage = False
+    is_plain_cmake = False
     import xml.etree.ElementTree as ElementTree
     et = ElementTree.parse(path)
     root = et.getroot()
     for export in root.findall('export'):
         to_remove = []
         for child in export:
-            if child.tag not in ['metapackage', 'rosdoc', 'deprecated']:
+            if child.tag not in ['metapackage', 'rosdoc', 'deprecated', 'build_type']:
                 to_remove.append(child)
             if child.tag == 'metapackage':
                 is_metapackage = True
+            if child.tag == 'build_type' and child.text == 'cmake':
+                is_plain_cmake = True
         for child in to_remove:
             export.remove(child)
     et.write(path)
-    return is_metapackage
+    return is_metapackage, is_plain_cmake
 
 
 def replace_catkin_cmake_files(catkin_packages):
+    has_plain_cmake = False
     for path in catkin_packages.values():
         is_metapackage = False
         #Remove export lines from manifest files
         pkg_file = os.path.join(path, "package.xml")
         if os.path.isfile(pkg_file):
-            is_metapackage = remove_export_tags(pkg_file)
+            is_metapackage, is_plain_cmake = remove_export_tags(pkg_file)
+            has_plain_cmake |= is_plain_cmake
 
-        if not is_metapackage:
+        if not is_metapackage and not is_plain_cmake:
             #Replace cmake files with custom version
             cmake_file = os.path.join(path, "CMakeLists.txt")
             if os.path.isfile(cmake_file):
                 with open(cmake_file, 'w') as f:
                     f.write(catkin_cmake_file)
+    return has_plain_cmake
 
 
 def replace_manifest_cmake_files(manifest_packages):
@@ -278,8 +284,14 @@ def build_repo_messages_manifest(manifest_packages, build_order, ros_distro):
 
 def build_repo_messages(catkin_packages, docspace, ros_distro):
     #we'll replace cmake files with our own since we only want to do message generation
-    replace_catkin_cmake_files(catkin_packages)
+    has_plain_cmake = replace_catkin_cmake_files(catkin_packages)
     build_errors = []
+    if has_plain_cmake:
+        print
+        print 'Skip building packages since they contain plain-cmake packages'
+        print 'There will be no messages in documentation'
+        print
+        return '', build_errors
     #For groovy, this isn't too bad, we just set up a workspace
     old_dir = os.getcwd()
     repo_devel = os.path.join(docspace, 'build_repo')
