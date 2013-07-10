@@ -82,6 +82,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo, no_chroot)
 
     # download the repo_list from source
+    pkg_names = set([])
     print "Creating rosinstall file for repo list"
     rosinstall = ""
     for repo_name, version in zip(repo_list, version_list):
@@ -103,6 +104,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
                     release_tag = '/'.join(release_tag.split('/')[:-1])
                 print 'Using tag "%s" of release distro file to download package "%s from repo "%s' % (version, pkg_name, repo_name)
                 rosinstall += _generate_rosinstall_for_pkg_version(release.repositories[repo_name], pkg_name, release_tag)
+                pkg_names.add(pkg_name)
     print "rosinstall file for all repositories: \n %s" % rosinstall
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         f.write(rosinstall)
@@ -196,6 +198,8 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
                 print('pkg_name', pkg_name)
                 depends_on |= walker.get_recursive_depends_on(pkg_name, ['buildtool', 'build'], ignore_pkgs=depends_on)
                 print('depends_on', depends_on)
+        # remove all packages which are already in the workspace
+        depends_on -= pkg_names
     except RuntimeError:
         print "Exception %s: If you are not in the rosdistro and only in the devel", \
             " builds there will be no depends on"
