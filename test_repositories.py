@@ -102,7 +102,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
                 if version in ['latest', 'master']:
                     release_tag = '/'.join(release_tag.split('/')[:-1])
                 print 'Using tag "%s" of release distro file to download package "%s from repo "%s' % (version, pkg_name, repo_name)
-                rosinstall += _generate_rosinstall_for_repo(release.repositories[repo_name], version=release_tag)
+                rosinstall += _generate_rosinstall_for_pkg_version(release.repositories[repo_name], pkg_name, release_tag)
     print "rosinstall file for all repositories: \n %s" % rosinstall
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         f.write(rosinstall)
@@ -473,10 +473,14 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
 
 def _generate_rosinstall_for_pkg(repo, pkg_name):
     from rosdistro.manifest_provider import get_release_tag
+    return _generate_rosinstall_for_pkg_version(repo, pkg_name, get_release_tag(repo, pkg_name))
+
+
+def _generate_rosinstall_for_pkg_version(repo, pkg_name, version):
     repo_data = {
         'local-name': pkg_name,
         'uri': repo.url,
-        'version': get_release_tag(repo, pkg_name)
+        'version': version
     }
     return yaml.safe_dump([{repo.type: repo_data}], default_style=False)
 
