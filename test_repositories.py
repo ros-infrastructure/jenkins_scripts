@@ -536,4 +536,4 @@ if __name__ == '__main__':
 
     except Exception as ex:
         print "test_repositories script failed. Check out the console output above for details."
-        raise ex
+        raise
