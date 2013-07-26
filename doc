@@ -25,7 +25,7 @@ def install_catkin_basic(ros_distro):
 
 
 #TODO: Eventually, pull rosdoc lite from debs
-def install_rosdoc_lite(workspace, ros_distro, no_chroot=False):
+def checkout_rosdoc_lite(workspace, ros_distro, no_chroot=False):
     checkout_path = "%s/rosdoc_lite" % workspace
     if os.path.exists(checkout_path):
         shutil.rmtree(checkout_path)
@@ -36,15 +36,20 @@ def install_rosdoc_lite(workspace, ros_distro, no_chroot=False):
     branch = 'groovy-devel' if ros_distro != 'fuerte' else 'fuerte-devel'
     call("git checkout %s" % branch)
     rev = check_output("git rev-parse HEAD").split('\n')[0]
-    if not no_chroot:
-        os.makedirs("build")
-        os.chdir("build")
-        ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
-        call("cmake ..", ros_env)
-        call("make", ros_env)
-        call("make install", ros_env)
     os.chdir(old_dir)
     return rev
+
+def install_rosdoc_lite(workspace, ros_distro):
+    checkout_path = "%s/rosdoc_lite" % workspace
+    old_dir = os.getcwd()
+    os.chdir(checkout_path)
+    os.makedirs("build")
+    os.chdir("build")
+    ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
+    call("cmake ..", ros_env)
+    call("make", ros_env)
+    call("make install", ros_env)
+    os.chdir(old_dir)
 
 
 def install_catkin_sphinx(workspace):
@@ -126,13 +131,8 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
 
         call("apt-get install python-rosdistro python-rosinstall --yes")
 
-    install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
-    if not no_chroot:
-        #TODO: Hack to install fuerte tools to document electric
-        call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
-
-    rosdoc_lite_version = install_rosdoc_lite(workspace, install_distro, no_chroot=no_chroot)
-    print "Done installing rosdoc_lite"
+    rosdoc_lite_version = checkout_rosdoc_lite(workspace, install_distro, no_chroot=no_chroot)
+    print "Done checking out rosdoc_lite"
 
     jenkins_scripts_version = get_jenkins_scripts_version(workspace, no_chroot=no_chroot)
 
@@ -168,8 +168,14 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         install_catkin_sphinx(workspace)
         print "Done installing catkin-sphinx"
 
+        print "Installing ros and genmsg"
+        #TODO: Hack to install fuerte tools to document electric
+        install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
+        call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
+
         #Install rosdoc lite
-        print "Installing ros and rosdoc_lite..."
+        print "Installing rosdoc_lite"
+        install_rosdoc_lite(workspace, install_distro)
         #TODO Hack for electric
         if ros_distro == 'electric' or os.environ['OS_PLATFORM'] == 'lucid':
             call("apt-get install python-pip python-setuptools build-essential --yes")
