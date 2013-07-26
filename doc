@@ -131,6 +131,8 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
 
         call("apt-get install python-rosdistro python-rosinstall --yes")
 
+    #TODO: Hack to install fuerte tools to document electric
+    install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
     rosdoc_lite_version = checkout_rosdoc_lite(workspace, install_distro, no_chroot=no_chroot)
     print "Done checking out rosdoc_lite"
 
@@ -169,8 +171,6 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         print "Done installing catkin-sphinx"
 
         print "Installing ros and genmsg"
-        #TODO: Hack to install fuerte tools to document electric
-        install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
         call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
 
         #Install rosdoc lite
