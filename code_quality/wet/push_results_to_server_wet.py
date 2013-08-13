@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     # get packages
     print 'Exporting packages to yaml/csv'  
-    package_files = [f for f in all_files(options.path) if f.endswith('package.xml')]
+    package_files = [f for f in all_files(options.path_src) if f.endswith('package.xml')]
     package_dirs = [os.path.dirname(f) for f in package_files]
     for package_dir in package_dirs:
     	if 'Project' in package_dir: continue
