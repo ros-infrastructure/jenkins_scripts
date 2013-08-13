@@ -187,7 +187,7 @@ class TagsDb(object):
         changes = check_output('git status -s').strip()
         if changes:
             print "Commiting changes to tags and deps lists...."
-            call("git add %s*" % os.path.join(self.path, self.distro_name))
+            call("git add %s" % os.path.join(self.path, self.distro_name))
             command = ['git', 'commit', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
             call_with_list(command)
 
