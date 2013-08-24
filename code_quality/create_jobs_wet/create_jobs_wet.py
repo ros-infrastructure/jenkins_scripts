@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-#!/usr/bin/env python
 import os
 import sys
 import subprocess
@@ -10,6 +8,8 @@ import shutil
 import optparse
 from time import sleep
 import rosdistro
+from rosdistro import get_cached_release, get_index, get_index_url, get_source_file
+import traceback
 
 def get_environment2():
     my_env = os.environ
@@ -37,19 +37,33 @@ def main():
     arch = args[1]       # e.g. amd64
     email = args[2]      # e.g. best_email@ever.com
     ros_distro = args[3] # e.g. groovy
-    
-    # parse the rosdistro file
-    print "Parsing rosdistro file for %s"%ros_distro
-    distro = rosdistro.RosDistro(ros_distro)
-    print "Parsing devel file for %s"%ros_distro
-    devel = rosdistro.DevelDistro(ros_distro)
+
+    #Get environment
     env = get_environment2()
 
+    index= get_index(get_index_url())
+    print "Parsing rosdistro file for %s" % ros_distro
+    release = get_cached_release(index, ros_distro)
+    print "Parsing devel file for %s" % ros_distro
+    source_file = get_source_file(index, ros_distro)
+
+    #Counter to count total number of pkg's that get analyzed
+    i= 0
+
     try:
-        for stack in distro.get_repositories():
-           print 'Analyzing stack %s'%stack
-	   h = subprocess.Popen(('run_chroot_jenkins_now %s %s %s metrics %s %s wet'%(platform, arch, email, ros_distro,stack)).split(' '),env=env)
-           h.communicate()
+        for stack in source_file.repositories:
+           print 'Analyzing stack %s %d'%(stack, i)
+           if stack in release.repositories:
+                #Get git repository url for triggering the jenkins-job
+                repo_url= release.repositories[stack].url
+                print 'Repo url %s\n'%(repo_url)
+                #Raise cntr to count number of pkg's that will analyzed
+                i= i+1
+                #Start jenkins-job
+                h = subprocess.Popen(('run_chroot_jenkins_vcs %s %s %s git %s master metrics %s %s wet'%(platform, arch, email, repo_url, ros_distr$
+                h.communicate()
+           else:
+                print'Repository %s does not exist in Ros Distro'%stack
     except Exception, ex:
         print "%s. Check the console output for test failure details."%ex
         traceback.print_exc(file=sys.stdout)
@@ -57,3 +71,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
