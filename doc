@@ -91,7 +91,12 @@ def main():
     parser.add_argument('--platform', default=platform, required=platform is None, help="The OS platform, e.g. 'precise' (default: environment variable OS_PLATFORM if defined)")
     parser.add_argument('--arch', default=arch, required=arch is None, help="The architecture, e.g. 'amd64' (default: environment variable ARCH if defined)")
     parser.add_argument('--no-chroot', action='store_true', help='Skip all installations and setup steps to run the script locally without sudo')
+    parser.add_argument('--skip-garbage', action='store_true', help='Skip deleting all generated doc files')
     args = parser.parse_args()
+
+    # no chroot implies keeping all generated artifacts
+    if args.no_chroot:
+        args.skip_garbage = True
 
     print
     print
@@ -110,13 +115,13 @@ def main():
     os.makedirs(docspace)
 
     try:
-        doit(args.rosdistro, args.repo, workspace, docspace, args.platform, args.arch, args.no_chroot)
+        doit(args.rosdistro, args.repo, workspace, docspace, args.platform, args.arch, args.no_chroot, args.skip_garbage)
     finally:
-        if not args.no_chroot:
+        if not args.skip_garbage:
             shutil.rmtree(docspace)
 
 
-def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False):
+def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False, skip_garbage=False):
     if not no_chroot:
         #Add ros to apt
         print "Add ROS to apt sources"
@@ -196,7 +201,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
     homepage = 'http://ros.org/doc'
     document_repo(workspace, docspace, ros_distro, stack,
                   platform, arch,
-                  homepage, no_chroot, **necessary)
+                  homepage, no_chroot, skip_garbage, **necessary)
 
 
 if __name__ == '__main__':
