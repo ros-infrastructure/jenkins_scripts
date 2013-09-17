@@ -92,6 +92,7 @@ def main():
     parser.add_argument('--arch', default=arch, required=arch is None, help="The architecture, e.g. 'amd64' (default: environment variable ARCH if defined)")
     parser.add_argument('--no-chroot', action='store_true', help='Skip all installations and setup steps to run the script locally without sudo')
     parser.add_argument('--skip-garbage', action='store_true', help='Skip deleting all generated doc files')
+    parser.add_argument('--force', action='store_true', help='Force generating documentation even when the upstream has not changed')
     args = parser.parse_args()
 
     # no chroot implies keeping all generated artifacts
@@ -115,13 +116,13 @@ def main():
     os.makedirs(docspace)
 
     try:
-        doit(args.rosdistro, args.repo, workspace, docspace, args.platform, args.arch, args.no_chroot, args.skip_garbage)
+        doit(args.rosdistro, args.repo, workspace, docspace, args.platform, args.arch, args.no_chroot, args.skip_garbage, args.force)
     finally:
         if not args.skip_garbage:
             shutil.rmtree(docspace)
 
 
-def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False, skip_garbage=False):
+def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False, skip_garbage=False, force=False):
     if not no_chroot:
         #Add ros to apt
         print "Add ROS to apt sources"
@@ -153,7 +154,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
 
     necessary = document_necessary(workspace, docspace, ros_distro, stack,
                                    rosdoc_lite_version, jenkins_scripts_version)
-    if not necessary:
+    if not necessary and not force:
         return
 
     if not no_chroot:
