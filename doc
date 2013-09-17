@@ -153,8 +153,8 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         shutil.rmtree(test_result_path)
 
     necessary = document_necessary(workspace, docspace, ros_distro, stack,
-                                   rosdoc_lite_version, jenkins_scripts_version)
-    if not necessary and not force:
+                                   rosdoc_lite_version, jenkins_scripts_version, force)
+    if not necessary:
         return
 
     if not no_chroot:
