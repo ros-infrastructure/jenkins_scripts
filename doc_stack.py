@@ -326,15 +326,18 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Everything that is after fuerte supports catkin workspaces, so everything
     #that has packages with package.xml files
+    local_install_path = os.path.join(docspace, 'local_installs')
+    if os.path.exists(local_install_path):
+        shutil.rmtree(local_install_path)
     if catkin_packages \
        and not 'rosdoc_lite' in catkin_packages.keys() and not 'catkin' in catkin_packages.keys():
-        source, errs = build_repo_messages(catkin_packages, docspace, ros_distro)
+        source, errs = build_repo_messages(catkin_packages, docspace, ros_distro, local_install_path)
         build_errors.extend(errs)
         if source:
             sources.append(source)
 
     #For fuerte catkin, we need to check if we should build catkin stacks
-    source, errs = build_repo_messages_catkin_stacks(stacks, ros_distro, os.path.join(docspace, 'local_installs'))
+    source, errs = build_repo_messages_catkin_stacks(stacks, ros_distro, local_install_path)
     build_errors.extend(errs)
     sources.append(source)
 
