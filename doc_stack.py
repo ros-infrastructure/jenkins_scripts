@@ -153,7 +153,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                    && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml -q' \
                    % (' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path)]
         print('Invoking: %s' % ' '.join(command))
-        rc = subprocess.call(command)
+        rc = subprocess.call(command, stderr=subprocess.STDOUT)
         print('rosdoc_lite return code %d' % rc)
 
         #Some doc runs won't generate tag files, so we need to check if they
