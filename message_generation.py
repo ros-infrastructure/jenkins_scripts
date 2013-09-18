@@ -163,16 +163,6 @@ def generate_messages_dry(env, name, messages, services):
 def build_repo_messages_catkin_stacks(stacks, ros_distro, local_install_path):
     ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
 
-    def makedirs(path):
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-    #Make sure to create the local install path if it doesn't exist
-    makedirs(local_install_path)
-    makedirs(os.path.join(local_install_path, 'lib/python2.7/dist-packages'))
-    makedirs(os.path.join(local_install_path, 'lib/python2.6/dist-packages'))
-    makedirs(os.path.join(local_install_path, 'share'))
-    makedirs(os.path.join(local_install_path, 'bin'))
     build_errors = []
 
     for stack, path in stacks.iteritems():
@@ -309,7 +299,12 @@ def build_repo_messages(catkin_packages, docspace, ros_distro, local_install_pat
         call("cmake -DCMAKE_INSTALL_PREFIX:PATH=%s .." % local_install_path, ros_env)
         ros_env = get_ros_env(os.path.join(repo_devel, 'devel/setup.bash'))
         generate_messages_catkin(ros_env)
-        call("make install", ros_env)
+        try:
+            call("make install", ros_env)
+        except BuildException as e:
+            print "FAILED TO CALL MAKE INSTALL ON CATKIN REPOS"
+            print "Exception: %s" % e
+            sys.exit(1)
         source = 'source %s' % (os.path.abspath(os.path.join(repo_devel, 'devel/setup.bash')))
     except BuildException as e:
         print "FAILED TO CALL CMAKE ON CATKIN REPOS"

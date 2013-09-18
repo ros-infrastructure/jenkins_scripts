@@ -329,6 +329,16 @@ def document_repo(workspace, docspace, ros_distro, repo,
     local_install_path = os.path.join(docspace, 'local_installs')
     if os.path.exists(local_install_path):
         shutil.rmtree(local_install_path)
+
+    #Make sure to create some subfolders under the local install path
+    def makedirs(path):
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    makedirs(os.path.join(local_install_path, 'bin'))
+    makedirs(os.path.join(local_install_path, 'lib/python2.7/dist-packages'))
+    makedirs(os.path.join(local_install_path, 'share'))
+
     if catkin_packages \
        and not 'rosdoc_lite' in catkin_packages.keys() and not 'catkin' in catkin_packages.keys():
         source, errs = build_repo_messages(catkin_packages, docspace, ros_distro, local_install_path)
