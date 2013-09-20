@@ -156,6 +156,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         rc = subprocess.call(command, stderr=subprocess.STDOUT)
         print('rosdoc_lite return code %d' % rc)
 
+        add_canonical_link(pkg_doc_path, "%s/%s/api/%s" % (homepage, ros_distro, package))
+
         #Some doc runs won't generate tag files, so we need to check if they
         #exist before adding them to the list
         if(os.path.exists(tags_path)):
@@ -174,13 +176,27 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                 repo_tags.setdefault(repo_map[package]['name'], []).append(package_tags)
 
         #We also need to add information to each package manifest that we only
-        #have availalbe in this script like vcs location and type
+        #have available in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, package),
                                        tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description)
 
         print "Done"
     return repo_tags
+
+
+def add_canonical_link(base_path, base_link):
+    print("add canonical link '%s' to all html files under '%s'...", base_link, base_path)
+    for path, dirs, files in os.walk(base_path):
+        for filename in [f for f in files if f.endswith('.html')]:
+            f = os.path.join(path, filename)
+            with open(f, 'r') as fh:
+                data = fh.read()
+            rel_path = os.path.relpath(f, base_path)
+            link = os.path.join(base_link, rel_path)
+            data = data.replace('</head>', '<link rel="canonical" href="%s" />\n</head>' % link, 1)
+            with open(f, 'w') as fh:
+                fh.write(data)
 
 
 def document_package_changelog(pkg_name, pkg_path, doc_path):
@@ -441,7 +457,7 @@ def main():
     stack = arguments[1]
     workspace = 'workspace'
     docspace = 'docspace'
-    homepage = 'http://ros.org/doc'
+    homepage = 'http://docs.ros.org'
 
     document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage, None, None)
 
