@@ -199,7 +199,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         print "Done installing ros"
 
     #Run documentation generation on the stack
-    homepage = 'http://ros.org/doc'
+    homepage = 'http://docs.ros.org'
     document_repo(workspace, docspace, ros_distro, stack,
                   platform, arch,
                   homepage, no_chroot, skip_garbage, **necessary)
