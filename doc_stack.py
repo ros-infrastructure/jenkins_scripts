@@ -194,6 +194,8 @@ def add_canonical_link(base_path, base_link):
                 data = fh.read()
             rel_path = os.path.relpath(f, base_path)
             link = os.path.join(base_link, rel_path)
+            if data.find('rel="canonical"') != -1:
+                continue
             data = data.replace('</head>', '<link rel="canonical" href="%s" />\n</head>' % link, 1)
             with open(f, 'w') as fh:
                 fh.write(data)
