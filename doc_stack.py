@@ -134,8 +134,9 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                 pkg = parse_manifest_file(package_path, STACK_FILE)
             else:
                 assert False, "Path '%s' does not neither contain a manifest.xml nor a stack.xml file" % package_path
-            for email in email_pattern.finditer(pkg.author):
-                notification_recipients.add(email.group(1))
+            if pkg.author:
+                for email in email_pattern.finditer(pkg.author):
+                    notification_recipients.add(email.group(1))
 
         if notification_recipients:
             print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
