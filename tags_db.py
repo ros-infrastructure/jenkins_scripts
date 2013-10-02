@@ -188,7 +188,7 @@ class TagsDb(object):
         if changes:
             print "Commiting changes to tags and deps lists...."
             call("git add %s" % os.path.join(self.path, self.distro_name))
-            command = ['git', '-c', 'user.email=jenkins@jenkins.ros.org', 'commit', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
+            command = ['git', '-c', 'user.name=jenkins.ros.org', 'commit', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
             call_with_list(command)
 
             env = os.environ
