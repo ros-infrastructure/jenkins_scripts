@@ -14,13 +14,6 @@ https://github.com/ros-infrastructure/jenkins_tools.git
 https://github.com/ros-infrastructure/catkin_pkg.git
 https://github.com/vcstools/wstool.git"
 
-#Make sure to set up ros sources for apt
-echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list
-wget http://packages.ros.org/ros.key -O $WORKSPACE/ros.key
-apt-key add $WORKSPACE/ros.key
-apt-get update
-apt-get install python-catkin-sphinx rsync --yes
-
 DOC_DIR="$WORKSPACE/documentation_gen"
 
 rm -rf $DOC_DIR
