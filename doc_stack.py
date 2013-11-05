@@ -313,6 +313,10 @@ def document_repo(workspace, docspace, ros_distro, repo,
     #Build a local dependency graph to be used for build order
     local_dep_graph = build_local_dependency_graph(catkin_packages, manifest_packages)
 
+    doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
+    if os.path.exists(doc_path):
+        shutil.rmtree(doc_path)
+
     #Write stack manifest files for all stacks, we can just do this off the
     #stack.xml files
     write_stack_manifests(stacks, docspace, ros_distro, repo_map, tags_db, doc_job, homepage)
@@ -384,10 +388,6 @@ def document_repo(workspace, docspace, ros_distro, repo,
     command = ['bash', '-c',
                'rsync -e "ssh -o StrictHostKeyChecking=no" -qrz rosbot@ros.osuosl.org:/home/rosbot/docs/%s/tags %s' % (ros_distro, tags_location)]
     call_with_list(command)
-
-    doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
-    if os.path.exists(doc_path):
-        shutil.rmtree(doc_path)
 
     repo_tags = document_packages(manifest_packages, catkin_packages, build_order,
                                   repos_to_doc, sources, tags_db, full_apt_deps,
