@@ -395,7 +395,12 @@ def document_repo(workspace, docspace, ros_distro, repo,
                                   homepage, doc_job, tags_location, doc_path, rosdistro_release_file)
 
     #Copy the files to the appropriate place
-    command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr %s rosbot@ros.osuosl.org:/home/rosbot/docs' % doc_path]
+    folders = sorted(set(manifest_packages.keys() + catkin_packages.keys()))
+    if folders:
+        dsts = ['%s/api/%s' % (doc_path, f) for f in folders]
+        command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr --delete %s rosbot@ros.osuosl.org:/home/rosbot/docs/%s/api' % (' '.join(dsts), ros_distro)]
+        call_with_list(command)
+    command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr %s/changelogs %s/tags rosbot@ros.osuosl.org:/home/rosbot/docs/%s' % (doc_path, doc_path, ros_distro)]
     call_with_list(command)
 
     if not skip_garbage:
