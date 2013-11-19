@@ -264,6 +264,23 @@ def document_necessary(workspace, docspace, ros_distro, repo,
         print "There were no changes to any of the repositories we document. Not running documentation."
         copy_test_results(workspace, docspace)
         tags_db.delete_tag_index_repo()
+
+        # create marker files for all packages an upload them
+        doc_path = os.path.realpath("%s/doc/%s" % (docspace, ros_distro))
+        if os.path.exists(doc_path):
+            shutil.rmtree(doc_path)
+        repo_path = os.path.realpath("%s" % (docspace))
+        _, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, depends_conf)
+        folders = sorted(set(manifest_packages.keys() + catkin_packages.keys()))
+        if folders:
+            dsts = ['%s/api/%s/stamp' % (doc_path, f) for f in folders]
+            for dst in dsts:
+                os.makedirs(os.path.dirname(dst))
+                with open(dst, 'w'): pass
+            print "Uploading marker files to identify that documentation is up-to-date."
+            command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr %s/api/ rosbot@ros.osuosl.org:/home/rosbot/docs/%s/api' % (doc_path, ros_distro)]
+            call_with_list(command)
+
         return False
 
     #Make sure to update the versions of jenkins_scripts and rosdoc_lite for this repo list
@@ -398,6 +415,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
     folders = sorted(set(manifest_packages.keys() + catkin_packages.keys()))
     if folders:
         dsts = ['%s/api/%s' % (doc_path, f) for f in folders]
+        for dst in dsts:
+            with open(os.path.join(dst, 'stamp'), 'w'): pass
         command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr --delete %s rosbot@ros.osuosl.org:/home/rosbot/docs/%s/api' % (' '.join(dsts), ros_distro)]
         call_with_list(command)
     folders = ['%s/changelogs' % doc_path, '%s/tags' % doc_path]
