@@ -270,8 +270,8 @@ def document_necessary(workspace, docspace, ros_distro, repo,
         if os.path.exists(doc_path):
             shutil.rmtree(doc_path)
         repo_path = os.path.realpath("%s" % (docspace))
-        _, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, depends_conf)
-        folders = sorted(set(manifest_packages.keys() + catkin_packages.keys()))
+        stacks, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, depends_conf)
+        folders = sorted(set(stacks.keys() + manifest_packages.keys() + catkin_packages.keys()))
         if folders:
             dsts = ['%s/api/%s/stamp' % (doc_path, f) for f in folders]
             for dst in dsts:
@@ -412,7 +412,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
                                   homepage, doc_job, tags_location, doc_path, rosdistro_release_file)
 
     #Copy the files to the appropriate place
-    folders = sorted(set(manifest_packages.keys() + catkin_packages.keys()))
+    folders = sorted(set(stacks.keys() + manifest_packages.keys() + catkin_packages.keys()))
     if folders:
         dsts = ['%s/api/%s' % (doc_path, f) for f in folders]
         for dst in dsts:
