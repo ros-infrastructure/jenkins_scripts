@@ -138,6 +138,8 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
 
         call("apt-get install python-rosdistro python-rosinstall --yes")
 
+        call("apt-get install rsync --yes")
+
     #TODO: Hack to install fuerte tools to document electric
     install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
     rosdoc_lite_version = checkout_rosdoc_lite(workspace, install_distro, no_chroot=no_chroot)
@@ -166,8 +168,6 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         call("apt-get install mercurial --yes")
         call("apt-get install git-core --yes")
         call("apt-get install subversion --yes")
-
-        call("apt-get install rsync --yes")
 
         #install ssh
         call("apt-get install openssh-client --yes")
