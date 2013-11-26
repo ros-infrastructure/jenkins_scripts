@@ -44,7 +44,7 @@ import rosdep
 
 from common import call, call_with_list, append_pymodules_if_needed,  \
                    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
-                   copy_test_results
+                   copy_test_results, BuildException
 from tags_db import TagsDb, build_tagfile
 from doc_manifest import write_distro_specific_manifest, write_stack_manifests
 from repo_structure import get_repositories_from_rosinstall, \
@@ -235,7 +235,41 @@ def document_necessary(workspace, docspace, ros_distro, repo,
     doc_conf, depends_conf = load_configuration(ros_distro, repo)
 
     #Install the repository
-    install_repo(docspace, workspace, repo, doc_conf, depends_conf)
+    try:
+        install_repo(docspace, workspace, repo, doc_conf, depends_conf)
+    except BuildException as e:
+        # checkout failed, try to get default branches of repos to notify the maintainers
+        print('Failed to checkout repositories, trying to checkout default branches to collect maintainer information for notification about failure')
+        for tuple in doc_conf:
+            for repo in tuple.values():
+                repo['version'] = None
+        install_repo(docspace, workspace, repo, doc_conf, [])
+        repo_path = os.path.realpath("%s" % (docspace))
+        stacks, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, [])
+        notification_recipients = set([])
+        for package_name in set(catkin_packages.keys()) | set(manifest_packages.keys()):
+            if package_name in catkin_packages:
+                package_path = catkin_packages[package_name]
+                from catkin_pkg.package import parse_package
+                pkg = parse_package(package_path)
+                for m in pkg.maintainers:
+                    notification_recipients.add(m.email)
+            else:
+                package_path = manifest_packages[package_name]
+                from rospkg import MANIFEST_FILE, STACK_FILE
+                from rospkg.manifest import parse_manifest_file
+                if os.path.exists(os.path.join(package_path, MANIFEST_FILE)):
+                    pkg = parse_manifest_file(package_path, MANIFEST_FILE)
+                elif os.path.exists(os.path.join(package_path, STACK_FILE)):
+                    pkg = parse_manifest_file(package_path, STACK_FILE)
+                else:
+                    assert False, "Path '%s' does not neither contain a manifest.xml nor a stack.xml file" % package_path
+                if pkg.author:
+                    for email in email_pattern.finditer(pkg.author):
+                        notification_recipients.add(email.group(1))
+        if notification_recipients:
+            print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
+        raise
 
     #Load information about existing tags
     jenkins_scripts_path = os.path.join(workspace, 'jenkins_scripts')
