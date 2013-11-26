@@ -247,6 +247,7 @@ def document_necessary(workspace, docspace, ros_distro, repo,
         repo_path = os.path.realpath("%s" % (docspace))
         stacks, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, [])
         notification_recipients = set([])
+        email_pattern = re.compile('([a-zA-Z0-9._%\+-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6})')
         for package_name in set(catkin_packages.keys()) | set(manifest_packages.keys()):
             if package_name in catkin_packages:
                 package_path = catkin_packages[package_name]
