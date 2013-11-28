@@ -104,7 +104,6 @@ def document_packages(manifest_packages, catkin_packages, build_order,
 
         pkg_status = None
         pkg_status_description = None
-        notification_recipients = set([])
         if package in catkin_packages:
             has_changelog_rst = document_package_changelog(package, package_path, doc_path)
             if rosdistro_release_file and package in rosdistro_release_file.packages:
@@ -118,28 +117,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                     pkg_status_description = pkg_data.status_description
                 elif repo_data.status_description is not None:
                     pkg_status_description = repo_data.status_description
-
-            from catkin_pkg.package import parse_package
-            pkg = parse_package(package_path)
-            for m in pkg.maintainers:
-                notification_recipients.add(m.email)
         else:
             has_changelog_rst = None
-
-            from rospkg import MANIFEST_FILE, STACK_FILE
-            from rospkg.manifest import parse_manifest_file
-            if os.path.exists(os.path.join(package_path, MANIFEST_FILE)):
-                pkg = parse_manifest_file(package_path, MANIFEST_FILE)
-            elif os.path.exists(os.path.join(package_path, STACK_FILE)):
-                pkg = parse_manifest_file(package_path, STACK_FILE)
-            else:
-                assert False, "Path '%s' does not neither contain a manifest.xml nor a stack.xml file" % package_path
-            if pkg.author:
-                for email in email_pattern.finditer(pkg.author):
-                    notification_recipients.add(email.group(1))
-
-        if notification_recipients:
-            print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
 
         #Build a tagfile list from dependencies for use by rosdoc
         build_tagfile(full_apt_deps, tags_db, 'rosdoc_tags.yaml', package, build_order, docspace, ros_distro, tags_location)
@@ -226,6 +205,35 @@ def document_package_changelog(pkg_name, pkg_path, doc_path):
     return False
 
 
+def extract_notification_recipients(docspace, doc_conf):
+    repo_path = os.path.realpath("%s" % (docspace))
+    _, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, [])
+    notification_recipients = set([])
+    email_pattern = re.compile('([a-zA-Z0-9._%\+-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6})')
+    for package_name in set(catkin_packages.keys()) | set(manifest_packages.keys()):
+        if package_name in catkin_packages:
+            package_path = catkin_packages[package_name]
+            from catkin_pkg.package import parse_package
+            pkg = parse_package(package_path)
+            for m in pkg.maintainers:
+                notification_recipients.add(m.email)
+        else:
+            package_path = manifest_packages[package_name]
+            from rospkg import MANIFEST_FILE, STACK_FILE
+            from rospkg.manifest import parse_manifest_file
+            if os.path.exists(os.path.join(package_path, MANIFEST_FILE)):
+                pkg = parse_manifest_file(package_path, MANIFEST_FILE)
+            elif os.path.exists(os.path.join(package_path, STACK_FILE)):
+                pkg = parse_manifest_file(package_path, STACK_FILE)
+            else:
+                assert False, "Path '%s' does not neither contain a manifest.xml nor a stack.xml file" % package_path
+            if pkg.author:
+                for email in email_pattern.finditer(pkg.author):
+                    notification_recipients.add(email.group(1))
+    if notification_recipients:
+        print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
+
+
 def document_necessary(workspace, docspace, ros_distro, repo,
                        rosdoc_lite_version, jenkins_scripts_version, force_doc=False):
     append_pymodules_if_needed()
@@ -244,33 +252,10 @@ def document_necessary(workspace, docspace, ros_distro, repo,
             for repo in tuple.values():
                 repo['version'] = None
         install_repo(docspace, workspace, repo, doc_conf, [])
-        repo_path = os.path.realpath("%s" % (docspace))
-        stacks, manifest_packages, catkin_packages, _ = build_repo_structure(repo_path, doc_conf, [])
-        notification_recipients = set([])
-        email_pattern = re.compile('([a-zA-Z0-9._%\+-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6})')
-        for package_name in set(catkin_packages.keys()) | set(manifest_packages.keys()):
-            if package_name in catkin_packages:
-                package_path = catkin_packages[package_name]
-                from catkin_pkg.package import parse_package
-                pkg = parse_package(package_path)
-                for m in pkg.maintainers:
-                    notification_recipients.add(m.email)
-            else:
-                package_path = manifest_packages[package_name]
-                from rospkg import MANIFEST_FILE, STACK_FILE
-                from rospkg.manifest import parse_manifest_file
-                if os.path.exists(os.path.join(package_path, MANIFEST_FILE)):
-                    pkg = parse_manifest_file(package_path, MANIFEST_FILE)
-                elif os.path.exists(os.path.join(package_path, STACK_FILE)):
-                    pkg = parse_manifest_file(package_path, STACK_FILE)
-                else:
-                    assert False, "Path '%s' does not neither contain a manifest.xml nor a stack.xml file" % package_path
-                if pkg.author:
-                    for email in email_pattern.finditer(pkg.author):
-                        notification_recipients.add(email.group(1))
-        if notification_recipients:
-            print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
+        extract_notification_recipients(docspace, doc_conf)
         raise
+
+    extract_notification_recipients(docspace, doc_conf)
 
     #Load information about existing tags
     jenkins_scripts_path = os.path.join(workspace, 'jenkins_scripts')
