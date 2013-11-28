@@ -33,6 +33,7 @@
 #
 import os
 import shutil
+import sys
 from common import call, check_output, get_ros_env, BuildException
 
 catkin_cmake_file = """cmake_minimum_required(VERSION 2.8.3)
