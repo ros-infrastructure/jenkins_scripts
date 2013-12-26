@@ -104,6 +104,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
 
         pkg_status = None
         pkg_status_description = None
+        pkg_is_released = None
         if package in catkin_packages:
             has_changelog_rst = document_package_changelog(package, package_path, doc_path)
             if rosdistro_release_file and package in rosdistro_release_file.packages:
@@ -117,6 +118,9 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                     pkg_status_description = pkg_data.status_description
                 elif repo_data.status_description is not None:
                     pkg_status_description = repo_data.status_description
+                pkg_is_released = repo_data.version is not None
+            else:
+                pkg_is_released = False
         else:
             has_changelog_rst = None
 
@@ -159,7 +163,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #have available in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, package),
-                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description)
+                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description, pkg_is_released)
 
         print "Done"
     return repo_tags
