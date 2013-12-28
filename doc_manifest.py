@@ -83,7 +83,8 @@ def write_stack_manifest(output_dir, stack_name, manifest,
 def write_distro_specific_manifest(manifest_file, package, vcs_type,
                                    vcs_uri, api_homepage, tags_db,
                                    repo_name, doc_job, version,
-                                   has_changelog_rst=None, pkg_status=None, pkg_status_description=None, pkg_is_released=None):
+                                   has_changelog_rst=None, pkg_status=None, pkg_status_description=None,
+                                   pkg_release_jobs=None, pkg_devel_jobs=None):
     m_yaml = {}
     if os.path.isfile(manifest_file):
         with open(manifest_file, 'r') as f:
@@ -125,8 +126,10 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
         m_yaml['maintainer_status'] = pkg_status
     if pkg_status_description is not None:
         m_yaml['maintainer_status_description'] = pkg_status_description
-    if pkg_is_released is not None:
-        m_yaml['is_released'] = pkg_is_released
+    if pkg_release_jobs:
+        m_yaml['release_jobs'] = pkg_release_jobs
+    if pkg_devel_jobs:
+        m_yaml['devel_jobs'] = pkg_devel_jobs
 
     with open(manifest_file, 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)

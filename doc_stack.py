@@ -85,7 +85,8 @@ def get_full_apt_deps(apt_deps, apt):
 def document_packages(manifest_packages, catkin_packages, build_order,
                       repos_to_doc, sources, tags_db, full_apt_deps,
                       ros_dep, repo_map, repo_path, docspace, ros_distro,
-                      homepage, doc_job, tags_location, doc_path, rosdistro_release_file):
+                      homepage, doc_job, tags_location, doc_path,
+                      rosdistro_release_file, rosdistro_source_file):
     repo_tags = {}
     email_pattern = re.compile('([a-zA-Z0-9._%\+-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6})')
     for package in build_order:
@@ -104,7 +105,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
 
         pkg_status = None
         pkg_status_description = None
-        pkg_is_released = None
+        pkg_release_jobs = []
+        pkg_devel_jobs = []
         if package in catkin_packages:
             has_changelog_rst = document_package_changelog(package, package_path, doc_path)
             if rosdistro_release_file and package in rosdistro_release_file.packages:
@@ -118,9 +120,14 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                     pkg_status_description = pkg_data.status_description
                 elif repo_data.status_description is not None:
                     pkg_status_description = repo_data.status_description
-                pkg_is_released = repo_data.version is not None
-            else:
-                pkg_is_released = False
+                if repo_data.version is not None:
+                    pkg_release_jobs.append('ros-%s-%s_sourcedeb' % (ros_distro, package.replace('_', '-')))
+                    for distro in rosdistro_release_file.platforms.get('ubuntu', []):
+                        for arch in ['amd64', 'i386']:
+                            pkg_release_jobs.append('ros-%s-%s_binarydeb_%s_%s' % (ros_distro, package.replace('_', '-'), distro, arch))
+
+                if pkg_data.repository_name in rosdistro_source_file.repositories:
+                    pkg_devel_jobs.append('devel-%s-%s' % (ros_distro, pkg_data.repository_name))
         else:
             has_changelog_rst = None
 
@@ -163,7 +170,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #have available in this script like vcs location and type
         write_distro_specific_manifest(os.path.join(pkg_doc_path, 'manifest.yaml'),
                                        package, repo_map[package]['type'], repo_map[package]['url'], "%s/%s/api/%s/html" % (homepage, ros_distro, package),
-                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description, pkg_is_released)
+                                       tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description,
+                                       pkg_release_jobs, pkg_devel_jobs)
 
         print "Done"
     return repo_tags
@@ -345,11 +353,13 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Get rosdistro release file if there are catkin packages to get status
     if catkin_packages and ros_distro not in ['electric', 'fuerte']:
-        print "Fetch rosdistro release file for: %s" % ros_distro
+        print "Fetch rosdistro files for: %s" % ros_distro
         index = rosdistro.get_index(rosdistro.get_index_url())
         rosdistro_release_file = rosdistro.get_release_file(index, ros_distro)
+        rosdistro_source_file = rosdistro.get_source_file(index, ros_distro)
     else:
         rosdistro_release_file = None
+        rosdistro_source_file = None
 
     #Build a local dependency graph to be used for build order
     local_dep_graph = build_local_dependency_graph(catkin_packages, manifest_packages)
@@ -433,7 +443,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
     repo_tags = document_packages(manifest_packages, catkin_packages, build_order,
                                   repos_to_doc, sources, tags_db, full_apt_deps,
                                   ros_dep, repo_map, repo_path, docspace, ros_distro,
-                                  homepage, doc_job, tags_location, doc_path, rosdistro_release_file)
+                                  homepage, doc_job, tags_location, doc_path,
+                                  rosdistro_release_file, rosdistro_source_file)
 
     #Copy the files to the appropriate place
     folders = sorted(set(stacks.keys() + manifest_packages.keys() + catkin_packages.keys()))
