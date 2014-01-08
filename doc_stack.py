@@ -336,6 +336,13 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Walk through the installed repositories and find old-style packages, new-stye packages, and stacks
     stacks, manifest_packages, catkin_packages, repo_map = build_repo_structure(repo_path, doc_conf, depends_conf)
+    if ros_distro == 'indigo':
+        if stacks or manifest_packages:
+            print("Ignoring dry packages and stacks in '%s'" % ros_distro)
+            stacks = []
+            manifest_packages = []
+        if not catkin_packages:
+            raise BuildException('No catkin packages found')
     print "Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys())
     #print "Catkin packages: %s" % catkin_packages
     #print "Manifest packages: %s" % manifest_packages
