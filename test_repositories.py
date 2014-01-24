@@ -160,6 +160,9 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         print "Install test and run dependencies of repo list: %s" % (', '.join(repo_test_dependencies))
         apt_get_install(repo_test_dependencies, rosdep_resolver, sudo)
 
+        # get environment after installing test and run dependencies
+        ros_env = get_ros_env('/opt/ros/%s/setup.bash' % ros_distro)
+
         # run tests
         print "Test repo list"
         call("make run_tests", ros_env)
