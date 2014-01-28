@@ -120,7 +120,7 @@ def call_with_list(command, envir=None, verbose=True, return_output=False):
         if helper.returncode is not None or not output:
             break
         if verbose:
-            sys.stdout.write(output)
+            sys.stdout.write(output.encode('utf8'))
         if return_output:
             res += output
 
