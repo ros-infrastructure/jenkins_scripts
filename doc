@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 import os
-import sys
 import urllib2
 import datetime
 import shutil
@@ -19,9 +18,9 @@ def install_catkin_basic(ros_distro):
         with open(os.path.join(install_dir, 'catkin_basicConfig.cmake'), 'wb+') as f:
             f.write(web_file.read())
     except Exception as e:
-        print "Error: %s" % e
+        print("Error: %s" % e)
         raise BuildException("Could not install catkin_basic. %s" % e)
-    print "Installed catkin_basic"
+    print("Installed catkin_basic")
 
 
 #TODO: Eventually, pull rosdoc lite from debs
@@ -39,6 +38,7 @@ def checkout_rosdoc_lite(workspace, ros_distro, no_chroot=False):
     rev = check_output("git rev-parse HEAD").split('\n')[0]
     os.chdir(old_dir)
     return rev
+
 
 def install_rosdoc_lite(workspace, ros_distro):
     checkout_path = "%s/rosdoc_lite" % workspace
@@ -99,17 +99,17 @@ def main():
     if args.no_chroot:
         args.skip_garbage = True
 
-    print
-    print
-    print
-    print "============================================================"
-    print "==== Begin doc script.  Ignore the output above ====="
-    print "============================================================"
-    print
-    print
-    print
+    print('')
+    print('')
+    print('')
+    print("============================================================")
+    print("==== Begin doc script.  Ignore the output above =====")
+    print("============================================================")
+    print('')
+    print('')
+    print('')
 
-    print "Working on distro %s and repo/stack %s" % (args.rosdistro, args.repo)
+    print("Working on distro %s and repo/stack %s" % (args.rosdistro, args.repo))
 
     workspace = os.environ['WORKSPACE']
     docspace = os.path.join(workspace, 'doc_stacks', str(datetime.datetime.now()).replace(' ', '_').replace(':', '-'))
@@ -125,7 +125,7 @@ def main():
 def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False, skip_garbage=False, force=False):
     if not no_chroot:
         #Add ros to apt
-        print "Add ROS to apt sources"
+        print("Add ROS to apt sources")
         with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:
             #TODO, perhaps this should move away from shadow fixed, also hack for electric
             if ros_distro == 'electric':
@@ -143,12 +143,12 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
     #TODO: Hack to install fuerte tools to document electric
     install_distro = ros_distro if ros_distro != 'electric' else 'fuerte'
     rosdoc_lite_version = checkout_rosdoc_lite(workspace, install_distro, no_chroot=no_chroot)
-    print "Done checking out rosdoc_lite"
+    print("Done checking out rosdoc_lite")
 
     jenkins_scripts_version = get_jenkins_scripts_version(workspace, no_chroot=no_chroot)
 
-    print "rosdoc_lite version: %s" % rosdoc_lite_version
-    print "jenkins_scripts version: %s" % jenkins_scripts_version
+    print("rosdoc_lite version: %s" % rosdoc_lite_version)
+    print("jenkins_scripts version: %s" % jenkins_scripts_version)
 
     test_result_path = os.path.join(workspace, 'test_results')
     if os.path.exists(test_result_path):
@@ -160,11 +160,11 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         return
 
     if not no_chroot:
-        print "Installing lsb-release and pkg-config"
+        print("Installing lsb-release and pkg-config")
         call("apt-get install pkg-config lsb-release --yes")
 
         # install vcs tools
-        print "Installing vcs tools..."
+        print("Installing vcs tools...")
         call("apt-get install mercurial --yes")
         call("apt-get install git-core --yes")
         call("apt-get install subversion --yes")
@@ -172,16 +172,16 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         #install ssh
         call("apt-get install openssh-client --yes")
 
-        print "Installing catkin-sphinx"
+        print("Installing catkin-sphinx")
         #TODO: Switch to apt for catkin-sphinx
         install_catkin_sphinx(workspace)
-        print "Done installing catkin-sphinx"
+        print("Done installing catkin-sphinx")
 
-        print "Installing ros and genmsg"
+        print("Installing ros and genmsg")
         call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
 
         #Install rosdoc lite
-        print "Installing rosdoc_lite"
+        print("Installing rosdoc_lite")
         install_rosdoc_lite(workspace, install_distro)
         #TODO Hack for electric
         if ros_distro == 'electric' or os.environ['OS_PLATFORM'] == 'lucid':
@@ -196,7 +196,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         #TODO: Put back in
         #call("apt-get install ros-%s-rosdoc-lite --yes" % ros_distro)
         install_catkin_basic(install_distro)
-        print "Done installing ros"
+        print("Done installing ros")
 
     #Run documentation generation on the stack
     homepage = 'http://docs.ros.org'

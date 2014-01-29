@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-from test_repositories import *
+
+import optparse
+import os
+import sys
+
+from common import BuildException
+from test_repositories import test_repositories
 
 
 def main():
@@ -10,7 +16,7 @@ def main():
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
-        print "Usage: %s ros_distro repository_name" % sys.argv[0]
+        print("Usage: %s ros_distro repository_name" % sys.argv[0])
         raise BuildException("Wrong number of parameters for devel script")
 
     ros_distro = args[0]
@@ -19,7 +25,7 @@ def main():
     if not options.workspace:
         options.workspace = os.environ['WORKSPACE']
 
-    print "Running prerelease test on distro %s and repositories %s" % (ros_distro, ', '.join(repositories))
+    print("Running prerelease test on distro %s and repositories %s" % (ros_distro, ', '.join(repositories)))
     test_repositories(ros_distro, repositories, versions, options.workspace, test_depends_on=False,
                       build_in_workspace=options.build_in_workspace, sudo=options.sudo)
 
@@ -28,12 +34,12 @@ if __name__ == '__main__':
     # global try
     try:
         main()
-        print "devel script finished cleanly"
+        print("devel script finished cleanly")
 
     # global catch
     except BuildException as ex:
-        print ex.msg
+        print(ex.msg)
 
     except Exception as ex:
-        print "devel script failed. Check out the console output above for details."
+        print("devel script failed. Check out the console output above for details.")
         raise

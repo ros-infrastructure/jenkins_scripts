@@ -78,7 +78,7 @@ class TagsDb(object):
         self.delete_tag_index_repo()
 
         command = ['bash', '-c', 'export GIT_SSH="%s/git_ssh" \
-                   && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s' \
+                   && git clone git@github.com:ros-infrastructure/rosdoc_tag_index.git %s'
                    % (self.jenkins_scripts_path, self.path)]
 
         call_with_list(command)
@@ -186,7 +186,7 @@ class TagsDb(object):
         os.chdir(self.path)
         changes = check_output('git status -s').strip()
         if changes:
-            print "Commiting changes to tags and deps lists...."
+            print("Commiting changes to tags and deps lists....")
             call("git add %s" % os.path.join(self.path, self.distro_name))
             command = ['git', '-c', 'user.name=jenkins.ros.org', 'commit', '-m', 'Updating tags and deps lists for %s' % (self.distro_name)]
             call_with_list(command)
@@ -203,16 +203,16 @@ class TagsDb(object):
                     call("git merge origin/master", env)
                     call("git push origin master", env)
                 except BuildException as e:
-                    print "Failed to fetch and merge..."
+                    print("Failed to fetch and merge...")
                     if i >= num_retries:
                         raise e
                     time.sleep(2)
                     i += 1
-                    print "Trying again attempt %d of %d..." % (i, num_retries)
+                    print("Trying again attempt %d of %d..." % (i, num_retries))
                     continue
 
                 break
         else:
-            print 'No changes to tags and deps lists'
+            print('No changes to tags and deps lists')
 
         os.chdir(old_dir)

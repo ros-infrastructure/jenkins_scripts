@@ -28,18 +28,18 @@ def apt_get_install(pkgs, rosdep=None, sudo=False):
         else:
             call(cmd + ' '.join(pkgs))
     else:
-        print "Not installing anything from apt right now."
+        print("Not installing anything from apt right now.")
 
 
 def copy_test_results(workspace, buildspace, errors=None, prefix='dummy'):
-    print "Preparing xml test results"
+    print("Preparing xml test results")
     try:
         os.makedirs(os.path.join(workspace, 'test_results'))
-        print "Created test results directory"
+        print("Created test results directory")
     except Exception:
         pass
     os.chdir(os.path.join(workspace, 'test_results'))
-    print "Copy all test results"
+    print("Copy all test results")
     base = os.path.join(buildspace, 'test_results')
     test_results_dir = os.path.join(workspace, 'test_results')
     for root, _, filenames in os.walk(base):
@@ -96,7 +96,7 @@ def create_test_result(test_results_dir, error=None, failure=None, prefix='dummy
 
 def get_ros_env(setup_file):
     res = os.environ
-    print "Retrieve the ROS build environment by sourcing %s" % setup_file
+    print("Retrieve the ROS build environment by sourcing %s" % setup_file)
     command = ['bash', '-c', 'source %s && env' % setup_file]
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     for line in proc.stdout:
@@ -105,13 +105,13 @@ def get_ros_env(setup_file):
     proc.communicate()
     if proc.returncode != 0:
         msg = "Failed to source %s" % setup_file
-        print "/!\  %s" % msg
+        print("/!\  %s" % msg)
         raise BuildException(msg)
     return res
 
 
 def call_with_list(command, envir=None, verbose=True, return_output=False):
-    print "Executing command '%s'" % ' '.join(command)
+    print("Executing command '%s'" % ' '.join(command))
     helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True, env=envir)
     if return_output:
         res = ''
@@ -127,7 +127,7 @@ def call_with_list(command, envir=None, verbose=True, return_output=False):
     helper.wait()
     if helper.returncode != 0:
         msg = "Failed to execute command '%s' with return code %d" % (command, helper.returncode)
-        print "/!\  %s" % msg
+        print("/!\  %s" % msg)
         raise BuildException(msg)
     if return_output:
         return res
@@ -145,9 +145,9 @@ def get_catkin_stack_deps(xml_path):
     import xml.etree.ElementTree as ET
     tree = ET.parse(xml_path)
     root = tree.getroot()
-    return list(set([d.text for d in root.findall('depends')] \
-                 + [d.text for d in root.findall('build_depends')] \
-                 + [d.text for d in root.findall('run_depends')]))
+    return list(set([d.text for d in root.findall('depends')]
+                + [d.text for d in root.findall('build_depends')]
+                + [d.text for d in root.findall('run_depends')]))
 
 
 def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
@@ -159,8 +159,8 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
     #First, we build the catkin deps
     for path in catkin_packages.values():
         pkg_info = packages.parse_package(path)
-        depends.extend([d.name \
-                        for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends \
+        depends.extend([d.name
+                        for d in pkg_info.buildtool_depends + pkg_info.build_depends + pkg_info.test_depends + pkg_info.run_depends
                         if not d.name in catkin_packages and not d.name in depends])
 
     #Next, we build the manifest deps for stacks
@@ -169,20 +169,20 @@ def get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages):
         if stack_manifest.is_catkin:
             depends.extend(get_catkin_stack_deps(os.path.join(path, 'stack.xml')))
         else:
-            depends.extend([d.name \
-                            for d in stack_manifest.depends + stack_manifest.rosdeps \
-                            if not d.name in catkin_packages \
-                            and not d.name in stacks \
+            depends.extend([d.name
+                            for d in stack_manifest.depends + stack_manifest.rosdeps
+                            if not d.name in catkin_packages
+                            and not d.name in stacks
                             and not d.name in depends])
 
     #Next, we build manifest deps for packages
     for path in manifest_packages.values():
         pkg_manifest = rospkg.parse_manifest_file(path, rospkg.MANIFEST_FILE)
-        depends.extend([d.name \
-                        for d in pkg_manifest.depends + pkg_manifest.rosdeps \
-                        if not d.name in catkin_packages \
-                        and not d.name in stacks \
-                        and not d.name in manifest_packages \
+        depends.extend([d.name
+                        for d in pkg_manifest.depends + pkg_manifest.rosdeps
+                        if not d.name in catkin_packages
+                        and not d.name in stacks
+                        and not d.name in manifest_packages
                         and not d.name in depends])
 
     return depends
@@ -239,13 +239,13 @@ def get_dependency_build_order(depends):
 
 def get_dependencies(source_folder, build_depends=True, test_depends=True):
     # get the dependencies
-    print "Get the dependencies of source folder %s" % source_folder
+    print("Get the dependencies of source folder %s" % source_folder)
     append_pymodules_if_needed()
     from catkin_pkg import packages
     pkgs = packages.find_packages(source_folder)
     local_packages = [p.name for p in pkgs.values()]
     if len(pkgs) > 0:
-        print "In folder %s, found packages %s" % (source_folder, ', '.join(local_packages))
+        print("In folder %s, found packages %s" % (source_folder, ', '.join(local_packages)))
     else:
         raise BuildException("Found no packages in folder %s. Are you sure your packages have a packages.xml file?" % source_folder)
 
