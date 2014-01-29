@@ -80,7 +80,7 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
     revisions = get_revisions(rosinstall, docspace)
     for name, rev in revisions.iteritems():
         if rev != last_revisions.get(name, None):
-            print "Change in repo due to %s: (%s) -> (%s)" % (name, rev, last_revisions.get(name, None))
+            print("Change in repo due to %s: (%s) -> (%s)" % (name, rev, last_revisions.get(name, None)))
             changes = True
 
     #Make sure to update the tags db to the latest list of revisions
@@ -91,7 +91,7 @@ def rev_changes(rosinstall_name, rosinstall, docspace, tags_db):
                 #The only two keys we expect to be different are listed below,
                 #otherwise something has changed in the repo list
                 if key not in ['rosdoc_lite-sys', 'jenkins_scripts-sys']:
-                    print "Change in repo due to %s: (%s), not listed in new repo" % (key, value)
+                    print("Change in repo due to %s: (%s), not listed in new repo" % (key, value))
                     changes = True
                 revisions[key] = value
 
@@ -122,8 +122,8 @@ def get_repo_packages(repo_folder):
     paths = []
 
     #find wet packages
-    paths.extend([os.path.abspath(os.path.join(repo_folder, pkg_path)) \
-                     for pkg_path in catkin_packages.find_package_paths(repo_folder)])
+    paths.extend([os.path.abspath(os.path.join(repo_folder, pkg_path))
+                  for pkg_path in catkin_packages.find_package_paths(repo_folder)])
 
     #Remove any duplicates
     paths = list(set(paths))
@@ -194,20 +194,20 @@ def load_configuration_fuerte(ros_distro, repo):
         depends_repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s_depends.rosinstall' % (ros_distro, repo)
         f = urllib2.urlopen(depends_repo_url)
         if f.code == 200:
-            print "Found a depends rosinstall file for %s" % repo
+            print("Found a depends rosinstall file for %s" % repo)
             depends_conf = yaml.load(f.read())
     except (urllib2.URLError, urllib2.HTTPError):
-        print "Did not find a depends rosinstall file for %s" % repo
+        print("Did not find a depends rosinstall file for %s" % repo)
 
     return (doc_conf, depends_conf)
 
 
 def install_repo(docspace, workspace, repo, doc_conf, depends_conf):
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
-        print "Rosinstall for repo %s:\n%s" % (repo, doc_conf + depends_conf)
+        print("Rosinstall for repo %s:\n%s" % (repo, doc_conf + depends_conf))
         yaml.safe_dump(doc_conf + depends_conf, f, default_flow_style=False)
 
-    print "Created rosinstall file for repo %s, installing repo..." % repo
+    print("Created rosinstall file for repo %s, installing repo..." % repo)
     # TODO Figure out why rosinstall insists on having ROS available when called with nobuild, but not catkin
     call("rosinstall %s %s --nobuild --catkin" % (docspace, os.path.join(workspace, "repo.rosinstall")))
 
@@ -229,7 +229,7 @@ def build_repo_structure(repo_path, doc_conf, depends_conf):
     for item in local_info:
         local_name = item['name']
         local_path = os.path.join(repo_path, local_name)
-        print "Looking for the packages in %s" % local_path
+        print("Looking for the packages in %s" % local_path)
         local_stacks = get_repo_manifests(local_path, manifest='stack')
         local_manifest_packages = get_repo_manifests(local_path, manifest='package')
         local_catkin_packages = get_repo_packages(local_path)

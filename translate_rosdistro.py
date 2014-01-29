@@ -63,7 +63,7 @@ def translate(filename, new_filename):
         new_yaml['repositories'][stack] = generate_new_format(rules)
 
     with open(new_filename, 'w+') as f:
-        print "Writing translated version to %s" % new_filename
+        print("Writing translated version to %s" % new_filename)
         yaml.dump(new_yaml, f, default_flow_style=False)
 
 

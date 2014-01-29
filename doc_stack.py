@@ -42,21 +42,21 @@ import subprocess
 import copy
 import rosdep
 
-from common import call, call_with_list, append_pymodules_if_needed,  \
-                   get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
-                   copy_test_results, BuildException
+from common import call, call_with_list, append_pymodules_if_needed, \
+    get_nonlocal_dependencies, build_local_dependency_graph, get_dependency_build_order, \
+    copy_test_results, BuildException
 from tags_db import TagsDb, build_tagfile
 from doc_manifest import write_distro_specific_manifest, write_stack_manifests
 from repo_structure import get_repositories_from_rosinstall, \
-                           load_configuration, install_repo, build_repo_structure, rev_changes
+    load_configuration, install_repo, build_repo_structure, rev_changes
 from message_generation import build_repo_messages_manifest, build_repo_messages, \
-                               build_repo_messages_catkin_stacks
+    build_repo_messages_catkin_stacks
 
 
 def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages):
     apt_deps = []
     deps = get_nonlocal_dependencies(catkin_packages, stacks, manifest_packages)
-    print "Dependencies: %s" % deps
+    print("Dependencies: %s" % deps)
     for dep in deps:
         if ros_dep.has_ros(dep):
             apt_dep = ros_dep.to_apt(dep)
@@ -67,7 +67,7 @@ def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_pac
             if apt.has_package(apt_dep):
                 apt_deps.append(apt_dep)
             else:
-                print "WARNING, could not find dependency %s, not adding to list" % dep
+                print("WARNING, could not find dependency %s, not adding to list" % dep)
 
     return apt_deps
 
@@ -75,7 +75,7 @@ def get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_pac
 def get_full_apt_deps(apt_deps, apt):
     full_apt_deps = copy.deepcopy(apt_deps)
     for dep in apt_deps:
-        print "Getting dependencies for %s" % dep
+        print("Getting dependencies for %s" % dep)
         full_apt_deps.extend(apt.depends(dep))
 
     #Make sure that we don't have any duplicates
@@ -88,11 +88,10 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                       homepage, doc_job, tags_location, doc_path,
                       rosdistro_release_file, rosdistro_source_file):
     repo_tags = {}
-    email_pattern = re.compile('([a-zA-Z0-9._%\+-]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6})')
     for package in build_order:
         #don't document packages that we're supposed to build but not supposed to document
         if not repo_map[package]['name'] in repos_to_doc:
-            print "Package: %s, in repo: %s, is not supposed to be documented. Skipping." % (package, repo_map[package]['name'])
+            print("Package: %s, in repo: %s, is not supposed to be documented. Skipping." % (package, repo_map[package]['name']))
             continue
 
         #Pull the package from the correct place
@@ -101,7 +100,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         else:
             package_path = manifest_packages[package]
 
-        print "Documenting %s [%s]..." % (package, package_path)
+        print("Documenting %s [%s]..." % (package, package_path))
 
         pkg_status = None
         pkg_status_description = None
@@ -141,7 +140,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #Generate the command we'll use to document the stack
         command = ['bash', '-c', '%s \
                    && export ROS_PACKAGE_PATH=%s:$ROS_PACKAGE_PATH \
-                   && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml' \
+                   && rosdoc_lite %s -o %s -g %s -t rosdoc_tags.yaml'
                    % (' && '.join(sources), repo_path, package_path, pkg_doc_path, tags_path)]
         print('Invoking: %s' % ' '.join(command))
         rc = subprocess.call(command, stderr=subprocess.STDOUT)
@@ -153,8 +152,8 @@ def document_packages(manifest_packages, catkin_packages, build_order,
         #exist before adding them to the list
         if(os.path.exists(tags_path)):
             package_tags = {'location': '%s' % (os.path.basename(relative_tags_path)),
-                                 'docs_url': '../../../api/%s/html' % (package),
-                                 'package': '%s' % package}
+                            'docs_url': '../../../api/%s/html' % (package),
+                            'package': '%s' % package}
 
             #If the package has a deb name, then we'll store the tags for it
             #alongside that name
@@ -173,7 +172,7 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                                        tags_db, repo_map[package]['name'], doc_job, repo_map[package]['version'], has_changelog_rst, pkg_status, pkg_status_description,
                                        pkg_release_jobs, pkg_devel_jobs)
 
-        print "Done"
+        print("Done")
     return repo_tags
 
 
@@ -198,7 +197,7 @@ def document_package_changelog(pkg_name, pkg_path, doc_path):
     assert os.path.exists(os.path.join(pkg_path, 'package.xml'))
     changelog_file = os.path.join(pkg_path, 'CHANGELOG.rst')
     if os.path.exists(changelog_file):
-        print 'Package "%s" contains a CHANGELOG.rst, generate html' % pkg_name
+        print('Package "%s" contains a CHANGELOG.rst, generate html' % pkg_name)
         with open(changelog_file, 'r') as f:
             rst_code = f.read()
         html_code = publish_string(rst_code, writer_name='html')
@@ -249,7 +248,7 @@ def extract_notification_recipients(docspace, doc_conf):
 def document_necessary(workspace, docspace, ros_distro, repo,
                        rosdoc_lite_version, jenkins_scripts_version, force_doc=False):
     append_pymodules_if_needed()
-    print "Working on distro %s and repo %s" % (ros_distro, repo)
+    print("Working on distro %s and repo %s" % (ros_distro, repo))
 
     #Load the rosinstall configurations for the repository
     doc_conf, depends_conf = load_configuration(ros_distro, repo)
@@ -257,7 +256,7 @@ def document_necessary(workspace, docspace, ros_distro, repo,
     #Install the repository
     try:
         install_repo(docspace, workspace, repo, doc_conf, depends_conf)
-    except BuildException as e:
+    except BuildException:
         # checkout failed, try to get default branches of repos to notify the maintainers
         print('Failed to checkout repositories, trying to checkout default branches to collect maintainer information for notification about failure')
         for tuple in doc_conf:
@@ -290,10 +289,10 @@ def document_necessary(workspace, docspace, ros_distro, repo,
     repo_hashes = tags_db.get_rosinstall_hashes(repo) if tags_db.has_rosinstall_hashes(repo) else {}
     old_rosdoc_lite_hash = repo_hashes.get('rosdoc_lite-sys', None)
     old_jenkins_scripts_hash = repo_hashes.get('jenkins_scripts-sys', None)
-    print "REPO HASHES: %s" % repo_hashes
+    print("REPO HASHES: %s" % repo_hashes)
 
     if not changes and old_rosdoc_lite_hash == rosdoc_lite_version and old_jenkins_scripts_hash == jenkins_scripts_version:
-        print "There were no changes to any of the repositories we document. Not running documentation."
+        print("There were no changes to any of the repositories we document. Not running documentation.")
         copy_test_results(workspace, docspace)
         tags_db.delete_tag_index_repo()
 
@@ -308,8 +307,9 @@ def document_necessary(workspace, docspace, ros_distro, repo,
             dsts = ['%s/api/%s/stamp' % (doc_path, f) for f in folders]
             for dst in dsts:
                 os.makedirs(os.path.dirname(dst))
-                with open(dst, 'w'): pass
-            print "Uploading marker files to identify that documentation is up-to-date."
+                with open(dst, 'w'):
+                    pass
+            print("Uploading marker files to identify that documentation is up-to-date.")
             command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr %s/api/ rosbot@ros.osuosl.org:/home/rosbot/docs/%s/api' % (doc_path, ros_distro)]
             call_with_list(command)
 
@@ -332,7 +332,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
     repos_to_doc = get_repositories_from_rosinstall(doc_conf)
 
     repo_path = os.path.realpath("%s" % (docspace))
-    print "Repo path %s" % repo_path
+    print("Repo path %s" % repo_path)
 
     #Walk through the installed repositories and find old-style packages, new-stye packages, and stacks
     stacks, manifest_packages, catkin_packages, repo_map = build_repo_structure(repo_path, doc_conf, depends_conf)
@@ -343,7 +343,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
             manifest_packages = []
         if not catkin_packages:
             raise BuildException('No catkin packages found')
-    print "Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys())
+    print("Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys()))
     #print "Catkin packages: %s" % catkin_packages
     #print "Manifest packages: %s" % manifest_packages
     #print "Stacks: %s" % stacks
@@ -356,11 +356,11 @@ def document_repo(workspace, docspace, ros_distro, repo,
     else:
         apt = rosdistro.AptDistro(platform, arch, shadow=True)
     apt_deps = get_apt_deps(apt, ros_dep, ros_distro, catkin_packages, stacks, manifest_packages)
-    print "Apt dependencies: %s" % apt_deps
+    print("Apt dependencies: %s" % apt_deps)
 
     #Get rosdistro release file if there are catkin packages to get status
     if catkin_packages and ros_distro not in ['electric', 'fuerte']:
-        print "Fetch rosdistro files for: %s" % ros_distro
+        print("Fetch rosdistro files for: %s" % ros_distro)
         index = rosdistro.get_index(rosdistro.get_index_url())
         rosdistro_release_file = rosdistro.get_release_file(index, ros_distro)
         rosdistro_source_file = rosdistro.get_source_file(index, ros_distro)
@@ -381,16 +381,16 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     #Need to make sure to re-order packages to be run in dependency order
     build_order = get_dependency_build_order(local_dep_graph)
-    print "Build order that honors deps:\n%s" % build_order
+    print("Build order that honors deps:\n%s" % build_order)
 
     #We'll need the full list of apt_deps to get tag files
     full_apt_deps = get_full_apt_deps(apt_deps, apt)
 
     if not no_chroot:
-        print "Installing all dependencies for %s" % repo
+        print("Installing all dependencies for %s" % repo)
         if apt_deps:
             call("apt-get install %s --yes" % (' '.join(apt_deps)))
-        print "Done installing dependencies"
+        print("Done installing dependencies")
 
     #Set up the list of things that need to be sourced to run rosdoc_lite
     #TODO: Hack for electric
@@ -458,7 +458,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
     if folders:
         dsts = ['%s/api/%s' % (doc_path, f) for f in folders]
         for dst in dsts:
-            with open(os.path.join(dst, 'stamp'), 'w'): pass
+            with open(os.path.join(dst, 'stamp'), 'w'):
+                pass
         command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr --delete %s rosbot@ros.osuosl.org:/home/rosbot/docs/%s/api' % (' '.join(dsts), ros_distro)]
         call_with_list(command)
     folders = ['%s/changelogs' % doc_path, '%s/tags' % doc_path]
@@ -493,10 +494,10 @@ def document_repo(workspace, docspace, ros_distro, repo,
     tags_db.delete_tag_index_repo()
 
     #Tell jenkins that we've succeeded
-    print "Preparing xml test results"
+    print("Preparing xml test results")
     try:
         os.makedirs(os.path.join(workspace, 'test_results'))
-        print "Created test results directory"
+        print("Created test results directory")
     except Exception:
         pass
 
