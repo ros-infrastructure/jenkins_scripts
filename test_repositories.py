@@ -9,7 +9,7 @@ import shutil
 import sys
 import yaml
 
-from common import apt_get_install, apt_get_update, BuildException, call, create_test_result, ensure_test_results, get_dependencies, get_ros_env
+from common import append_pymodules_if_needed, apt_get_install, apt_get_update, BuildException, call, create_test_result, ensure_test_results, get_dependencies, get_ros_env
 
 
 def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False, no_chroot=False):
@@ -71,6 +71,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
 def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on,
                        repo_sourcespace, dependson_sourcespace, repo_buildspace, dependson_buildspace,
                        sudo=False, no_chroot=False):
+    append_pymodules_if_needed()
     from catkin_pkg.package import InvalidPackage, parse_package_string
     from rosdistro import get_cached_release, get_index, get_index_url, get_source_file
     from rosdistro.dependency_walker import DependencyWalker
