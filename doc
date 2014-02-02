@@ -136,7 +136,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         call("apt-key add %s/ros.key" % workspace)
         call("apt-get update")
 
-        call("apt-get install python-rosdistro python-rosinstall --yes")
+        call("apt-get install python-rosdistro python-rosinstall python-yaml --yes")
 
         call("apt-get install rsync --yes")
 

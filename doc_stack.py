@@ -36,7 +36,6 @@
 import os
 import re
 import sys
-import yaml
 import shutil
 import subprocess
 import copy
@@ -502,6 +501,7 @@ def document_repo(workspace, docspace, ros_distro, repo,
         pass
 
     if build_errors:
+        import yaml
         copy_test_results(workspace, docspace,
                           """Failed to generate messages by calling cmake for %s.
 Look in the console for cmake failures, search for "CMake Error"
