@@ -31,7 +31,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import yaml
 import os
 import shutil
 from common import call, call_with_list, check_output, BuildException
@@ -67,6 +66,7 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
                          'package': '%s' % dep})
 
     with open(rosdoc_tagfile, 'w+') as tags_file:
+        import yaml
         yaml.dump(tags, tags_file)
 
 
@@ -108,6 +108,7 @@ class TagsDb(object):
 
     #Turn a folder of files into a dict
     def read_folder(self, folder_name):
+        import yaml
         folder_dict = {}
         folder = os.path.join(self.path, self.distro_name, folder_name)
         if os.path.exists(folder):
@@ -118,6 +119,7 @@ class TagsDb(object):
 
     #Write a dict to a file with an entry per key
     def write_folder(self, folder_name, folder_dict):
+        import yaml
         folder = os.path.join(self.path, self.distro_name, folder_name)
 
         #Make sure to create the directory we want to write to if it doesn't exist
