@@ -7,7 +7,6 @@ import os
 import rosdep
 import shutil
 import sys
-import yaml
 
 from common import append_pymodules_if_needed, apt_get_install, apt_get_update, BuildException, call, create_test_result, ensure_test_results, get_dependencies, get_ros_env
 
@@ -56,7 +55,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     else:
         # install stuff we need
         print("Installing Debian packages we need for running this script")
-        apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro'], sudo=sudo)
+        apt_get_install(['python-catkin-pkg', 'python-rosinstall', 'python-rosdistro', 'python-yaml'], sudo=sudo)
 
     if ros_distro != 'fuerte':
         return _test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on,
@@ -494,6 +493,7 @@ def _generate_rosinstall_for_pkg(repo, pkg_name):
 
 
 def _generate_rosinstall_for_pkg_version(repo, pkg_name, version):
+    import yaml
     repo_data = {
         'local-name': pkg_name,
         'uri': repo.url,
@@ -503,6 +503,7 @@ def _generate_rosinstall_for_pkg_version(repo, pkg_name, version):
 
 
 def _generate_rosinstall_for_repo(repo, version=None):
+    import yaml
     repo_data = {
         'local-name': repo.name,
         'uri': repo.url
