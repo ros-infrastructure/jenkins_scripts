@@ -34,7 +34,6 @@
 
 import os
 import time
-import yaml
 from repo_structure import get_repo_manifests
 
 
@@ -76,6 +75,7 @@ def write_stack_manifest(output_dir, stack_name, manifest,
     #Make sure to write stack dependencies to the tags db
     tags_db.set_metapackage_deps(stack_name, packages)
 
+    import yaml
     with open(os.path.join(output_dir, 'manifest.yaml'), 'w+') as f:
         yaml.safe_dump(m_yaml, f, default_flow_style=False)
 
@@ -85,6 +85,7 @@ def write_distro_specific_manifest(manifest_file, package, vcs_type,
                                    repo_name, doc_job, version,
                                    has_changelog_rst=None, pkg_status=None, pkg_status_description=None,
                                    pkg_release_jobs=None, pkg_devel_jobs=None):
+    import yaml
     m_yaml = {}
     if os.path.isfile(manifest_file):
         with open(manifest_file, 'r') as f:
