@@ -32,7 +32,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import yaml
 import urllib2
 import os
 import sys
@@ -180,6 +179,7 @@ def _get_repo_data(doc_file, repo_name):
 
 
 def load_configuration_fuerte(ros_distro, repo):
+    import yaml
     try:
         repo_url = 'https://raw.github.com/ros/rosdistro/master/doc/%s/%s.rosinstall' % (ros_distro, repo)
         f = urllib2.urlopen(repo_url)
@@ -203,6 +203,7 @@ def load_configuration_fuerte(ros_distro, repo):
 
 
 def install_repo(docspace, workspace, repo, doc_conf, depends_conf):
+    import yaml
     with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
         print("Rosinstall for repo %s:\n%s" % (repo, doc_conf + depends_conf))
         yaml.safe_dump(doc_conf + depends_conf, f, default_flow_style=False)
