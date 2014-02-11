@@ -46,7 +46,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         if not os.path.exists(ros_apt):
             with open(ros_apt, 'w') as f:
                 f.write("deb http://repos.ros.org/repos/ros-shadow-fixed/ubuntu %s main" % os.environ['OS_PLATFORM'])
-            call("wget http://packages.ros.org/ros.key -O %s/ros.key" % workspace)
+            call("curl http://packages.ros.org/ros.key -o %s/ros.key" % workspace)
             call("apt-key add %s/ros.key" % workspace)
         apt_get_update(sudo)
 

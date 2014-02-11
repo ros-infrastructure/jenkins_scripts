@@ -132,7 +132,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
                 f.write("deb http://prepos.ros.org/repos/ros/ubuntu %s main" % os.environ['OS_PLATFORM'])
             else:
                 f.write("deb http://repos.ros.org/repos/ros-shadow-fixed/ubuntu %s main" % os.environ['OS_PLATFORM'])
-        call("wget http://packages.ros.org/ros.key -O %s/ros.key" % workspace)
+        call("curl http://packages.ros.org/ros.key -o %s/ros.key" % workspace)
         call("apt-key add %s/ros.key" % workspace)
         call("apt-get update")
 
