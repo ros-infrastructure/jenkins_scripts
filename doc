@@ -126,6 +126,8 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
     if not no_chroot:
         call("apt-get update")
         call("apt-get install ca-certificates curl --yes")
+        #install ssh
+        call("apt-get install openssh-client --yes")
 
         #Add ros to apt
         print("Add ROS to apt sources")
@@ -172,8 +174,6 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         call("apt-get install git-core --yes")
         call("apt-get install subversion --yes")
 
-        #install ssh
-        call("apt-get install openssh-client --yes")
 
         print("Installing catkin-sphinx")
         #TODO: Switch to apt for catkin-sphinx
