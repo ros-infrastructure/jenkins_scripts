@@ -124,6 +124,9 @@ def main():
 
 def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False, skip_garbage=False, force=False):
     if not no_chroot:
+        call("apt-get update")
+        call("apt-get install curl --yes")
+
         #Add ros to apt
         print("Add ROS to apt sources")
         with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:

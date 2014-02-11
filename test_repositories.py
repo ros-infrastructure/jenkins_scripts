@@ -40,6 +40,9 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
     if no_chroot:
         print("Skip adding ros sources to apt")
     else:
+        call("apt-get update")
+        call("apt-get install curl --yes")
+
         # Add ros sources to apt
         print("Add ros sources to apt")
         ros_apt = '/etc/apt/sources.list.d/ros-latest.list'
