@@ -41,6 +41,7 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         print("Skip adding ros sources to apt")
     else:
         call("apt-get update")
+        call("apt-get install ca-certificates --yes")
         call("apt-get install curl --yes")
 
         # Add ros sources to apt
