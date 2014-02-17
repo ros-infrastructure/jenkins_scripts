@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import optparse
 import os
+import re
 import rosdep
 import shutil
 import sys
@@ -120,6 +121,8 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     print("Install repo list from source")
     os.makedirs(repo_sourcespace)
     call("rosinstall %s %s/repo.rosinstall --catkin" % (repo_sourcespace, workspace))
+
+    extract_notification_recipients(repo_sourcespace)
 
     # get the repositories build dependencies
     print("Get build dependencies of repo list")
@@ -313,6 +316,17 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     print("Test depends-on packages")
     call("make run_tests", ros_env)
     ensure_test_results(test_results_dir)
+
+
+def extract_notification_recipients(path):
+    from catkin_pkg.package import find_packages
+    pkgs = find_packages(path)
+    notification_recipients = set([])
+    for pkg in pkgs.values():
+        for m in pkg.maintainers:
+            notification_recipients.add(m.email)
+    if notification_recipients:
+        print('Notification recipients: %s' % ' '.join(sorted(notification_recipients)))
 
 
 def _get_non_catkin_packages(basepath):
