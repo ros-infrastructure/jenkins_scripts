@@ -319,7 +319,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
 
 def extract_notification_recipients(path):
-    from catkin_pkg.package import find_packages
+    from catkin_pkg.packages import find_packages
     pkgs = find_packages(path)
     notification_recipients = set([])
     for pkg in pkgs.values():
