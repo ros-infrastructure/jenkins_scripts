@@ -24,9 +24,9 @@ def apt_get_install(pkgs, rosdep=None, sudo=False):
 
     if len(pkgs) > 0:
         if rosdep:
-            call(cmd + ' '.join(rosdep.to_aptlist(pkgs)))
+            call(cmd + ' '.join(sorted(rosdep.to_aptlist(pkgs))))
         else:
-            call(cmd + ' '.join(pkgs))
+            call(cmd + ' '.join(sorted(pkgs)))
     else:
         print("Not installing anything from apt right now.")
 
@@ -245,7 +245,7 @@ def get_dependencies(source_folder, build_depends=True, test_depends=True):
     pkgs = packages.find_packages(source_folder)
     local_packages = [p.name for p in pkgs.values()]
     if len(pkgs) > 0:
-        print("In folder %s, found packages %s" % (source_folder, ', '.join(local_packages)))
+        print("In folder %s, found packages: %s" % (source_folder, ', '.join(sorted(local_packages))))
     else:
         raise BuildException("Found no packages in folder %s. Are you sure your packages have a packages.xml file?" % source_folder)
 
