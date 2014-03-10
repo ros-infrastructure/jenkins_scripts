@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+import argparse
+import os
+import shutil
+import time
+
+from catkin_pkg.package import parse_package_string
+from rosdistro import get_cached_distribution, get_index, get_index_url
+
+from common import call_with_list
+
+
+def get_repo_names_with_release_but_no_doc(distro_file):
+    repo_names = []
+    for repo in distro_file.repositories.values():
+        if not repo.doc_repository and repo.release_repository and repo.release_repository.version:
+            repo_names.append(repo.name)
+    return repo_names
+
+
+def get_package_names(distro_file, repo_names):
+    pkg_names = []
+    for repo_name in repo_names:
+        pkg_names.extend(distro_file.repositories[repo_name].release_repository.package_names)
+    return pkg_names
+
+
+# def write_distro_specific_manifest(manifest_file, package, vcs_type,
+#                                    vcs_uri, api_homepage, tags_db,
+#                                    repo_name, doc_job, version,
+#                                    has_changelog_rst=None, pkg_status=None, pkg_status_description=None,
+#                                    pkg_release_jobs=None, pkg_devel_jobs=None):
+def get_metadata(distro, pkg_name):
+    rel_pkg = distro.release_packages[pkg_name]
+    repo_name = rel_pkg.repository_name
+
+    xml = distro.get_release_package_xml(pkg_name)
+    pkg = parse_package_string(xml)
+
+    data = {}
+    data['repo_name'] = repo_name
+    data['timestamp'] = time.time()
+
+    if rel_pkg.status is not None:
+        data['maintainer_status'] = rel_pkg.status
+    if rel_pkg.status_description is not None:
+        data['maintainer_status_description'] = rel_pkg.status_description
+
+    data['description'] = pkg.description
+    data['maintainers'] = ', '.join([str(m) for m in pkg.maintainers])
+    data['license'] = ', '.join(pkg.licenses)
+
+    website_urls = [u.url for u in pkg.urls if u.type == 'website']
+    if website_urls:
+        data['url'] = website_urls[0]
+
+    data['authors'] = ', '.join([str(a) for a in pkg.authors])
+
+    data['depends'] = [dep.name for dep in pkg.build_depends + pkg.buildtool_depends + pkg.run_depends]
+
+    is_metapackage = 'metapackage' in pkg.exports
+    data['package_type'] = 'metapackage' if is_metapackage else 'package'
+    if is_metapackage:
+        data['packages'] = [dep.name for dep in pkg.run_depends]
+
+    release_jobs = []
+    release_jobs.append('ros-%s-%s_sourcedeb' % (distro.name, pkg_name.replace('_', '-')))
+    for os_codename in distro.release_platforms.get('ubuntu', []):
+        for arch in ['amd64', 'i386']:
+            release_jobs.append('ros-%s-%s_binarydeb_%s_%s' % (distro.name, pkg_name.replace('_', '-'), os_codename, arch))
+    data['release_jobs'] = release_jobs
+
+    if distro.repositories[repo_name].doc_repository:
+        data['devel_jobs'] = 'devel-%s-%s' % (distro.name, repo_name)
+
+    return data
+
+
+def write_manifest_yaml(manifest_yaml, data):
+    import yaml
+    base_path = os.path.dirname(manifest_yaml)
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+    with open(manifest_yaml, 'w+') as f:
+        yaml.safe_dump(data, f, default_flow_style=False)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Document released packages without a dedicated doc job')
+    parser.add_argument('rosdistro', help='The ROS distro')
+    parser.add_argument('repos', nargs='*', help='The repository names')
+    parser.add_argument('--upload', action='store_true', help='Upload generated to server')
+    args = parser.parse_args()
+
+    workspace = os.environ['WORKSPACE']
+    base_path = os.path.join(workspace, 'doc_packages')
+    if os.path.exists(base_path):
+        shutil.rmtree(base_path)
+
+    index = get_index(get_index_url())
+    distro = get_cached_distribution(index, args.rosdistro)
+
+    if args.repos:
+        pkg_names = get_package_names(distro, args.repos)
+    else:
+        repo_names = get_repo_names_with_release_but_no_doc(distro)
+        pkg_names = get_package_names(distro, repo_names)
+
+    pkg_names.sort()
+
+    print("Generate 'manifest.yaml' files for the following packages in the rosdistro '%s':" % args.rosdistro)
+    api_path = os.path.join(base_path, args.rosdistro, 'api')
+    for pkg_name in pkg_names:
+        data = get_metadata(distro, pkg_name)
+        print('- %s' % pkg_name)
+        manifest_yaml = os.path.join(api_path, pkg_name, 'manifest.yaml')
+        write_manifest_yaml(manifest_yaml, data)
+
+    if args.upload and pkg_names:
+        command = ['bash', '-c', 'rsync -e "ssh -o StrictHostKeyChecking=no" -qr %s rosbot@ros.osuosl.org:/home/rosbot/docs/%s/api' % (' '.join(pkg_names), args.rosdistro)]
+        call_with_list(command, cwd=api_path)
+
+
+if __name__ == '__main__':
+    main()

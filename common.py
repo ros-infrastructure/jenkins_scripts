@@ -110,9 +110,9 @@ def get_ros_env(setup_file):
     return res
 
 
-def call_with_list(command, envir=None, verbose=True, return_output=False):
-    print("Executing command '%s'" % ' '.join(command))
-    helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True, env=envir)
+def call_with_list(command, envir=None, verbose=True, return_output=False, cwd=None):
+    print(("Executing command '%s'" % ' '.join(command)) + (" in '%s'" % cwd if cwd else ''))
+    helper = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True, cwd=cwd, env=envir)
     if return_output:
         res = ''
     while True:
