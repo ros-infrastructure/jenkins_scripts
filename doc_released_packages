@@ -83,6 +83,8 @@ def write_manifest_yaml(manifest_yaml, data):
         os.makedirs(base_path)
     with open(manifest_yaml, 'w+') as f:
         yaml.safe_dump(data, f, default_flow_style=False)
+    with open(os.path.join(base_path, 'stamp'), 'w'):
+        pass
 
 
 def main():
