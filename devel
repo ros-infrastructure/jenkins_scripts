@@ -1,36 +1,40 @@
 #!/usr/bin/env python
 
-import optparse
+import argparse
 import os
-import sys
 
 from common import BuildException
 from test_repositories import test_repositories
 
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option("--workspace", action="store", default=None)
-    parser.add_option("--build_in_workspace", action="store_true", default=False)
-    parser.add_option("--sudo", action="store_true", default=False)
-    parser.add_option("--no-chroot", action="store_true", default=False)
-    (options, args) = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('rosdistro')
+    parser.add_argument('repository')
+    parser.add_argument('--workspace')
+    parser.add_argument('--build_in_workspace', action='store_true')
+    parser.add_argument('--sudo', action='store_true')
+    parser.add_argument('--no-chroot', action='store_true')
+    parser.add_argument('--repo-path')
+    args = parser.parse_args()
 
-    if len(args) != 2:
-        print("Usage: %s ros_distro repository_name" % sys.argv[0])
-        raise BuildException("Wrong number of parameters for devel script")
+    if not args.workspace:
+        args.workspace = os.environ['WORKSPACE']
+    if not os.path.exists(args.workspace):
+        os.makedirs(args.workspace)
 
-    ros_distro = args[0]
-    repositories = args[1:]
-    versions = ['devel' for _ in repositories]
-    if not options.workspace:
-        options.workspace = os.environ['WORKSPACE']
-    if not os.path.exists(options.workspace):
-        os.makedirs(options.workspace)
-
-    print("Running prerelease test on distro %s and repositories %s" % (ros_distro, ', '.join(repositories)))
-    test_repositories(ros_distro, repositories, versions, options.workspace, test_depends_on=False,
-                      build_in_workspace=options.build_in_workspace, sudo=options.sudo, no_chroot=options.no_chroot)
+    print("Running devel test on ROS distro '%s' and repository '%s'" % (args.rosdistro, args.repository))
+    if not args.repo_path:
+        repo_list = [args.repository]
+        version_list = ['devel']
+        repo_sourcespace = None
+    else:
+        repo_list = []
+        version_list = []
+        repo_sourcespace = args.repo_path
+    test_repositories(args.rosdistro, repo_list, version_list, args.workspace, test_depends_on=False,
+                      build_in_workspace=args.build_in_workspace, sudo=args.sudo, no_chroot=args.no_chroot,
+                      repo_sourcespace=repo_sourcespace)
 
 
 if __name__ == '__main__':

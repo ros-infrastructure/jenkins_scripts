@@ -12,7 +12,7 @@ import sys
 from common import append_pymodules_if_needed, apt_get_install, apt_get_update, BuildException, call, create_test_result, ensure_test_results, get_dependencies, get_ros_env
 
 
-def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False, no_chroot=False):
+def test_repositories(ros_distro, repo_list, version_list, workspace, test_depends_on, build_in_workspace=False, sudo=False, no_chroot=False, repo_sourcespace=None):
     print("Testing on distro %s" % ros_distro)
     print("Testing repositories %s" % ', '.join(repo_list))
     print("Testing versions %s" % ', '.join(version_list))
@@ -33,7 +33,8 @@ def test_repositories(ros_distro, repo_list, version_list, workspace, test_depen
         shutil.rmtree(tmpdir)
     except Exception:
         print("Temp folder did not exist yet")
-    repo_sourcespace = os.path.join(tmpdir, 'src_repository')
+    if not repo_sourcespace:
+        repo_sourcespace = os.path.join(tmpdir, 'src_repository')
     dependson_sourcespace = os.path.join(tmpdir, 'src_depends_on')
     repo_buildspace = os.path.join(tmpdir, 'build_repository')
     dependson_buildspace = os.path.join(tmpdir, 'build_depend_on')
@@ -91,34 +92,35 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
     print("Create rosdep object")
     rosdep_resolver = rosdep.RosDepResolver(ros_distro, sudo, no_chroot)
 
-    # download the repo_list from source
-    print("Creating rosinstall file for repo list")
-    rosinstall = ""
-    for repo_name, version in zip(repo_list, version_list):
-        if version == 'devel':
-            if repo_name not in source_file.repositories:
-                raise BuildException("Repository %s does not exist in Devel Distro" % repo_name)
-            print("Using devel distro file to download repositories")
-            rosinstall += _generate_rosinstall_for_repo(source_file.repositories[repo_name])
-        else:
-            if repo_name not in release.repositories:
-                raise BuildException("Repository %s does not exist in Ros Distro" % repo_name)
-            repo = release.repositories[repo_name]
-            if version not in ['latest', 'master']:
-                assert repo.version is not None, 'Repository "%s" does not have a version set' % repo_name
-            assert 'release' in repo.tags, 'Repository "%s" does not have a "release" tag set' % repo_name
-            for pkg_name in repo.package_names:
-                release_tag = get_release_tag(repo, pkg_name)
-                if version in ['latest', 'master']:
-                    release_tag = '/'.join(release_tag.split('/')[:-1])
-                print('Using tag "%s" of release distro file to download package "%s from repo "%s' % (version, pkg_name, repo_name))
-                rosinstall += _generate_rosinstall_for_pkg_version(release.repositories[repo_name], pkg_name, release_tag)
-    print("rosinstall file for all repositories: \n %s" % rosinstall)
-    with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
-        f.write(rosinstall)
-    print("Install repo list from source")
-    os.makedirs(repo_sourcespace)
-    call("rosinstall %s %s/repo.rosinstall --catkin" % (repo_sourcespace, workspace))
+    if repo_list:
+        # download the repo_list from source
+        print("Creating rosinstall file for repo list")
+        rosinstall = ""
+        for repo_name, version in zip(repo_list, version_list):
+            if version == 'devel':
+                if repo_name not in source_file.repositories:
+                    raise BuildException("Repository %s does not exist in Devel Distro" % repo_name)
+                print("Using devel distro file to download repositories")
+                rosinstall += _generate_rosinstall_for_repo(source_file.repositories[repo_name])
+            else:
+                if repo_name not in release.repositories:
+                    raise BuildException("Repository %s does not exist in Ros Distro" % repo_name)
+                repo = release.repositories[repo_name]
+                if version not in ['latest', 'master']:
+                    assert repo.version is not None, 'Repository "%s" does not have a version set' % repo_name
+                assert 'release' in repo.tags, 'Repository "%s" does not have a "release" tag set' % repo_name
+                for pkg_name in repo.package_names:
+                    release_tag = get_release_tag(repo, pkg_name)
+                    if version in ['latest', 'master']:
+                        release_tag = '/'.join(release_tag.split('/')[:-1])
+                    print('Using tag "%s" of release distro file to download package "%s from repo "%s' % (version, pkg_name, repo_name))
+                    rosinstall += _generate_rosinstall_for_pkg_version(release.repositories[repo_name], pkg_name, release_tag)
+        print("rosinstall file for all repositories: \n %s" % rosinstall)
+        with open(os.path.join(workspace, "repo.rosinstall"), 'w') as f:
+            f.write(rosinstall)
+        print("Install repo list from source")
+        os.makedirs(repo_sourcespace)
+        call("rosinstall %s %s/repo.rosinstall --catkin" % (repo_sourcespace, workspace))
 
     extract_notification_recipients(repo_sourcespace)
 
