@@ -237,7 +237,7 @@ def get_dependency_build_order(depends):
     return order
 
 
-def get_dependencies(source_folder, build_depends=True, test_depends=True):
+def get_dependencies(source_folder, build_depends=True, run_depends=True):
     # get the dependencies
     print("Get the dependencies of source folder %s" % source_folder)
     append_pymodules_if_needed()
@@ -252,11 +252,11 @@ def get_dependencies(source_folder, build_depends=True, test_depends=True):
     depends = []
     for pkg in pkgs.values():
         if build_depends:
-            for d in pkg.build_depends + pkg.buildtool_depends:
+            for d in pkg.build_depends + pkg.buildtool_depends + (pkg.test_depends if pkg.package_format > 1 else []):
                 if not d.name in depends and not d.name in local_packages:
                     depends.append(d.name)
-        if test_depends:
-            for d in pkg.test_depends + pkg.run_depends:
+        if run_depends:
+            for d in pkg.run_depends + (pkg.test_depends if pkg.package_format == 1 else []):
                 if not d.name in depends and not d.name in local_packages:
                     depends.append(d.name)
 

@@ -126,7 +126,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
     # get the repositories build dependencies
     print("Get build dependencies of repo list")
-    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, test_depends=False)
+    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, run_depends=True)
     # ensure that catkin gets installed, for non-catkin packages so that catkin_make_isolated is available
     if 'catkin' not in repo_build_dependencies:
         repo_build_dependencies.append('catkin')
@@ -169,9 +169,9 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         call("make tests", ros_env)
 
         # get the repositories test and run dependencies
-        print("Get test and run dependencies of repo list")
-        repo_test_dependencies = get_dependencies(repo_sourcespace, build_depends=False, test_depends=True)
-        print("Install test and run dependencies of repo list: %s" % (', '.join(repo_test_dependencies)))
+        print("Get run dependencies of repo list")
+        repo_test_dependencies = get_dependencies(repo_sourcespace, build_depends=False, run_depends=True)
+        print("Install run dependencies of repo list: %s" % (', '.join(repo_test_dependencies)))
         apt_get_install(repo_test_dependencies, rosdep_resolver, sudo)
 
         # get environment after installing test and run dependencies
@@ -217,7 +217,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
             repo = release.repositories[repo_name]
             for pkg_name in repo.package_names:
                 print('pkg_name', pkg_name)
-                depends_on |= walker.get_recursive_depends_on(pkg_name, ['buildtool', 'build'], ignore_pkgs=depends_on)
+                depends_on |= walker.get_recursive_depends_on(pkg_name, ['buildtool', 'build', 'test'], ignore_pkgs=depends_on)
                 print('depends_on', depends_on)
         # remove all packages which are already in the workspace
         from catkin_pkg.packages import find_packages
@@ -274,9 +274,9 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         create_test_result(test_results_dir, failure='Non-catkin packages depend on the repos (%s). Skip building and testing depends_on packages.' % ', '.join(sorted(non_catkin_pkgs)))
         return
 
-    # get build and test dependencies of depends_on list
+    # get build and run dependencies of depends_on list
     dependson_build_dependencies = []
-    for d in get_dependencies(dependson_sourcespace, build_depends=True, test_depends=False):
+    for d in get_dependencies(dependson_sourcespace, build_depends=True, run_depends=False):
         print("  Checking dependency %s" % d)
         if d in dependson_build_dependencies:
             print("    Already in dependson_build_dependencies")
@@ -288,7 +288,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
             dependson_build_dependencies.append(d)
     print("Build dependencies of depends_on list are %s" % (', '.join(dependson_build_dependencies)))
     dependson_test_dependencies = []
-    for d in get_dependencies(dependson_sourcespace, build_depends=False, test_depends=True):
+    for d in get_dependencies(dependson_sourcespace, build_depends=False, run_depends=True):
         if not d in dependson_test_dependencies and not d in depends_on and not d in repo_list:
             dependson_test_dependencies.append(d)
     print("Test dependencies of depends_on list are %s" % (', '.join(dependson_test_dependencies)))
@@ -393,7 +393,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
 
     # get the repositories build dependencies
     print("Get build dependencies of repo list")
-    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, test_depends=False)
+    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, run_depends=False)
     print("Install build dependencies of repo list: %s" % (', '.join(repo_build_dependencies)))
     apt_get_install(repo_build_dependencies, rosdep_resolver, sudo)
 
@@ -415,9 +415,9 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     call("make", ros_env)
     call("make tests", ros_env)
 
-    # get the repositories test and run dependencies
+    # get the repositories run dependencies
     print("Get test and run dependencies of repo list")
-    repo_test_dependencies = get_dependencies(repo_sourcespace, build_depends=False, test_depends=True)
+    repo_test_dependencies = get_dependencies(repo_sourcespace, build_depends=False, run_depends=True)
     print("Install test and run dependencies of repo list: %s" % (', '.join(repo_test_dependencies)))
     apt_get_install(repo_test_dependencies, rosdep_resolver, sudo)
 
@@ -461,9 +461,9 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
     os.makedirs(dependson_sourcespace)
     call("rosinstall --catkin %s %s/depends_on.rosinstall" % (dependson_sourcespace, workspace))
 
-    # get build and test dependencies of depends_on list
+    # get build and run dependencies of depends_on list
     dependson_build_dependencies = []
-    for d in get_dependencies(dependson_sourcespace, build_depends=True, test_depends=False):
+    for d in get_dependencies(dependson_sourcespace, build_depends=True, run_depends=False):
         print("  Checking dependency %s" % d)
         if d in dependson_build_dependencies:
             print("    Already in dependson_build_dependencies")
@@ -475,7 +475,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
             dependson_build_dependencies.append(d)
     print("Build dependencies of depends_on list are %s" % (', '.join(dependson_build_dependencies)))
     dependson_test_dependencies = []
-    for d in get_dependencies(dependson_sourcespace, build_depends=False, test_depends=True):
+    for d in get_dependencies(dependson_sourcespace, build_depends=False, run_depends=True):
         if not d in dependson_test_dependencies and not d in depends_on and not d in repo_list:
             dependson_test_dependencies.append(d)
     print("Test dependencies of depends_on list are %s" % (', '.join(dependson_test_dependencies)))
