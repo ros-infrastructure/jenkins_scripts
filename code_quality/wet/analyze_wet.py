@@ -125,7 +125,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
 
     # get the repositories build dependencies
     print "Get build dependencies of repo list"
-    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, test_depends=False)
+    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, run_depends=False)
     # ensure that catkin gets installed, for non-catkin packages so that catkin_make_isolated is available
     if 'catkin' not in repo_build_dependencies:
         repo_build_dependencies.append('catkin')
@@ -306,7 +306,7 @@ def _test_repositories_fuerte(ros_distro, repo_list, version_list, workspace, te
 
     # get the repositories build dependencies
     print "Get build dependencies of repo list"
-    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, test_depends=False)
+    repo_build_dependencies = get_dependencies(repo_sourcespace, build_depends=True, run_depends=False)
     print "Install build dependencies of repo list: %s" % (', '.join(repo_build_dependencies))
     apt_get_install(repo_build_dependencies, rosdep_resolver, sudo)
 
