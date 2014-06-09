@@ -22,11 +22,20 @@ def apt_get_install(pkgs, rosdep=None, sudo=False):
     if sudo:
         cmd = "sudo " + cmd
 
-    if len(pkgs) > 0:
-        if rosdep:
-            call(cmd + ' '.join(sorted(rosdep.to_aptlist(pkgs))))
-        else:
-            call(cmd + ' '.join(sorted(pkgs)))
+    if rosdep:
+        pkgs = rosdep.to_aptlist(pkgs)
+
+    not_installed_pkgs = []
+    for pkg in pkgs:
+        try:
+            print("Checking if '%s' is already installed..." % pkg)
+            call('dpkg -s %s' % pkg, verbose=False, return_output=True)
+            print("Package '%s' is already installed." % pkg)
+        except BuildException:
+            not_installed_pkgs.append(pkg)
+
+    if len(not_installed_pkgs) > 0:
+        call(cmd + ' '.join(sorted(not_installed_pkgs)))
     else:
         print("Not installing anything from apt right now.")
 
@@ -133,8 +142,8 @@ def call_with_list(command, envir=None, verbose=True, return_output=False, cwd=N
         return res
 
 
-def call(command, envir=None, verbose=True):
-    return call_with_list(command.split(' '), envir, verbose)
+def call(command, envir=None, verbose=True, return_output=False):
+    return call_with_list(command.split(' '), envir=envir, verbose=verbose, return_output=return_output)
 
 
 def check_output(command, envir=None, verbose=True):
