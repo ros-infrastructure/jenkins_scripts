@@ -338,8 +338,8 @@ def document_repo(workspace, docspace, ros_distro, repo,
     if ros_distro == 'indigo':
         if stacks or manifest_packages:
             print("Ignoring dry packages and stacks in '%s'" % ros_distro)
-            stacks = []
-            manifest_packages = []
+            stacks = {}
+            manifest_packages = {}
         if not catkin_packages:
             raise BuildException('No catkin packages found')
     print("Running documentation generation on\npackages: %s" % (manifest_packages.keys() + catkin_packages.keys()))
