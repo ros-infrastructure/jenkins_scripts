@@ -196,6 +196,15 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
 
         #TODO: Replace with commented line below
         call("apt-get install graphviz python-sphinx python-yaml doxygen python-epydoc --yes")
+
+        if platform == 'trusty':
+            print("Doxygen version 1.8.6 seems to generate excessive tagfiles when cross referencing, overriding with older package (1.7.6) from precise")
+            call("apt-get install wget --yes")
+            call("rm /usr/bin/doxygen")
+            call("wget http://us.archive.ubuntu.com/ubuntu/pool/main/d/doxygen/doxygen_1.7.6.1-2ubuntu1_amd64.deb --output-document=/tmp/doxygen_1.7.6.1-2ubuntu1_amd64.deb")
+            call("dpkg -i /tmp/doxygen_1.7.6.1-2ubuntu1_amd64.deb")
+            call("doxygen --version")
+
         #TODO: Put back in
         #call("apt-get install ros-%s-rosdoc-lite --yes" % ros_distro)
         install_catkin_basic(install_distro)
