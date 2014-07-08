@@ -181,6 +181,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         print("Done installing catkin-sphinx")
 
         print("Installing ros and genmsg")
+        call("apt-get install ros-%s-mk --yes" % ( install_distro)) # separate install for debug
         call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
 
         #Install rosdoc lite
