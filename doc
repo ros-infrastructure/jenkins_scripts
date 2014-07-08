@@ -183,7 +183,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         print("Installing ros and genmsg")
         
         call('apt-get install debfoster -y')
-        call_with_list(['bash','-c', "for p in `debfoster -d libboost-context1.54-dev | grep -v libboost`; do sudo apt-get install $p -y; done"']))
+        call_with_list(['bash','-c', "for p in `debfoster -d libboost-context1.54-dev | grep -v libboost`; do sudo apt-get install $p -y; done"]))
         call("apt-get install libboost-context1.54-dev --yes") # separate install for debug
         call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
 
