@@ -129,6 +129,9 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         #install ssh
         call("apt-get install openssh-client --yes")
 
+        call("apt-get install aptitude --yes") # separate install for debug
+        call("aptitude install libboost-context1.54-dev") # separate install for debug
+
         #Add ros to apt
         print("Add ROS to apt sources")
         with open('/etc/apt/sources.list.d/ros-latest.list', 'w') as f:
@@ -184,8 +187,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         
         #call('apt-get install debfoster -y')
         #call_with_list(['bash','-c', "for p in `debfoster -d libboost-context1.54-dev | grep -v libboost`; do sudo apt-get install $p -y; done"]))
-        call("apt-get install aptitude --yes") # separate install for debug
-        call("aptitude install libboost-context1.54-dev") # separate install for debug
+
         call("apt-get install libboost-context1.54-dev --yes") # separate install for debug
         call("apt-get install ros-%s-ros ros-%s-genmsg --yes" % (install_distro, install_distro))
 
