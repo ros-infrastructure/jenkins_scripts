@@ -129,6 +129,7 @@ def doit(ros_distro, stack, workspace, docspace, platform, arch, no_chroot=False
         #install ssh
         call("apt-get install openssh-client --yes")
 
+        call('dpkg -l *boost*')
         call("apt-get install aptitude --yes") # separate install for debug
         call("aptitude install libboost-context1.54-dev") # separate install for debug
 
