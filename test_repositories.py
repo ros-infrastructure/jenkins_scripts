@@ -188,7 +188,7 @@ def _test_repositories(ros_distro, repo_list, version_list, workspace, test_depe
         print("Build workspace with non-catkin packages in isolation")
         # work around catkin_make_isolated issue (at least with version 0.5.65 of catkin)
         os.makedirs(os.path.join(repo_buildspace, 'devel_isolated'))
-        call('catkin_make_isolated --source %s --install-space install_isolated --install' % repo_sourcespace, ros_env)
+        call('catkin_make_isolated -C %s --source %s --install' % (repo_buildspace, repo_sourcespace), ros_env)
         setup_file = os.path.join(repo_buildspace, 'install_isolated', 'setup.sh')
         # anything after this should build on this env
         ros_env = get_ros_env(setup_file)
