@@ -256,7 +256,7 @@ def get_dependencies(source_folder, build_depends=True, run_depends=True):
     if len(pkgs) > 0:
         print("In folder %s, found packages: %s" % (source_folder, ', '.join(sorted(local_packages))))
     else:
-        raise BuildException("Found no packages in folder %s. Are you sure your packages have a packages.xml file?" % source_folder)
+        raise BuildException("Found no packages in folder %s. Are you sure your packages have a package.xml file?" % source_folder)
 
     depends = []
     for pkg in pkgs.values():
