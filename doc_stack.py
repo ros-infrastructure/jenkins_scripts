@@ -387,6 +387,14 @@ def document_repo(workspace, docspace, ros_distro, repo,
 
     if not no_chroot:
         print("Installing all dependencies for %s" % repo)
+
+        # XXX this is a really ugly hack to make the hydro doc job for ros_comm pass
+        # otherwise roslisp pulls in the rosgraph_msgs package as a Debian dependency
+        # which then break catkin_basic since it include the msgs CMake multiple files
+        # resulting in duplicate target names (https://github.com/ros/ros_comm/issues/471)
+        if repo == 'ros_comm' and 'ros-hydro-roslisp' in apt_deps:
+            apt_deps.remove('ros-hydro-roslisp')
+
         if apt_deps:
             call("apt-get install %s --yes" % (' '.join(apt_deps)))
         print("Done installing dependencies")
