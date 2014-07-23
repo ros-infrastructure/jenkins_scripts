@@ -30,7 +30,10 @@ class RosDepResolver:
             if len(split_entry) < 2:
                 continue
             ros_entry = split_entry[0]
-            apt_entries = split_entry[1].split(' ')
+            if split_entry[1]:
+                apt_entries = split_entry[1].split(' ')
+            else:
+                apt_entries = []
             self.r2a[ros_entry] = apt_entries
             for a in apt_entries:
                 self.a2r[a] = ros_entry
