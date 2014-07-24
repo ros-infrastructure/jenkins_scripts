@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -240,7 +242,17 @@ def get_dependency_build_order(depends):
         graph.add_node(name)
         graph.add_edges_from([(name, d) for d in deps])
 
-    order = nx.topological_sort(graph)
+    try:
+        order = nx.topological_sort(graph)
+    except nx.NetworkXUnfeasible:
+        print('')
+        print('Packages have a circular dependency:')
+        for name, deps in depends.items():
+            print('%s:' % name)
+            for dep in sorted(set(deps)):
+                print('* %s' % dep)
+        print('')
+        raise
     order.reverse()
 
     return order
