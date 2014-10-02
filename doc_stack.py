@@ -154,6 +154,13 @@ def document_packages(manifest_packages, catkin_packages, build_order,
                             'docs_url': '../../../api/%s/html' % (package),
                             'package': '%s' % package}
 
+            # fetch generator specific output folders from rosdoc_lite
+            from rosdoc_lite import get_generator_output_folders
+            output_folders = get_generator_output_folders(package_path)
+            print('output_folders', output_folders)
+            for generator, output_folder in output_folders.items():
+                package_tags['%s_output_folder' % generator] = output_folder
+
             #If the package has a deb name, then we'll store the tags for it
             #alongside that name
             if ros_dep.has_ros(package):
