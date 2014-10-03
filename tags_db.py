@@ -59,11 +59,20 @@ def build_tagfile(apt_deps, tags_db, rosdoc_tagfile, current_package, ordered_de
         if dep == current_package:
             break
 
-        relative_tags_path = "doc/%s/tags/%s.tag" % (ros_distro, dep)
-        if os.path.isfile(os.path.join(docspace, relative_tags_path)):
-            tags.append({'docs_url': '../../%s/html' % dep,
-                         'location': 'file://%s' % os.path.join(docspace, relative_tags_path),
-                         'package': '%s' % dep})
+        key = 'ros-%s-%s' % (ros_distro, dep.replace('_', '-'))
+        if tags_db.has_tags(key):
+            tag = tags_db.get_tags(key)
+            if len(tag) == 1:
+                tag_copy = copy.deepcopy(tag[0])
+                #build the full path to the tagfiles
+                tag_copy['location'] = 'file://%s' % os.path.join(tags_location, 'tags', tag_copy['location'])
+                tags.append(tag_copy)
+        else:
+            relative_tags_path = "doc/%s/tags/%s.tag" % (ros_distro, dep)
+            if os.path.isfile(os.path.join(docspace, relative_tags_path)):
+                tags.append({'docs_url': '../../%s/html' % dep,
+                             'location': 'file://%s' % os.path.join(docspace, relative_tags_path),
+                             'package': '%s' % dep})
 
     with open(rosdoc_tagfile, 'w+') as tags_file:
         import yaml
