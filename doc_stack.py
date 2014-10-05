@@ -537,17 +537,3 @@ Depends rosinstall:\n%s""" % (build_errors,
                           "message_generation_failure")
     else:
         copy_test_results(workspace, docspace)
-
-
-def main():
-    arguments = sys.argv[1:]
-    ros_distro = arguments[0]
-    stack = arguments[1]
-    workspace = 'workspace'
-    docspace = 'docspace'
-    homepage = 'http://docs.ros.org'
-
-    document_repo(workspace, docspace, ros_distro, stack, 'precise', 'amd64', homepage, None, None)
-
-if __name__ == '__main__':
-    main()
