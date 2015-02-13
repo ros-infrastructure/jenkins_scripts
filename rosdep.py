@@ -23,7 +23,7 @@ class RosDepResolver:
             call("rosdep update", self.env)
 
         print("Building dictionaries from a rosdep's db")
-        raw_db = check_output("rosdep db", self.env, verbose=False).split('\n')
+        raw_db = check_output("rosdep db --install-method apt", self.env, verbose=False).split('\n')
 
         for entry in raw_db:
             split_entry = entry.split(' -> ')
